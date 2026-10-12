@@ -1,0 +1,52 @@
+
+> team-collob-platform@0.1.10 test
+> node scripts/test-core.mjs
+
+✔ anonymous and cross-origin requests are rejected (385.723ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (15.1255ms)
+✔ private-channel visibility excludes a team guest (16.882333ms)
+✔ concurrent retried writes commit one message and one ordered event (72.044084ms)
+✔ message edit ownership, threads, reactions and monotonic read position (31.645125ms)
+✔ search and draft persistence survive a fresh application instance (15.620625ms)
+✔ private tasks and forms enforce assignment and response permissions (24.3775ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (31.116042ms)
+✔ meeting attendees must be tenant members; only organizer cancels (39.103583ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (13.376959ms)
+✔ 32-person receipts include every opted-in authorized recipient (222.2725ms)
+✔ live event replay and membership revocation close an active subscription (1066.574208ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (238.0385ms)
+✔ receipt privacy opt-out and session logout enforced (40.230334ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (758.87325ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (26.553291ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.949834ms)
+✔ authentication throttling does not consume the session-status and logout budget (120.710291ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (106.82775ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (96.816042ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (10.416625ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (33.832459ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (6.457375ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (5.884417ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (29.268459ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (16.074416ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (18.985708ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (36.151542ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (37.118709ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (4.151667ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (41.033875ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (52.066333ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (4.257916ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (131.408417ms)
+✔ durable scan jobs retry, reject, recover leases and never resurrect deleted files (107.302292ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (3.186083ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.24ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.110459ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (1.827542ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.143208ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4345.48025

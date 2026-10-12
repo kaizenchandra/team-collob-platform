@@ -1,0 +1,2 @@
+CREATE TABLE invitations(id uuid PRIMARY KEY,org_id uuid NOT NULL REFERENCES organizations,email text NOT NULL,role text NOT NULL CHECK(role IN ('member','guest')),token_hash text UNIQUE NOT NULL,expires_at timestamptz NOT NULL,revoked boolean NOT NULL DEFAULT false,accepted_by uuid REFERENCES users,created_by uuid REFERENCES users,created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX invitations_tenant ON invitations(org_id,created_at DESC);

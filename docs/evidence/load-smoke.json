@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-11T22:39:17.849Z",
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpus": 11,
+    "memoryGiB": 18,
+    "node": "v24.19.0"
+  },
+  "boundary": "Local HTTP roundtrip including body transfer; warm services; concurrency 5; small development dataset; no external dependencies. Not target-scale evidence.",
+  "reads": {
+    "count": 100,
+    "concurrency": 5,
+    "errors": 0,
+    "p50Ms": 5.79,
+    "p95Ms": 11.29,
+    "maxMs": 22.97
+  },
+  "search": {
+    "count": 50,
+    "concurrency": 5,
+    "errors": 0,
+    "p50Ms": 3.29,
+    "p95Ms": 7.28,
+    "maxMs": 8.09
+  },
+  "writes": {
+    "count": 50,
+    "concurrency": 5,
+    "errors": 0,
+    "p50Ms": 5.27,
+    "p95Ms": 10.36,
+    "maxMs": 13.1
+  }
+}

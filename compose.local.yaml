@@ -1,0 +1,40 @@
+# Limited local development deployment. Not a production topology.
+services:
+  api:
+    build:
+      context: .
+      target: api
+    image: concord-api:0.1.11-local
+    environment:
+      NODE_ENV: development
+      DEV_AUTH: 'true'
+      API_HOST: 0.0.0.0
+      PORT: '4100'
+      WEB_ORIGIN: http://localhost:3101,http://localhost:3100
+      DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord
+    ports: ['127.0.0.1:4100:4100']
+    volumes: ['files-data:/app/.data']
+    depends_on:
+      postgres: {condition: service_healthy}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    mem_limit: 512m
+    cpus: 1.0
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4100
+    image: concord-web:0.1.11-local
+    ports: ['127.0.0.1:3101:3100']
+    depends_on:
+      api: {condition: service_healthy}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 15s
+    mem_limit: 512m
+    cpus: 1.0
+volumes:
+  files-data:

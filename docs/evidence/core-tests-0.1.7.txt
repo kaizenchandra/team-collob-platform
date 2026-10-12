@@ -1,0 +1,47 @@
+
+> team-collob-platform@0.1.7 test
+> node scripts/test-core.mjs
+
+✔ anonymous and cross-origin requests are rejected (295.764584ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (22.763167ms)
+✔ private-channel visibility excludes a team guest (20.741125ms)
+✔ concurrent retried writes commit one message and one ordered event (53.432292ms)
+✔ message edit ownership, threads, reactions and monotonic read position (34.69925ms)
+✔ search and draft persistence survive a fresh application instance (25.966ms)
+✔ private tasks and forms enforce assignment and response permissions (25.0325ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (30.669417ms)
+✔ meeting attendees must be tenant members; only organizer cancels (24.997208ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (13.631666ms)
+✔ 32-person receipts include every opted-in authorized recipient (448.502333ms)
+✔ live event replay and membership revocation close an active subscription (1088.355792ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (69.4775ms)
+✔ receipt privacy opt-out and session logout enforced (12.996958ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (414.314959ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (30.295083ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.490584ms)
+✔ authentication throttling does not consume the session-status and logout budget (131.12925ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (62.290959ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (51.812667ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (10.400917ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (26.521625ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (6.59425ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (4.044875ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (24.167833ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (15.034625ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (22.676667ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (46.600083ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (44.845125ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (3.247833ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (41.964667ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.322834ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.253459ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.122458ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (1.826375ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3397.590334

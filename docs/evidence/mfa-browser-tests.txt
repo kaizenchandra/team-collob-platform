@@ -1,0 +1,14 @@
+
+Running 6 tests using 1 worker
+
+(node:92906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/identity.spec.ts:20:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session (717ms)
+  ✓  2 [chrome] › tests/browser/identity.spec.ts:53:1 › a valid provider identity without a provisioned subject gets no application session (425ms)
+  ✓  3 [chrome] › tests/browser/identity.spec.ts:66:1 › live password-only identity cannot satisfy a stronger configured assurance requirement (806ms)
+Completed real provider OTP enrollment for a synthetic local identity.
+  ✓  4 [chrome] › tests/browser/identity.spec.ts:158:1 › an in-flight provider login survives a real API container restart (1.7s)
+  ✓  5 [chrome] › tests/browser/identity.spec.ts:203:1 › real provider logout revokes the application session and active UI while another identity stays signed in (4.7s)
+  ✓  6 [chrome] › tests/browser/identity.spec.ts:234:1 › removing browser assurance hints cannot bypass the application client OTP minimum (28.8s)
+
+  6 passed (38.0s)

@@ -1,26 +1,53 @@
 {
   "name": "team-collob-platform",
-  "version": "0.1.0",
+  "version": "0.1.11",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "next dev --port 3100",
+    "build": "next build && node scripts/prepare-standalone.mjs",
+    "start": "node scripts/start-web.mjs",
+    "lint": "eslint",
+    "api": "node --import tsx services/core/server.ts",
+    "db:migrate": "node --import tsx services/core/migrate.ts",
+    "db:seed": "DEV_AUTH=true node --import tsx services/core/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/test-core.mjs",
+    "test:e2e": "playwright test",
+    "requirements": "node scripts/requirements.mjs"
   },
   "dependencies": {
+    "@fastify/cors": "11.3.1",
+    "fastify": "5.12.5",
+    "jose": "6.2.12",
+    "lucide-react": "1.55.0",
     "next": "16.4.0",
+    "openid-client": "6.8.8",
+    "pg": "8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-markdown": "10.1.0",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.5",
+    "zod": "4.6.6"
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0",
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "20.19.43",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.4.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "otpauth": "9.5.2",
+    "prettier": "3.9.10",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
   }
 }

@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:5753) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (6.2s)
+
+  1 passed (6.9s)

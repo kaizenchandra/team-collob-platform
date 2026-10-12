@@ -1,0 +1,6 @@
+ Volume concord-collaboration_clamav-signatures Creating 
+ Volume concord-collaboration_clamav-signatures Created 
+ Container concord-collaboration-clamav-1 Creating 
+ Container concord-collaboration-clamav-1 Created 
+ Container concord-collaboration-clamav-1 Starting 
+ Container concord-collaboration-clamav-1 Started 

@@ -1,0 +1,116 @@
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { randomUUID, createHash } from "node:crypto";
+import { mkdir, open } from "node:fs/promises";
+import path from "node:path";
+import { pool, transaction } from "./db.ts";
+import { channel, audit, HttpError, event } from "./security.ts";
+import { idParam } from "./server.ts";
+import { validateFile,storedBytes } from "./file-content.ts";
+export async function registerFiles(app: FastifyInstance) {
+  const root = path.resolve(process.env.FILE_ROOT ?? ".data/files");
+  app.get("/v1/channels/:id/files", async (req) => {
+    const id = idParam(req);
+    await channel(pool, req.user.id, id);
+    return {
+      files: (
+        await pool.query(
+          "SELECT f.id,f.name,f.mime,f.bytes,f.state,f.created_at,j.status scan_status,j.attempts FROM files f LEFT JOIN file_scan_jobs j ON j.file_id=f.id WHERE channel_id=$1 AND state<>'deleted' ORDER BY created_at DESC LIMIT 100",
+          [id],
+        )
+      ).rows,
+    };
+  });
+  app.post("/v1/channels/:id/files", { bodyLimit: 1500000 }, async (req) => {
+    const id = idParam(req);
+    const b = z
+      .object({
+        clientId: z.uuid().transform(v=>v.toLowerCase()).optional(),
+        name: z
+          .string()
+          .min(1)
+          .max(200)
+          .regex(/^[^/\\\x00-\x1f]+$/),
+        mime: z.string().max(120),
+        content: z
+          .string()
+          .max(1400000)
+          .regex(/^[A-Za-z0-9+/]*={0,2}$/),
+      })
+      .parse(req.body);
+    await channel(pool, req.user.id, id);
+    const bytes = Buffer.from(b.content, "base64");
+    if (bytes.length > 1048576)
+      throw new HttpError(413, "Maximum upload size is 1 MB");
+    const mime = validateFile(b.name,b.mime,bytes);
+    const sha256=createHash("sha256").update(bytes).digest("hex");
+    return transaction(async db=>{
+      const c=await channel(db,req.user.id,id,true);
+      if(b.clientId){
+        const old=(await db.query("SELECT * FROM files WHERE channel_id=$1 AND created_by=$2 AND client_id=$3",[id,req.user.id,b.clientId])).rows[0];
+        if(old){
+          if(old.name!==b.name || old.mime!==mime || Number(old.bytes)!==bytes.length || old.sha256!==sha256)throw new HttpError(409,"Upload ID already used with different content");
+          return {id:old.id,state:old.state};
+        }
+      }
+      await db.query("SELECT pg_advisory_xact_lock(hashtext($1))",[c.org_id]);
+      const usage=await db.query("SELECT coalesce(sum(bytes),0)::bigint bytes FROM files WHERE org_id=$1 AND state<>'deleted'",[c.org_id]);
+      if(Number(usage.rows[0].bytes)+bytes.length>104857600)throw new HttpError(413,"Workspace development quota exceeded (100 MB)");
+      // Shared with reconciliation: metadata absence is meaningful only outside an active write.
+      await db.query("SELECT pg_advisory_xact_lock_shared(712341)");
+      const file=randomUUID();
+      await mkdir(root,{recursive:true,mode:0o700});
+      const handle=await open(path.join(root,file),"wx",0o600);
+      try {await handle.writeFile(bytes);await handle.sync();} finally {await handle.close();}
+      const directory=await open(root,"r");
+      try {await directory.sync();} finally {await directory.close();}
+      // On any failure retain bytes for reconciliation, including ambiguous COMMIT failures.
+      await db.query("INSERT INTO files(id,org_id,channel_id,name,mime,bytes,storage_key,sha256,created_by,client_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",[file,c.org_id,id,b.name,mime,bytes.length,file,sha256,req.user.id,b.clientId??null]);
+      await db.query("INSERT INTO file_scan_jobs(file_id) VALUES($1)",[file]);
+      await audit(db,req.user.id,c.org_id,"file.quarantined",file);
+      await event(db,c.org_id,id,"file.uploaded");
+      return {id:file,state:"quarantined"};
+    });
+  });
+  app.get("/v1/channels/:id/files/:file/download", async (req,reply) => {
+    const id=idParam(req),file=idParam(req,"file");
+    await channel(pool,req.user.id,id);
+    const row=(await pool.query("SELECT * FROM files WHERE id=$1 AND channel_id=$2 AND state<>'deleted'",[file,id])).rows[0];
+    if(!row)throw new HttpError(404,"File unavailable");
+    if(row.state!=="ready")throw new HttpError(409,"Download unavailable: the file has not passed malware scanning.");
+    let bytes:Buffer;
+    try{bytes=await storedBytes(row);}catch{throw new HttpError(503,"File integrity could not be verified. Contact your administrator.");}
+    await channel(pool,req.user.id,id);
+    if(!(await pool.query("SELECT 1 FROM files WHERE id=$1 AND state='ready'",[file])).rowCount)throw new HttpError(409,"File access changed");
+    return reply.header("Content-Type","application/octet-stream").header("Content-Disposition",`attachment; filename="download"; filename*=UTF-8''${encodeURIComponent(row.name).replace(/['()*]/g,c=>'%'+c.charCodeAt(0).toString(16))}`).send(bytes);
+  });
+  app.post("/v1/channels/:id/files/:file/retry",async(req)=>{
+    const id=idParam(req),file=idParam(req,"file");
+    return transaction(async db=>{
+      const c=await channel(db,req.user.id,id,true);
+      const owned=await db.query("SELECT 1 FROM files WHERE id=$1 AND channel_id=$2 AND created_by=$3 AND state='quarantined'",[file,id,req.user.id]);
+      if(!owned.rowCount)throw new HttpError(404,"Retry unavailable");
+      const changed=await db.query("UPDATE file_scan_jobs SET status='queued',attempts=0,available_at=now(),lease_id=NULL,lease_until=NULL,last_error=NULL WHERE file_id=$1 AND status='dead' RETURNING file_id",[file]);
+      if(!changed.rowCount)throw new HttpError(409,"Only failed scan jobs can be retried");
+      await audit(db,req.user.id,c.org_id,"file.scan_retried",file);
+      return {ok:true};
+    });
+  });
+  app.delete("/v1/channels/:id/files/:file", async (req) => {
+    const id = idParam(req),
+      file = idParam(req, "file");
+    return transaction(async (db) => {
+      const c = await channel(db, req.user.id, id, true);
+      const r = await db.query(
+        "UPDATE files SET state='deleted' WHERE id=$1 AND channel_id=$2 AND created_by=$3 RETURNING storage_key",
+        [file, id, req.user.id],
+      );
+      if (!r.rowCount)
+        throw new HttpError(404, "Only the uploader can delete this file");
+      await db.query("UPDATE file_scan_jobs SET status='cancelled',lease_id=NULL,lease_until=NULL WHERE file_id=$1",[file]);
+      await audit(db, req.user.id, c.org_id, "file.deleted", file);
+      await event(db, c.org_id, id, "file.deleted");
+      return { ok: true };
+    });
+  });
+}

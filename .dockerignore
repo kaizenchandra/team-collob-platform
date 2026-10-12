@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.idea
+.agents
+.codex
+.env*
+.data
+test-results
+playwright-report
+*.tsbuildinfo

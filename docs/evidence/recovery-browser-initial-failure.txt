@@ -1,0 +1,46 @@
+
+Running 7 tests using 1 worker
+
+(node:95130) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/identity.spec.ts:25:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session (2.1s)
+  ✓  2 [chrome] › tests/browser/identity.spec.ts:58:1 › a valid provider identity without a provisioned subject gets no application session (443ms)
+  ✓  3 [chrome] › tests/browser/identity.spec.ts:71:1 › live password-only identity cannot satisfy a stronger configured assurance requirement (868ms)
+Completed real provider OTP enrollment for a synthetic local identity.
+  ✓  4 [chrome] › tests/browser/identity.spec.ts:163:1 › an in-flight provider login survives a real API container restart (1.9s)
+  ✓  5 [chrome] › tests/browser/identity.spec.ts:208:1 › real provider logout revokes the application session and active UI while another identity stays signed in (24.0s)
+  ✓  6 [chrome] › tests/browser/identity.spec.ts:279:1 › removing browser assurance hints cannot bypass the application client OTP minimum (28.8s)
+  ✘  7 [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application (35.4s)
+
+
+  1) [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#totp, #otp')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#totp, #otp') with timeout 5000ms
+      - waiting for locator('#totp, #otp')
+
+
+       at ../helpers/local-otp.ts:19
+
+      17 |   )
+      18 |     throw new Error("Local OTP helper denied");
+    > 19 |   await expect(page.locator("#totp, #otp")).toBeVisible();
+         |                                             ^
+      20 |   if (new URL(page.url()).origin !== "http://localhost:5180")
+      21 |     throw new Error("Unexpected OTP provider");
+      22 |   let secrets: Record<string, string> = {};
+        at completeOtp (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/helpers/local-otp.ts:19:45)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/recovery.spec.ts:75:11
+
+    Error Context: test-results/recovery-provider-recovery-0fbe8-ng-codes-to-the-application-chrome/error-context.md
+
+  1 failed
+    [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application 
+  6 passed (1.6m)

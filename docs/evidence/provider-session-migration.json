@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-10-11T21:47:54.881Z",
+  "legacySessionInvalidation": [
+    {
+      "metadata": {
+        "revokedSessions": 118
+      },
+      "created_at": "2026-10-11T21:44:19.332Z"
+    }
+  ],
+  "remainingUnboundLegacySessions": 0
+}

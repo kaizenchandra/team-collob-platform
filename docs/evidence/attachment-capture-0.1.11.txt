@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:15247) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion (3.8s)
+
+  1 passed (4.5s)

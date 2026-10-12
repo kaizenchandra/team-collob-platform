@@ -1,0 +1,22 @@
+Updating the configuration and installing your custom providers, if any. Please wait.
+2026-10-11 22:10:45,661 WARN  [org.keycloak.common.Profile] (build-3) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+2026-10-11 22:10:58,488 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 16095ms
+Running the server in development mode. DO NOT use this configuration in production.
+2026-10-11 22:11:02,056 INFO  [org.infinispan.CONTAINER] (main) ISPN000974: Virtual threads support: disabled
+2026-10-11 22:11:02,194 WARN  [com.arjuna.ats.arjuna] (main) ARJUNA012210: Unable to use InetAddress.getLocalHost() to resolve address.
+2026-10-11 22:11:02,862 INFO  [org.hibernate.orm.jdbc.batch] (JPA Startup Thread) HHH100501: Automatic JDBC statement batching enabled (maximum batch size 32)
+2026-10-11 22:11:02,881 WARN  [org.keycloak.common.Profile] (main) Deprecated features identity-brokering-api:v1, twitter-broker:v1 enabled by default. Check the upgrading guide for steps to use later versions if available.
+2026-10-11 22:11:03,780 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
+2026-10-11 22:11:07,364 INFO  [org.infinispan.CONTAINER] (main) ISPN000556: Starting user marshaller 'org.infinispan.commons.marshall.ImmutableProtoStreamMarshaller'
+2026-10-11 22:11:07,660 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_62004, Site name: null, Cluster name: ISPN
+2026-10-11 22:11:07,779 INFO  [org.keycloak.quarkus.runtime.storage.database.jpa.DatabaseIndexChecker] (db-index-checker) Running database index checker
+2026-10-11 22:11:07,857 INFO  [org.keycloak.models.workflow.WorkflowsEventListenerFactory] (main) Workflow runner task scheduled: next execution at 10:11:07, then every PT12H
+2026-10-11 22:11:08,059 INFO  [org.keycloak.exportimport.dir.DirImportProvider] (main) Importing from directory /opt/keycloak/bin/../data/import
+2026-10-11 22:11:08,063 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
+2026-10-11 22:11:09,583 INFO  [org.keycloak.services] (main) KC-SERVICES0030: Full model import requested. Strategy: IGNORE_EXISTING
+2026-10-11 22:11:11,353 INFO  [org.keycloak.exportimport.util.ImportUtils] (main) Realm 'concord-local' imported
+2026-10-11 22:11:11,356 INFO  [org.keycloak.services] (main) KC-SERVICES0032: Import finished successfully
+2026-10-11 22:11:11,560 INFO  [org.keycloak.services.resources.KeycloakApplication] (main) Bootstrap completed in 8.679000 seconds
+2026-10-11 22:11:11,682 INFO  [io.quarkus] (main) Keycloak 26.7.3 on JVM (powered by Quarkus 3.33.3.1) started in 13.068s. Listening on: http://0.0.0.0:8080
+2026-10-11 22:11:11,682 INFO  [io.quarkus] (main) Profile dev activated. 
+2026-10-11 22:11:11,682 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-h2, keycloak, narayana-jta, opentelemetry, rest, rest-jackson, smallrye-context-propagation, vertx]

@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:8850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (13.1s)
+
+  1 passed (13.8s)

@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:11577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-scanning.spec.ts:9:1 › real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR (7.4s)
+
+  1 passed (9.1s)

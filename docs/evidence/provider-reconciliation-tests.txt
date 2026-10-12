@@ -1,0 +1,39 @@
+
+Running 2 tests using 1 worker
+
+(node:98088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Disabled account revoked with undeliverable back-channel callback in 60035ms (local60s freshness policy).
+Missed logout reconciled in 60280ms.
+  ✓  1 [chrome] › tests/browser/provider-reconciliation.spec.ts:41:1 › disabled provider user and missed logout both revoke live sessions within the freshness window (2.1m)
+  ✘  2 [chrome] › tests/browser/provider-reconciliation.spec.ts:113:1 › encrypted provider credentials survive API restart and provider outage fails closed without losing the live draft (27.3s)
+
+
+  1) [chrome] › tests/browser/provider-reconciliation.spec.ts:113:1 › encrypted provider credentials survive API restart and provider outage fails closed without losing the live draft 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Live', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Live', { exact: true }) with timeout 5000ms
+      - waiting for getByText('Live', { exact: true })
+
+
+      201 |       )
+      202 |       .toBe(200);
+    > 203 |     await expect(page.getByText("Live", { exact: true })).toBeVisible();
+          |                                                           ^
+      204 |     await expect(
+      205 |       page.getByRole("textbox", { name: "Message", exact: true }),
+      206 |     ).toHaveValue("Draft preserved during provider outage");
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/provider-reconciliation.spec.ts:203:59
+
+    Error Context: test-results/provider-reconciliation-en-0d581-thout-losing-the-live-draft-chrome/error-context.md
+
+  1 failed
+    [chrome] › tests/browser/provider-reconciliation.spec.ts:113:1 › encrypted provider credentials survive API restart and provider outage fails closed without losing the live draft 
+  1 passed (2.5m)

@@ -1,0 +1,122 @@
+ Image concord-api:0.1.1-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 637B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.58kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 142B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [build 1/6] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#6 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.0s done
+#6 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 74.98kB done
+#5 DONE 0.0s
+
+#7 [build 3/6] COPY package.json package-lock.json ./
+#7 CACHED
+
+#8 [build 2/6] WORKDIR /app
+#8 CACHED
+
+#9 [build 4/6] RUN npm ci
+#9 CACHED
+
+#10 [build 5/6] COPY . .
+#10 DONE 0.1s
+
+#11 [build 6/6] RUN npm run build
+#11 0.226 
+#11 0.226 > team-collob-platform@0.1.1 build
+#11 0.226 > next build && node scripts/prepare-standalone.mjs
+#11 0.226 
+#11 0.452 ▲ Next.js 16.4.0 (Turbopack)
+#11 0.573 ✓ Running next.config.ts took 121ms
+#11 0.579 - Cache Components enabled
+#11 0.579 - Partial Prefetching enabled
+#11 0.579 
+#11 0.591   Creating an optimized production build ...
+#11 2.361 ✓ Compiled successfully in 1768ms
+#11 2.372   Running TypeScript ...
+#11 4.695   Finished TypeScript in 2.3s ...
+#11 4.696   Collecting page data using 5 workers ...
+#11 4.942   Generating static pages using 5 workers (0/4) ...
+#11 5.143   Generating static pages using 5 workers (1/4) 
+#11 5.191   Generating static pages using 5 workers (2/4) 
+#11 5.191   Generating static pages using 5 workers (3/4) 
+#11 5.193 ✓ Generating static pages using 5 workers (4/4) in 250ms
+#11 5.195   Finalizing page optimization ...
+#11 5.289 
+#11 5.289 Route (app)
+#11 5.289 ┌ ○ /
+#11 5.289 └ ○ /_not-found
+#11 5.289 
+#11 5.289 
+#11 5.289 ○  (Static)  prerendered as static content
+#11 5.289 
+#11 DONE 5.4s
+
+#12 [api-build 1/1] RUN npm prune --omit=dev
+#12 1.673 
+#12 1.673 removed 340 packages, and audited 105 packages in 1s
+#12 1.673 
+#12 1.673 33 packages are looking for funding
+#12 1.673   run `npm fund` for details
+#12 1.673 
+#12 1.673 found 0 vulnerabilities
+#12 DONE 1.7s
+
+#13 [api 3/7] COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
+#13 CACHED
+
+#14 [api 4/7] COPY --chown=node:node package.json ./
+#14 CACHED
+
+#15 [api 5/7] COPY --chown=node:node services ./services
+#15 DONE 0.1s
+
+#16 [api 6/7] COPY --chown=node:node migrations ./migrations
+#16 DONE 0.1s
+
+#17 [api 7/7] RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
+#17 DONE 0.2s
+
+#18 exporting to image
+#18 exporting layers 0.1s done
+#18 exporting manifest sha256:4fa39f5e04503f2bbbbd6b357d895f165a57519de91d4094cbae42bd519c5a39
+#18 exporting manifest sha256:4fa39f5e04503f2bbbbd6b357d895f165a57519de91d4094cbae42bd519c5a39 0.0s done
+#18 exporting config sha256:bf2e4dabbb4cfc95cb1f0ff60dbd92aa44cfeb227f774c764485b1ac1f17cac9 0.0s done
+#18 exporting attestation manifest sha256:7d9ab6784259b71b95564c19053f0b4ae95d523e438a0a7ec77b7c81be2fb759 0.0s done
+#18 exporting manifest list sha256:f4a286a7fd7d8bce5f387bee4fe874118057aef4448fbddb3a45b5826dd18838 done
+#18 naming to docker.io/library/concord-api:0.1.1-local done
+#18 unpacking to docker.io/library/concord-api:0.1.1-local 0.1s done
+#18 DONE 0.3s
+
+#19 resolving provenance for metadata file
+#19 DONE 0.0s
+ Image concord-api:0.1.1-local Built 
+ Container concord-collaboration-keycloak-1 Running 
+ Container concord-collaboration-postgres-1 Running 
+ Container concord-collaboration-api-1 Recreate 
+ Container concord-collaboration-api-1 Recreated 
+ Container concord-collaboration-keycloak-1 Waiting 
+ Container concord-collaboration-postgres-1 Waiting 
+ Container concord-collaboration-postgres-1 Healthy 
+ Container concord-collaboration-keycloak-1 Healthy 
+ Container concord-collaboration-api-1 Starting 
+ Container concord-collaboration-api-1 Started 

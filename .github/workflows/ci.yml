@@ -1,0 +1,44 @@
+name: Verify
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: concord
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: concord_test
+        ports: ['5432:5432']
+        options: --health-cmd="pg_isready -U concord" --health-interval=5s --health-timeout=3s --health-retries=10
+    env:
+      DATABASE_URL: postgres://concord:ci-only@localhost:5432/concord_test
+      TEST_DATABASE_URL: postgres://concord:ci-only@localhost:5432/concord_test
+      DEV_AUTH: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run requirements
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npx playwright install --with-deps chrome
+      - run: |
+          npm run api > /tmp/api.log 2>&1 &
+          npm run start > /tmp/web.log 2>&1 &
+          node scripts/wait-ready.mjs http://localhost:3100 http://localhost:4100/ready
+          TEST_BASE_URL=http://localhost:3100 npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-report
+          path: playwright-report

@@ -1,0 +1,51 @@
+
+> team-collob-platform@0.1.9 test
+> node scripts/test-core.mjs
+
+✔ anonymous and cross-origin requests are rejected (316.816209ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (18.559292ms)
+✔ private-channel visibility excludes a team guest (19.7115ms)
+✔ concurrent retried writes commit one message and one ordered event (74.388ms)
+✔ message edit ownership, threads, reactions and monotonic read position (31.259917ms)
+✔ search and draft persistence survive a fresh application instance (18.693875ms)
+✔ private tasks and forms enforce assignment and response permissions (23.946375ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (30.538625ms)
+✔ meeting attendees must be tenant members; only organizer cancels (40.353542ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (12.276166ms)
+✔ 32-person receipts include every opted-in authorized recipient (241.468708ms)
+✔ live event replay and membership revocation close an active subscription (1054.992709ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (41.167875ms)
+✔ receipt privacy opt-out and session logout enforced (10.887ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (435.347416ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (24.804916ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.832167ms)
+✔ authentication throttling does not consume the session-status and logout budget (101.458584ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (88.564542ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (56.420083ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (6.985708ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (30.118709ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (6.410292ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (4.094291ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (19.973333ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (14.407875ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (21.127666ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (39.311209ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (35.372375ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (2.710375ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (38.337333ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (39.611666ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (3.403666ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (85.044083ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.353167ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.236875ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.10725ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (2.053ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.189458ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3333.973417

@@ -1,0 +1,249 @@
+{
+  "realm": "concord-local",
+  "enabled": true,
+  "displayName": "Concord local identity (development only)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "bruteForceProtected": true,
+  "users": [
+    {
+      "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "username": "alice@acme.test",
+      "email": "alice@acme.test",
+      "firstName": "Alice",
+      "lastName": "Local",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Development123!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "username": "bob@acme.test",
+      "email": "bob@acme.test",
+      "firstName": "Bob",
+      "lastName": "Local",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Development123!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "username": "unprovisioned@acme.test",
+      "email": "unprovisioned@acme.test",
+      "firstName": "Unprovisioned",
+      "lastName": "Local",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Development123!",
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "concord-local",
+      "secret": "local-identity-client-only",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4100/v1/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3101"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "backchannel.logout.url": "http://api:4100/v1/auth/backchannel-logout",
+        "backchannel.logout.session.required": "true",
+        "acr.loa.map": "{\"urn:concord:password\":1,\"urn:concord:mfa\":2}",
+        "minimum.acr.value": "urn:concord:mfa",
+        "default.acr.values": "urn:concord:mfa"
+      }
+    },
+    {
+      "clientId": "concord-assurance-test",
+      "secret": "local-assurance-test-only",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4100/v1/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3101"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "backchannel.logout.session.required": "true",
+        "acr.loa.map": "{\"urn:concord:password\":1,\"urn:concord:mfa\":2}",
+        "minimum.acr.value": "urn:concord:password",
+        "default.acr.values": "urn:concord:password"
+      }
+    }
+  ],
+  "browserFlow": "concord-recovery-v1",
+  "authenticationFlows": [
+    {
+      "alias": "concord-recovery-v1",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "concord-recovery-password",
+          "requirement": "CONDITIONAL",
+          "priority": 10
+        },
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "concord-recovery-second",
+          "requirement": "CONDITIONAL",
+          "priority": 20
+        }
+      ]
+    },
+    {
+      "alias": "concord-recovery-password",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-level-of-authentication",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "authenticatorConfig": "concord-recovery-level1"
+        },
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20
+        }
+      ]
+    },
+    {
+      "alias": "concord-recovery-second",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-level-of-authentication",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "authenticatorConfig": "concord-recovery-level2"
+        },
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "concord-recovery-choices",
+          "requirement": "CONDITIONAL",
+          "priority": 20
+        },
+        {
+          "authenticatorFlow": true,
+          "flowAlias": "concord-recovery-enroll",
+          "requirement": "CONDITIONAL",
+          "priority": 30
+        }
+      ]
+    },
+    {
+      "alias": "concord-recovery-choices",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-user-configured",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 20
+        },
+        {
+          "authenticator": "auth-recovery-authn-code-form",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 30
+        }
+      ]
+    },
+    {
+      "alias": "concord-recovery-enroll",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "conditional-sub-flow-executed",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 10,
+          "authenticatorConfig": "concord-recovery-fallback"
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 20
+        }
+      ]
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "concord-recovery-level1",
+      "config": {
+        "loa-condition-level": "1",
+        "loa-max-age": "0"
+      }
+    },
+    {
+      "alias": "concord-recovery-level2",
+      "config": {
+        "loa-condition-level": "2",
+        "loa-max-age": "0"
+      }
+    },
+    {
+      "alias": "concord-recovery-fallback",
+      "config": {
+        "flow_to_check": "concord-recovery-choices",
+        "check_result": "not-executed"
+      }
+    }
+  ],
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0
+}

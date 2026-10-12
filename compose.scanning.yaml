@@ -1,0 +1,40 @@
+# Local scanner integration. ClamD has no exposed host port.
+services:
+  clamav:
+    build: ./infra/clamav
+    image: concord-scanner:0.1.10-local
+    platform: linux/amd64
+    volumes: ['clamav-signatures:/var/lib/clamav']
+    mem_limit: 4g
+    cpus: 2.0
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'clamdcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+  file-worker:
+    image: concord-api:0.1.11-local
+    command: ['node','services/core/file-worker.ts']
+    environment:
+      DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord
+      FILE_ROOT: /app/.data/files
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: '3310'
+    volumes: ['files-data:/app/.data:ro']
+    depends_on:
+      postgres: {condition: service_healthy}
+      clamav: {condition: service_healthy}
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 60s
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ['CMD','node','-e',"const fs=require('node:fs');process.exit(Date.now()-Number(fs.readFileSync('/tmp/concord-file-worker-heartbeat','utf8'))<120000?0:1)"]
+      interval: 15s
+      timeout: 3s
+      start_period: 30s
+volumes:
+  clamav-signatures:

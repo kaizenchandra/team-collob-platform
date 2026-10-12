@@ -1,0 +1,87 @@
+
+> team-collob-platform@0.1.8 test:e2e
+> playwright test
+
+
+Running 25 tests using 1 worker
+
+(node:5244) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.5s)
+  ✓   2 [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI (875ms)
+  ✓   3 [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit (520ms)
+  ✓   4 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (1.8s)
+  ✓   5 [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both (1.6s)
+  ✓   6 [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized quarantined document (558ms)
+  ✓   7 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (983ms)
+  ✓   8 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.4s)
+Browser under test: 155.0.8059.40
+  ✓   9 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (1.8s)
+  ✓  10 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (662ms)
+  ✓  11 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (917ms)
+  ✓  12 [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery (477ms)
+  ✓  13 [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails (1.8s)
+  ✓  14 [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out (731ms)
+  ✘  15 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (2.4s)
+(node:5349) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 [chrome] › tests/browser/collaboration.spec.ts:419:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages (931ms)
+(node:5364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  17 [chrome] › tests/browser/identity.spec.ts:25:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session (942ms)
+  ✓  18 [chrome] › tests/browser/identity.spec.ts:78:1 › a valid provider identity without a provisioned subject gets no application session (437ms)
+  ✓  19 [chrome] › tests/browser/identity.spec.ts:91:1 › live password-only identity cannot satisfy a stronger configured assurance requirement (797ms)
+  ✓  20 [chrome] › tests/browser/identity.spec.ts:183:1 › an in-flight provider login survives a real API container restart (1.5s)
+  ✓  21 [chrome] › tests/browser/identity.spec.ts:228:1 › real provider logout revokes the application session and active UI while another identity stays signed in (9.2s)
+  ✓  22 [chrome] › tests/browser/identity.spec.ts:299:1 › removing browser assurance hints cannot bypass the application client OTP minimum (28.8s)
+  -  23 [chrome] › tests/browser/provider-reconciliation.spec.ts:41:1 › disabled provider user and missed logout both revoke live sessions within the freshness window
+  -  24 [chrome] › tests/browser/provider-reconciliation.spec.ts:113:1 › encrypted provider credentials survive API restart and provider outage fails closed without losing the live draft
+  ✓  25 [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application (2.0m)
+
+
+  1) [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('article').filter({ hasText: 'Formatting 1791773295351' }).locator('strong')
+    Expected substring: "Formatting 1791773295351"
+    Error: strict mode violation: locator('article').filter({ hasText: 'Formatting 1791773295351' }).locator('strong') resolved to 2 elements:
+        1) <strong>Alice Morgan</strong> aka locator('#message-64de9807-ed16-40bd-be73-cdd8508f80e8 > .message-content > .message-meta > strong')
+        2) <strong>Formatting 1791773295351</strong> aka getByText('Formatting 1791773295351')
+
+    Call log:
+      - Expect "toContainText" locator('article').filter({ hasText: 'Formatting 1791773295351' }).locator('strong') with timeout 5000ms
+      - waiting for locator('article').filter({ hasText: 'Formatting 1791773295351' }).locator('strong')
+
+
+      398 |     await alice.getByRole("button",{name:"Send message",exact:true}).click();
+      399 |     const received = bob.locator("article").filter({hasText:marker});
+    > 400 |     await expect(received.locator("strong")).toContainText(marker);
+          |                                              ^
+      401 |     await expect(received.locator("em")).toHaveText("Emphasis");
+      402 |     await expect(received.locator("code")).toHaveText("inline code");
+      403 |     await expect(received.getByRole("link",{name:"Documentation"})).toHaveAttribute("href","https://example.com/docs");
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:400:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text 
+  2 skipped
+  22 passed (3.1m)

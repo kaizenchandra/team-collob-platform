@@ -1,0 +1,37 @@
+# Explicit local-only identity overlay. Never use these public test credentials in production.
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.3@sha256:29be7252db0a106f1cd2ac17b9a56ff2668073da645638a38b9fc67deeb2d6c4
+    command: ['start-dev', '--import-realm']
+    environment:
+      KC_HOSTNAME: http://localhost:5180
+      KC_HEALTH_ENABLED: 'true'
+    ports: ['127.0.0.1:5180:8080']
+    volumes:
+      - ./infra/keycloak/concord-local-realm.json:/opt/keycloak/data/import/concord-local-realm.json:ro
+      - identity-data:/opt/keycloak/data
+    healthcheck:
+      test: ["CMD", "bash", "-ec", "exec 3<>/dev/tcp/127.0.0.1/9000; printf \"GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3; grep -q \"HTTP/1.1 200\" <&3"]
+      interval: 10s
+      timeout: 4s
+      start_period: 60s
+      retries: 12
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1.0
+  api:
+    depends_on:
+      keycloak: {condition: service_healthy}
+    environment:
+      OIDC_ISSUER: http://localhost:5180/realms/concord-local
+      OIDC_PROVIDER: keycloak
+      OIDC_CLIENT_ID: concord-local
+      OIDC_CLIENT_SECRET: local-identity-client-only
+      OIDC_REDIRECT_URI: http://localhost:4100/v1/auth/callback
+      OIDC_REQUIRED_ACR: urn:concord:mfa
+      OIDC_RECONCILE: 'true'
+      OIDC_TOKEN_KEY_FILE: /app/.data/identity-token-keys.json
+      OIDC_LOCAL_HTTP: 'true'
+      OIDC_INTERNAL_ORIGIN: http://keycloak:8080
+volumes:
+  identity-data:
