@@ -72,3 +72,31 @@ test("scanned attachments reach another user, survive lost-response retry and di
     expect((await history.json()).messages.filter((m:{body:string})=>m.body===text)).toHaveLength(1);
   } finally {await other.close();}
 });
+
+test("upload lost-response recovery reuses the original operation after reload and file reselection",async({page,context})=>{
+  await page.goto(`/?channel=${channel}`);
+  await page.getByLabel("Email address").fill("alice@acme.test");await page.getByLabel("Password",{exact:true}).fill("Development123!");await page.getByRole("button",{name:"Sign in",exact:true}).click();
+  await page.locator(".tabs").getByRole("button",{name:"Files",exact:true}).click();
+  const name=`retry-upload-${Date.now()}.txt`,file={name,mimeType:"text/plain",buffer:Buffer.from("Same operation after browser reload")};
+  const pattern=`**/v1/channels/${channel}/files`;
+  let firstId="",acceptedFile="";
+  await page.route(pattern,async route=>{
+    if(route.request().method()==="POST"){
+      firstId=route.request().postDataJSON().clientId;
+      const accepted=await route.fetch();expect(accepted.status()).toBe(200);acceptedFile=(await accepted.json()).id;
+      await route.abort("failed");await page.unroute(pattern);
+    }else await route.continue();
+  });
+  await page.locator('input[type="file"]').setInputFiles(file);
+  await expect(page.getByRole("alert").filter({hasText:/fetch|network|failed/i})).toBeVisible();
+  expect(firstId).toMatch(/^[a-f0-9-]{36}$/);
+  await page.reload();await page.locator(".tabs").getByRole("button",{name:"Files",exact:true}).click();
+  const retry=page.waitForRequest(r=>r.method()==="POST" && r.url()===`${api}/v1/channels/${channel}/files`);
+  await page.locator('input[type="file"]').setInputFiles(file);
+  expect((await retry).postDataJSON().clientId).toBe(firstId);
+  const row=page.locator(".file-row").filter({hasText:name});await expect(row).toHaveCount(1);await expect(row).toContainText("ready",{timeout:120000});
+  const response=await context.request.get(`${api}/v1/channels/${channel}/files`);
+  const matches=(await response.json()).files.filter((f:{name:string})=>f.name===name);expect(matches).toHaveLength(1);expect(matches[0].id).toBe(acceptedFile);
+  await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem("concord.pending-uploads.v1"))).toBeNull();
+  await row.getByRole("button",{name:"Delete",exact:true}).click();
+});

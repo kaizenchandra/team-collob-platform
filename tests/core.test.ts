@@ -1240,3 +1240,24 @@ test("orphan reconciliation preserves referenced, young, unknown and symlink byt
     for(const name of [orphan,young,unknown,link])await unlink(path.join(root,name)).catch(()=>{});
   }
 });
+
+test("failed upload metadata leaves recoverable bytes instead of eagerly unlinking them",async()=>{
+  const {readdir,utimes,lstat}=await import("node:fs/promises");
+  const {fileRoot}=await import("../services/core/file-content.ts");
+  const {reconcileFiles}=await import("../services/core/file-reconciliation.ts");
+  const path=await import("node:path");
+  const before=new Set(await readdir(fileRoot()));
+  await pool.query("CREATE FUNCTION reject_test_upload() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.name='rollback-fixture.txt' THEN RAISE EXCEPTION 'test rollback'; END IF; RETURN NEW; END $$");
+  await pool.query("CREATE TRIGGER reject_test_upload BEFORE INSERT ON files FOR EACH ROW EXECUTE FUNCTION reject_test_upload()");
+  try {
+    const r=await request("alice","POST",`/v1/channels/${ids.channel}/files`,{clientId:randomUUID(),name:"rollback-fixture.txt",mime:"text/plain",content:Buffer.from("rollback bytes").toString("base64")});
+    assert.equal(r.statusCode,500);
+    const added=(await readdir(fileRoot())).filter(name=>!before.has(name));assert.equal(added.length,1);
+    assert.equal((await pool.query("SELECT 1 FROM files WHERE storage_key=$1",[added[0]])).rowCount,0);
+    await reconcileFiles();assert.ok(await lstat(path.join(fileRoot(),added[0])));
+    const old=new Date(Date.now()-7200000);await utimes(path.join(fileRoot(),added[0]),old,old);
+    await reconcileFiles();await assert.rejects(lstat(path.join(fileRoot(),added[0])),{code:"ENOENT"});
+  }finally{
+    await pool.query("DROP TRIGGER reject_test_upload ON files");await pool.query("DROP FUNCTION reject_test_upload()");
+  }
+});

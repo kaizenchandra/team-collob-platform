@@ -598,7 +598,8 @@
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
-        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete."
+        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],
@@ -1259,7 +1260,8 @@
         "tests/browser/collaboration.spec.ts: lost-response retry after navigation/reload, independent draft preservation, logout isolation, blocked storage, accepted-send refresh failure and Help recovery; scope excludes browser closure and offline reload shell",
         "0.1.6-local: workspace SSE reconnects explicitly after terminal HTTP503 handshakes with bounded backoff/jitter and stale callback guards. Real provider outage/recovery test verifies Live resumes with draft intact; authorization fails closed while freshness is expired. See tests/browser/provider-reconciliation.spec.ts and docs/evidence/browser-tests.txt. Broader resilience remains incomplete.",
         "0.1.8-local: migration008 and API format enum preserve plain legacy text, persist markdown-v1 source and include format in retry equality. MessageContent/FormattingTools share a safe CommonMark renderer across preview/history/edit; raw HTML and remote embeds cannot execute/fetch, only absolute HTTP(S) links without credentials are active. Pending records retain original format; absent legacy format replays plain. Tests and release evidence: docs/VERIFICATION.md, core-tests-0.1.8.txt, browser-tests-0.1.8.txt. Structured mentions/attachment entities remain unfinished.",
-        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete."
+        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],
@@ -1859,7 +1861,8 @@
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
-        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion."
+        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],
@@ -2626,7 +2629,8 @@
         "BE-FR-35: positive, negative authorization, persistence/recovery and UI acceptance for every criterion"
       ],
       "evidence": [
-        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion."
+        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3009,7 +3013,8 @@
         "tests/pending-messages.test.ts: reload-reader stability, immutable payload, identity isolation, storage failure and bounded capacity",
         "tests/browser/collaboration.spec.ts: lost-response retry after navigation/reload, independent draft preservation, logout isolation, blocked storage, accepted-send refresh failure and Help recovery; scope excludes browser closure and offline reload shell",
         "0.1.6-local: workspace SSE reconnects explicitly after terminal HTTP503 handshakes with bounded backoff/jitter and stale callback guards. Real provider outage/recovery test verifies Live resumes with draft intact; authorization fails closed while freshness is expired. See tests/browser/provider-reconciliation.spec.ts and docs/evidence/browser-tests.txt. Broader resilience remains incomplete.",
-        "0.1.8-local: migration008 and API format enum preserve plain legacy text, persist markdown-v1 source and include format in retry equality. MessageContent/FormattingTools share a safe CommonMark renderer across preview/history/edit; raw HTML and remote embeds cannot execute/fetch, only absolute HTTP(S) links without credentials are active. Pending records retain original format; absent legacy format replays plain. Tests and release evidence: docs/VERIFICATION.md, core-tests-0.1.8.txt, browser-tests-0.1.8.txt. Structured mentions/attachment entities remain unfinished."
+        "0.1.8-local: migration008 and API format enum preserve plain legacy text, persist markdown-v1 source and include format in retry equality. MessageContent/FormattingTools share a safe CommonMark renderer across preview/history/edit; raw HTML and remote embeds cannot execute/fetch, only absolute HTTP(S) links without credentials are active. Pending records retain original format; absent legacy format replays plain. Tests and release evidence: docs/VERIFICATION.md, core-tests-0.1.8.txt, browser-tests-0.1.8.txt. Structured mentions/attachment entities remain unfinished.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3740,7 +3745,8 @@
         "0.1.8-local: migration008 and API format enum preserve plain legacy text, persist markdown-v1 source and include format in retry equality. MessageContent/FormattingTools share a safe CommonMark renderer across preview/history/edit; raw HTML and remote embeds cannot execute/fetch, only absolute HTTP(S) links without credentials are active. Pending records retain original format; absent legacy format replays plain. Tests and release evidence: docs/VERIFICATION.md, core-tests-0.1.8.txt, browser-tests-0.1.8.txt. Structured mentions/attachment entities remain unfinished.",
         "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete.",
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
-        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete."
+        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3812,7 +3818,9 @@
       "tests": [
         "BE-NFR-13: positive, negative authorization, persistence/recovery and UI acceptance for every criterion"
       ],
-      "evidence": [],
+      "evidence": [
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+      ],
       "status": "Blocked",
       "blockers": [
         "B-TARGET"
@@ -3853,7 +3861,8 @@
         "tests/browser/identity.spec.ts: live local Keycloak PKCE, subject denial, assurance downgrade rejection and API restart recovery; no full enterprise MFA/revocation claim",
         "services/core/config.ts and tests/core.test.ts: production configuration and authentication rate-limit guards",
         "0.1.6-local: services/core/provider-reconciliation.ts, token-vault.ts and migration007; tests/core.test.ts exercises bound JWE, key rotation, coalescing, lease races, inactive sessions and fail-closed outages. tests/browser/provider-reconciliation.spec.ts uses real Keycloak disable/logout with an undeliverable callback, API restart and provider outage; see docs/evidence/browser-tests.txt and VERIFICATION.md. Local partial scope only.",
-        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion."
+        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
       ],
       "status": "In progress",
       "blockers": [],

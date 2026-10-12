@@ -4,7 +4,7 @@ services:
     build:
       context: .
       target: api
-    image: concord-api:0.1.11-local
+    image: concord-api:0.1.12-local
     environment:
       NODE_ENV: development
       DEV_AUTH: 'true'
@@ -27,7 +27,7 @@ services:
       target: web
       args:
         NEXT_PUBLIC_API_URL: http://localhost:4100
-    image: concord-web:0.1.11-local
+    image: concord-web:0.1.12-local
     ports: ['127.0.0.1:3101:3100']
     depends_on:
       api: {condition: service_healthy}

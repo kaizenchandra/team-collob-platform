@@ -25,7 +25,7 @@ docker compose -f compose.yaml -f compose.local.yaml up -d --build
 
 For source development, run only Postgres in Docker, then `DEV_AUTH=true npm run api` and `npm run dev` in two terminals. For an optimized host build use `npm run build` then `npm run start`. Read [operations](docs/OPERATIONS.md) before changing deployment or data.
 
-For real local provider sign-in, add the [SSO overlay](docs/OPERATIONS.md#local-sso-overlay-011) and run the explicit subject-provisioning command. The running local release is `0.1.11-local`. New messages support Markdown formatting, safe links and a preview; existing messages remain plain text. Structured mentions use channel-authorized recipients and appear in the recipient’s Mentions activity filter. Use the composer paperclip to send a scanned conversation file with your current message; recipients download through current permissions.
+For real local provider sign-in, add the [SSO overlay](docs/OPERATIONS.md#local-sso-overlay-011) and run the explicit subject-provisioning command. The running local release is `0.1.12-local`. New messages support Markdown formatting, safe links and a preview; existing messages remain plain text. Structured mentions use channel-authorized recipients and appear in the recipient’s Mentions activity filter. Use the composer paperclip to send a scanned conversation file with your current message; recipients download through current permissions.
 
 ## Working scope
 
@@ -34,7 +34,7 @@ For real local provider sign-in, add the [SSO overlay](docs/OPERATIONS.md#local-
 - Durable messages, replies, reactions, edits/deletion, saved flags, explicit read positions and per-recipient receipts; persistent server drafts, tab-scoped pending-send recovery across reload/navigation, typing, expiring presence, authorized search/activity, real event replay and popout windows.
 - Private task boards and forms with responses/comments, local meeting scheduling/RSVP/cancellation, profiles/themes/privacy preferences, feedback.
 - Manual single-use invitations, membership role/revocation controls, basic audit view.
-- Private local uploads with real ClamAV scanning, durable scan jobs and authorized clean-file downloads. Previews, object storage, editor integration and versioning remain unfinished.
+- Private local uploads with real ClamAV scanning, durable scan jobs and authorized clean-file downloads, retry-safe uploads and conservative orphan cleanup. Previews, object storage, editor integration and versioning remain unfinished.
 - Automated API/browser checks, Docker images and local deployment, CI definition, bounded latency and database restore smoke exercises.
 
 The UI explains unavailable services. **No real media, E2EE, PSTN, collaborative editor, external calendar or email integration is currently implemented.** Enterprise governance, advanced browser features, production monitoring/HA/backups/TLS and large-scale verification remain incomplete. A production build passing is not full product acceptance.
@@ -65,3 +65,5 @@ Core integration tests use a separate test database. Browser tests use the runni
 All mandatory requirements remain in scope. No mandatory feature has been silently deferred, and partial implementation does not count as verification of a whole requirement.
 
 To enable the verified local scanner, add `-f compose.scanning.yaml` to the combined Compose command (see [scanner operations](docs/OPERATIONS.md#local-file-scanning-0110)). Without a worker, uploads remain quarantined.
+
+If an upload response is lost, reselect the same file in the same tab after reload to retry without duplication. Only recovery identifiers/fingerprints are stored locally; the browser must ask you to select the bytes again.

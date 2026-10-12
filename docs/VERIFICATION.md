@@ -1,4 +1,4 @@
-# Verification report — 0.1.11-local
+# Verification report — 0.1.12-local
 
 Full specification is **not complete**. Phase 1 architecture gate passed. Foundation/core collaboration are partially implemented, with an independently useful local slice deployed. Phases 2–9 have **not** passed their full gates; local deployment is not equivalent to the required enterprise staging/production release.
 
@@ -10,11 +10,11 @@ Full specification is **not complete**. Phase 1 architecture gate passed. Founda
 | `npm run typecheck` | Pass | Strict TS frontend/backend/tests |
 | `npm run lint` | Pass | Narrow documented remote-state effect exception in UI; no blanket lint disable |
 | `npm run build` | Pass | Next 16.4 / React 19.3 standalone build, host and Linux image |
-| `npm test` | 42/42 pass | 36 core/security checks and 6 pending-storage unit checks; real PostgreSQL/event stream and JOSE validation |
-| `TEST_LOCAL_OIDC=true TEST_SCANNING=true npm run test:e2e` | 26 pass, 2 explicitly skipped in3.5minutes | Chrome 155.0.8059.40, real local deployment; administrator-enabled provider fault injection not rerun for0.1.11 |
+| `npm test` | 46/46 pass | 39 core/security checks and 7 pending-storage unit checks; real PostgreSQL/event stream and JOSE validation |
+| `TEST_LOCAL_OIDC=true TEST_SCANNING=true npm run test:e2e` | 27 pass, 2 explicitly skipped in3.4minutes | Chrome 155.0.8059.40, real local deployment; administrator-enabled provider fault injection not rerun for0.1.12 |
 | Axe light/dark chat samples | Zero violations for selected WCAG A/AA tags | Not a complete WCAG2.2AA or screen-reader audit |
 | Desktop/mobile screenshot & overflow | Pass at Playwright desktop and 390x844 | Full tablet/browser/device/workflow matrix not executed |
-| Docker image build/deployment | Pass, web/API/Postgres/Keycloak/ClamAV/file-worker health checks | Loopback local development only; image identities in release.json |
+| Docker image build/deployment | Pass, web/API/Postgres/Keycloak/ClamAV/file-worker/file-reconciler health checks | Loopback local development only; image identities in release.json |
 | `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities at check | No OS-image security scan or independent security assessment |
 | Full `npm audit` | 5 high findings in dev dependency chain | Unpatched `braces` stack-exhaustion advisory via Next ESLint plugin/fast-glob/micromatch; do not downgrade Next blindly |
 | `node scripts/load-smoke.mjs` | 200 HTTP requests, concurrency 5, zero errors | Small development dataset, loopback, warm services; not target-scale sign-off |
@@ -205,3 +205,20 @@ Limits: one-file-at-a-time UI, no unsent attachment draft selection, no replacem
 Evidence: `core-tests-0.1.11.txt`, `attachments-browser-0.1.11.txt`, `browser-tests-0.1.11.txt`, `message-attachments.png`, `build-0.1.11.txt`, `deploy-0.1.11.txt`, `runtime-audit-0.1.11.txt`, `release.json`.
 
 Full0.1.11 combined browser regression:26 passed,2 provider-admin fault checks explicitly skipped in3.5minutes. Screenshot framing was corrected to scroll the recipient message into view; the affected attachment test passed again (`attachment-capture-0.1.11.txt`) and the screenshot was visually reviewed. No application change followed the production build.
+
+
+## Upload recovery and orphan reconciliation — 0.1.12-local
+
+ADR020 precedes coding. Migration012 scopes upload clientId to channel/uploader, compares filename/canonical MIME/decoded size/SHA256 and returns the original current-state file on identical retries. Existing legacy clients can omit the ID and remain non-idempotent. Local writes fsync file/directory; failures retain possible orphan bytes instead of risking deletion after an ambiguous commit. Cleanup holds the exclusive counterpart of the upload shared storage lock, streams500-entry batches, and only removes hour-old regular UUID-named files with no metadata row. Referenced deleted/rejected/quarantined files remain protected. A separate maintenance container performs minute-spaced passes with counts-only logs.
+
+Frontend session recovery stores opaque operation identity and file fingerprint scoped to user/channel, without raw filename or contents. Reselecting a matching file after reload reuses its upload ID. Confirmed acceptance removes metadata; sign-out/session-clear/Help clears it. Invalid/full/unavailable storage blocks sending. No automatic file-handle restoration, byte storage or upload-progress claim.
+
+Core/storage tests46/46 passed (39 core/database/security,7 storage). Added real SQL concurrent retry/event/job deduplication, changed-content/name conflicts, cross-tenant denial, uploader identity scoping and deleted-file retry without resurrection. A real failing SQL trigger confirms failed metadata writes retain young orphan bytes; after the grace period the cleanup removes them. Tests exercise shared-lock exclusion, old orphan deletion, young/unknown/symlink/reference protection. Test files now use `.data/test-files`, separate from application roots. Typecheck/lint, production API/web builds, health-gated local deployment and runtime audit0 passed. No dependency versions changed.
+
+Targeted browser suite3/3 passed against the real scanner/API. New case discards an accepted upload response, reloads, reselects the file, observes the identical clientId, one stored file and eventual ready state; pending metadata clears. Existing real clean/EICAR/restart and independent-user attachment download/retry/deletion checks remain passing. `TEST_RECONCILIATION=true node scripts/test-local-reconciliation.mjs` verifies the actual scheduled worker removes a task-created old orphan while preserving a young fixture (3916ms in this run); finally removes its fixtures. This is not an orphan corpus/large-directory capacity test.
+
+Limits: private local filesystem only; no S3/object storage. Fsync calls and local restart tests do not prove power-loss/replicated durability, RPO or HA. Ambiguous COMMIT protection is implemented; the test injects an SQL metadata failure, not a network failure exactly during COMMIT. Cleanup protects all rows and therefore does not reclaim soft-deleted referenced bytes or enforce retention/legal holds. Local filesystem clock and exclusive application ownership are assumed. A very large pass can exceed the heartbeat budget; fairness/capacity and alerts remain unverified. Stop maintenance before downgrading to a pre-lock API. No production or whole requirement completion claim.
+
+Evidence: `core-tests-0.1.12.txt`, `upload-browser-0.1.12.txt`, `browser-tests-0.1.12.txt`, `reconciliation-live-0.1.12.txt`, `build-0.1.12.txt`, `deploy-0.1.12.txt`, `runtime-audit-0.1.12.txt`, `release.json`. Register unchanged:146 entries,4 Verified,80 In progress,15 Blocked,47 Not started.
+
+Full0.1.12 regression:27 browser cases passed,2 provider-admin fault cases explicitly skipped in3.4minutes. Existing collaboration, attachment, OIDC/MFA/logout and recovery-code workflows passed alongside new upload recovery. Local release now has seven services; final observed health and immutable IDs are in release.json.

@@ -6,6 +6,7 @@ const child = spawn(
     stdio: "inherit",
     env: {
       ...process.env,
+      FILE_ROOT: process.env.TEST_FILE_ROOT ?? ".data/test-files",
       DATABASE_URL:
         process.env.TEST_DATABASE_URL ??
         "postgres://concord:local-development-only@localhost:55432/concord_test",

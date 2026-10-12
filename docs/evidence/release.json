@@ -1,10 +1,10 @@
 {
-  "version": "0.1.11-local",
+  "version": "0.1.12-local",
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-12T05:28:57.557Z",
+  "recordedAt": "2026-10-12T05:48:32.997Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "973a2a5514fefb118e0038b3c8225edd311e48eeb05fad49ed24c91dcfa4dcc7",
+  "sourceSha256": "aaa6132d136931d523c2130e2a1102682bd149dd3df51cd900c58087e8d7e1dc",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
@@ -30,6 +30,7 @@
     "infra/production.env.example",
     "lib/contracts.ts",
     "lib/pending-messages.ts",
+    "lib/pending-uploads.ts",
     "migrations/001_core.sql",
     "migrations/002_membership.sql",
     "migrations/003_oidc_transactions.sql",
@@ -41,6 +42,7 @@
     "migrations/009_message_mentions.sql",
     "migrations/010_file_scanning.sql",
     "migrations/011_message_attachments.sql",
+    "migrations/012_upload_identity.sql",
     "next.config.ts",
     "package-lock.json",
     "package.json",
@@ -58,6 +60,7 @@
     "scripts/restore-smoke.sh",
     "scripts/start-web.mjs",
     "scripts/test-core.mjs",
+    "scripts/test-local-reconciliation.mjs",
     "scripts/wait-ready.mjs",
     "services/core/attachments.ts",
     "services/core/clamav.ts",
@@ -65,6 +68,8 @@
     "services/core/db.ts",
     "services/core/file-content.ts",
     "services/core/file-jobs.ts",
+    "services/core/file-reconciler.ts",
+    "services/core/file-reconciliation.ts",
     "services/core/file-worker.ts",
     "services/core/files.ts",
     "services/core/identity-actions.ts",
@@ -92,17 +97,17 @@
     "tests/pending-messages.test.ts",
     "tsconfig.json"
   ],
-  "baseCommit": "748707f9497d5b90a9ca089442abf7be20777fba",
+  "baseCommit": "e7ca5bebdb2d6f791e1887df2ea3b4ea92d9db5a",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.11-local": {
-      "imageId": "sha256:7cb87b4657699d8a7782d95ab04feab3d73ef3030880017ef0bd5b26c7fd0880",
-      "created": "2026-10-12T10:53:01.217679998+05:30",
+    "concord-web:0.1.12-local": {
+      "imageId": "sha256:0b30c007de26be22e763483a612e09bdadf33032c1ffee112f9dd03b48f9b61b",
+      "created": "2026-10-12T11:12:00.404594494+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.11-local": {
-      "imageId": "sha256:23a38945fd979067a54bd3761c2bc3cc0f8c9d9db2bd09ace3fdba6fd5f0e77e",
-      "created": "2026-10-12T10:53:06.743621083+05:30",
+    "concord-api:0.1.12-local": {
+      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
+      "created": "2026-10-12T11:12:05.851612272+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
@@ -113,12 +118,12 @@
   },
   "containers": {
     "web": {
-      "imageId": "sha256:7cb87b4657699d8a7782d95ab04feab3d73ef3030880017ef0bd5b26c7fd0880",
+      "imageId": "sha256:0b30c007de26be22e763483a612e09bdadf33032c1ffee112f9dd03b48f9b61b",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:23a38945fd979067a54bd3761c2bc3cc0f8c9d9db2bd09ace3fdba6fd5f0e77e",
+      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
       "status": "running",
       "health": "healthy"
     },
@@ -138,7 +143,12 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:23a38945fd979067a54bd3761c2bc3cc0f8c9d9db2bd09ace3fdba6fd5f0e77e",
+      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
+      "status": "running",
+      "health": "healthy"
+    },
+    "file-reconciler": {
+      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
       "status": "running",
       "health": "healthy"
     }
