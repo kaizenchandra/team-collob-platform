@@ -1,0 +1,2 @@
+{"exercise":"concord-restore-1da2e47e","snapshotAt":"2026-10-13T06:01:20.310Z","filesVerified":48,"local":41,"s3":7,"countsMatch":true,"authorizedDownload":true,"crossTenantDenied":true,"durationMs":2892,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}

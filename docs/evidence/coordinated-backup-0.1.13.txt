@@ -1,0 +1,1 @@
+{"artifact":".data/backups/core-c3ecfd1d-14ab-4a3f-9b67-d48e5ba8e77a.jwe","sha256":"a5d52142e54ee5251225605620b13a52db7342373e0f4fa9c72e00fedde010a1","snapshotAt":"2026-10-13T05:58:21.357Z","counts":{"messages":161,"memberships":5,"files":47,"message_attachments":6,"file_scan_jobs":30},"bytes":440177,"durationMs":271,"keyStoredSeparately":true}

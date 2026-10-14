@@ -1,0 +1,47 @@
+
+> team-collob-platform@0.1.17 test:e2e
+> playwright test
+
+
+Running 32 tests using 1 worker
+
+(node:9705) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.3s)
+  ✓   2 [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI (885ms)
+  ✓   3 [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit (482ms)
+  ✓   4 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (1.8s)
+  ✓   5 [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both (1.7s)
+  ✓   6 [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document (545ms)
+  ✓   7 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (924ms)
+  ✓   8 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.5s)
+Browser under test: 155.0.8059.41
+  ✓   9 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (1.8s)
+  ✓  10 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (553ms)
+  ✓  11 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (792ms)
+  ✓  12 [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery (530ms)
+  ✓  13 [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails (1.8s)
+  ✓  14 [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out (744ms)
+  ✓  15 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (4.6s)
+  ✓  16 [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages (926ms)
+  ✓  17 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (12.9s)
+  ✓  18 [chrome] › tests/browser/file-scanning.spec.ts:9:1 › real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR (6.9s)
+  ✓  19 [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion (5.7s)
+  ✓  20 [chrome] › tests/browser/file-scanning.spec.ts:76:1 › upload lost-response recovery reuses the original operation after reload and file reselection (4.0s)
+  ✓  21 [chrome] › tests/browser/file-scanning.spec.ts:104:1 › real scanned text previews escape markup, recover failures and withdraw deleted content (10.0s)
+  ✓  22 [chrome] › tests/browser/file-scanning.spec.ts:139:1 › file versions preserve old bytes, recover accepted uploads and revoke history after root deletion (11.1s)
+  ✓  23 [chrome] › tests/browser/notifications.spec.ts:3:1 › saved quiet hours suppress mention alerts; native browser construction is deduplicated across tabs (11.7s)
+(node:10020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  24 [chrome] › tests/browser/identity.spec.ts:25:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session (968ms)
+  ✓  25 [chrome] › tests/browser/identity.spec.ts:78:1 › a valid provider identity without a provisioned subject gets no application session (450ms)
+  ✓  26 [chrome] › tests/browser/identity.spec.ts:91:1 › live password-only identity cannot satisfy a stronger configured assurance requirement (906ms)
+  ✓  27 [chrome] › tests/browser/identity.spec.ts:183:1 › an in-flight provider login survives a real API container restart (2.0s)
+  ✓  28 [chrome] › tests/browser/identity.spec.ts:228:1 › real provider logout revokes the application session and active UI while another identity stays signed in (5.4s)
+  ✓  29 [chrome] › tests/browser/identity.spec.ts:299:1 › removing browser assurance hints cannot bypass the application client OTP minimum (28.8s)
+  -  30 [chrome] › tests/browser/provider-reconciliation.spec.ts:41:1 › disabled provider user and missed logout both revoke live sessions within the freshness window
+  -  31 [chrome] › tests/browser/provider-reconciliation.spec.ts:113:1 › encrypted provider credentials survive API restart and provider outage fails closed without losing the live draft
+  ✓  32 [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application (2.0m)
+
+  2 skipped
+  30 passed (4.1m)

@@ -1,0 +1,4 @@
+{"backup":{"artifact":".data/backups/core-81c454c7-25f6-424e-aa7b-3929e88c083f.jwe","sha256":"cbf35c02a69a5e19e8c8c0ac7f278b0def11a8534f26eed6d951ea7bc819b2e8","snapshotAt":"2026-10-13T06:01:20.310Z","counts":{"messages":161,"memberships":5,"files":48,"message_attachments":6,"file_scan_jobs":31},"bytes":441229,"durationMs":335,"keyStoredSeparately":true}}
+{"exercise":"concord-restore-0dc2bacc","snapshotAt":"2026-10-13T06:01:20.310Z","filesVerified":48,"local":41,"s3":7,"countsMatch":true,"authorizedDownload":true,"crossTenantDenied":true,"durationMs":2921,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+{"tamperedArtifactRejected":true,"sourceDeletionDidNotChangeSnapshot":true}

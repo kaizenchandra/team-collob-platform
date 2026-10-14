@@ -1,0 +1,41 @@
+# Synthetic credentials, isolated local development only. No host ports or cloud resources.
+x-storage: &storage
+  S3_ENDPOINT: http://object-store:8333
+  S3_BUCKET: concord-files
+  S3_ALLOW_INSECURE_LOCAL: 'true'
+  NODE_ENV: development
+services:
+  object-store:
+    image: chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
+    command: ['mini','-dir=/data','-ip=object-store','-s3.config=/etc/concord/s3.json','-bucket=concord-files','-admin.ui=false']
+    volumes: ['object-data:/data','./infra/seaweedfs/local-s3.json:/etc/concord/s3.json:ro']
+    networks: [objects]
+    restart: unless-stopped
+    init: true
+    mem_limit: 1g
+    cpus: 1.0
+    stop_grace_period: 30s
+    healthcheck:
+      test: ['CMD-SHELL','wget -q -O /dev/null http://localhost:9333/cluster/status']
+      interval: 10s
+      timeout: 3s
+      retries: 15
+      start_period: 30s
+  api:
+    environment:
+      <<: *storage
+      S3_ACCESS_KEY_ID: local-concord-reader
+      S3_SECRET_ACCESS_KEY: local-development-reader-only
+    networks: [default,objects]
+  file-worker:
+    environment:
+      <<: *storage
+      S3_ACCESS_KEY_ID: local-concord-writer
+      S3_SECRET_ACCESS_KEY: local-development-writer-only
+    networks: [default,objects]
+    stop_grace_period: 120s
+volumes:
+  object-data:
+networks:
+  objects:
+    internal: true

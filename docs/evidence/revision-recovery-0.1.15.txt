@@ -1,0 +1,8 @@
+
+> team-collob-platform@0.1.15 test:recovery
+> node scripts/test-coordinated-recovery.mjs
+
+{"backup":{"artifact":".data/backups/core-4fbb3778-a241-4202-856a-13c0053c236b.jwe","sha256":"d575cb46382279b3fbf26ac71e61e37b810e81bf8d918de6a2b7620c45348497","snapshotAt":"2026-10-14T00:53:15.441Z","counts":{"messages":183,"memberships":5,"files":65,"message_attachments":8,"file_scan_jobs":48},"bytes":833462,"durationMs":386,"keyStoredSeparately":true}}
+{"exercise":"concord-restore-78f4bfbd","snapshotAt":"2026-10-14T00:53:15.441Z","revisionRootsVerified":["10ba0526-18d7-44a2-972d-c683566a32f4"],"revisionMetadataVerified":true,"filesVerified":65,"local":45,"s3":20,"countsMatch":true,"authorizedDownload":true,"crossTenantDenied":true,"durationMs":4021,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+{"tamperedArtifactRejected":true,"sourceDeletionDidNotChangeSnapshot":true}

@@ -1,0 +1,1 @@
+{"event":"object_migration","promoted":0,"skipped":0,"failed":0}

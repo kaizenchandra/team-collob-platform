@@ -1,0 +1,29 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Manifest\/database mismatch/. Input:
+
+'Backup command /Users/mwgbh/Library/Caches/JetBrains/WebStorm2026.2/acp-agents/.runtimes/node/24.19.0/bin/node failed (1): file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/backup-common.mjs:13\n' +
+  "    child.on('close',code=>{clearTimeout(timer);if(failed)return;if(code!==0)reject(Object.assign(new Error(`Backup command ${cmd} failed (${code}): ${Buffer.concat(err).toString().slice(0,1000)}`),{stdout:Buffer.concat(out).toString()}));else resolve(Buffer.concat(out));});\n" +
+  '                                                                                                  ^\n' +
+  '\n' +
+  'Error: Backup command docker failed (1): file:///app/[eval1]:1\n' +
+  "import {pool} from './services/core/db.ts';import {storedBytes,fileRoot} from './services/core/file-content.ts';import {putVerifiedObject} from './services/core/object-storage.ts';import {createApp} from './services/core/server.ts';import {mkdir,writeFile} from 'node:fs/promises';import path from 'node:path';let input='';for await(const b of process.stdin)input+=b;const backup=JSON.parse(input);await mkdir(fileRoot(),{recursive:true,mode:0o700})"
+
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-restore-failure.mjs:22:26
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'Backup command /Users/mwgbh/Library/Caches/JetBrains/WebStorm2026.2/acp-agents/.runtimes/node/24.19.0/bin/node failed (1): file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/backup-common.mjs:13\n' +
+    "    child.on('close',code=>{clearTimeout(timer);if(failed)return;if(code!==0)reject(Object.assign(new Error(`Backup command ${cmd} failed (${code}): ${Buffer.concat(err).toString().slice(0,1000)}`),{stdout:Buffer.concat(out).toString()}));else resolve(Buffer.concat(out));});\n" +
+    '                                                                                                  ^\n' +
+    '\n' +
+    'Error: Backup command docker failed (1): file:///app/[eval1]:1\n' +
+    "import {pool} from './services/core/db.ts';import {storedBytes,fileRoot} from './services/core/file-content.ts';import {putVerifiedObject} from './services/core/object-storage.ts';import {createApp} from './services/core/server.ts';import {mkdir,writeFile} from 'node:fs/promises';import path from 'node:path';let input='';for await(const b of process.stdin)input+=b;const backup=JSON.parse(input);await mkdir(fileRoot(),{recursive:true,mode:0o700})",
+  expected: /Manifest\/database mismatch/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

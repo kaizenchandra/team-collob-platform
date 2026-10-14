@@ -1,0 +1,1 @@
+{"test":"real S3 provider","readyObjectVerified":true,"anonymousDenied":true,"readerWriteDenied":true,"corruptionDenied":true,"outageFailsClosed":true,"messagingDuringOutage":true,"restartBytesPersist":true,"migrationRepeatable":true,"uploadQuarantineDuringOutage":true,"uploadPromotionAfterRecovery":true}

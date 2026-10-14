@@ -1,0 +1,919 @@
+
+> team-collob-platform@0.1.14 test:e2e
+> playwright test
+
+
+Running 30 tests using 1 worker
+
+(node:8716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (1.6s)
+(node:8739) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI (290ms)
+(node:8755) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   3 [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit (262ms)
+(node:8782) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   4 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (267ms)
+(node:8799) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   5 [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both (282ms)
+(node:8816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document (274ms)
+(node:8832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (278ms)
+(node:8846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (260ms)
+(node:8860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Browser under test: 155.0.8059.40
+  ✘   9 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (234ms)
+(node:8874) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  10 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (238ms)
+(node:8888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (244ms)
+(node:8902) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery (246ms)
+(node:8917) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  13 [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails (262ms)
+(node:8931) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  14 [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out (262ms)
+(node:8946) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  15 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (466ms)
+(node:8966) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  16 [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages (260ms)
+(node:8981) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  17 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (429ms)
+(node:9004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [chrome] › tests/browser/file-scanning.spec.ts:9:1 › real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR (267ms)
+(node:9021) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  19 [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion (385ms)
+(node:9039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  20 [chrome] › tests/browser/file-scanning.spec.ts:76:1 › upload lost-response recovery reuses the original operation after reload and file reselection (263ms)
+(node:9053) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  21 [chrome] › tests/browser/file-scanning.spec.ts:104:1 › real scanned text previews escape markup, recover failures and withdraw deleted content (464ms)
+(node:9072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  22 [chrome] › tests/browser/identity.spec.ts:25:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session (210ms)
+(node:9094) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  23 [chrome] › tests/browser/identity.spec.ts:78:1 › a valid provider identity without a provisioned subject gets no application session (207ms)
+(node:9108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  24 [chrome] › tests/browser/identity.spec.ts:91:1 › live password-only identity cannot satisfy a stronger configured assurance requirement (2.6s)
+(node:9125) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  25 [chrome] › tests/browser/identity.spec.ts:183:1 › an in-flight provider login survives a real API container restart (189ms)
+(node:9139) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  26 [chrome] › tests/browser/identity.spec.ts:228:1 › real provider logout revokes the application session and active UI while another identity stays signed in (181ms)
+(node:9153) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  27 [chrome] › tests/browser/identity.spec.ts:299:1 › removing browser assurance hints cannot bypass the application client OTP minimum (185ms)
+  -  28 [chrome] › tests/browser/provider-reconciliation.spec.ts:41:1 › disabled provider user and missed logout both revoke live sessions within the freshness window
+  -  29 [chrome] › tests/browser/provider-reconciliation.spec.ts:113:1 › encrypted provider credentials survive API restart and provider outage fails closed without losing the live draft
+(node:9170) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  30 [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application (160ms)
+
+
+  1) [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:20:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:63:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-private-board-task-and-form-persist-through-UI-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-private-board-task-and-form-persist-through-UI-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-private-board-task-and-form-persist-through-UI-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-private-board-task-and-form-persist-through-UI-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:103:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-tenant-switc-65a74-ervice-limitations-explicit-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-tenant-switc-65a74-ervice-limitations-explicit-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-tenant-switc-65a74-ervice-limitations-explicit-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-tenant-switc-65a74-ervice-limitations-explicit-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:119:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-workspace-ac-b9048-ity-and-responsive-overflow-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-workspace-ac-b9048-ity-and-responsive-overflow-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-workspace-ac-b9048-ity-and-responsive-overflow-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-workspace-ac-b9048-ity-and-responsive-overflow-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:152:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-separate-win-a1147-nize-and-logout-clears-both-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-separate-win-a1147-nize-and-logout-clears-both-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-separate-win-a1147-nize-and-logout-clears-both-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-separate-win-a1147-nize-and-logout-clears-both-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:177:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-guest-adds-and-deletes-an-authorized-document-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-guest-adds-and-deletes-an-authorized-document-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-guest-adds-and-deletes-an-authorized-document-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-guest-adds-and-deletes-an-authorized-document-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:200:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-lost-accepta-d80e2-retries-without-duplication-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-lost-accepta-d80e2-retries-without-duplication-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-lost-accepta-d80e2-retries-without-duplication-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-lost-accepta-d80e2-retries-without-duplication-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:237:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-offline-draf-9b870-nd-syncs-after-reconnection-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-offline-draf-9b870-nd-syncs-after-reconnection-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-offline-draf-9b870-nd-syncs-after-reconnection-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-offline-draf-9b870-nd-syncs-after-reconnection-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:269:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-dark-theme-remains-accessible-and-persists-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-dark-theme-remains-accessible-and-persists-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-dark-theme-remains-accessible-and-persists-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-dark-theme-remains-accessible-and-persists-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:306:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:316:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-logout-clear-6892e--identity-cannot-inherit-it-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-logout-clear-6892e--identity-cannot-inherit-it-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-logout-clear-6892e--identity-cannot-inherit-it-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-logout-clear-6892e--identity-cannot-inherit-it-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:334:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-blocked-brow-e8e48-ssion-and-explains-recovery-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-blocked-brow-e8e48-ssion-and-explains-recovery-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-blocked-brow-e8e48-ssion-and-explains-recovery-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-blocked-brow-e8e48-ssion-and-explains-recovery-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:353:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-an-accepted--cb175-when-the-draft-update-fails-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-an-accepted--cb175-when-the-draft-update-fails-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-an-accepted--cb175-when-the-draft-update-fails-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-an-accepted--cb175-when-the-draft-update-fails-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:367:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-malformed-re-f67d4-gh-Help-without-signing-out-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-malformed-re-f67d4-gh-Help-without-signing-out-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-malformed-re-f67d4-gh-Help-without-signing-out-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-malformed-re-f67d4-gh-Help-without-signing-out-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:385:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-formatted-co-93139-ithout-changing-legacy-text-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:423:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-Markdown-rej-4488a-n-preview-and-sent-messages-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-Markdown-rej-4488a-n-preview-and-sent-messages-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-Markdown-rej-4488a-n-preview-and-sent-messages-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-Markdown-rej-4488a-n-preview-and-sent-messages-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      3 | const channel = "44444444-4444-4444-8444-444444444444";
+      4 | async function login(page: Page, email = "alice@acme.test") {
+    > 5 |   await page.goto(`/?channel=${channel}`);
+        |              ^
+      6 |   await page.getByLabel("Email address").fill(email);
+      7 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+      8 |   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:5:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:449:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-channel-ment-ebe1b-when-the-mention-is-removed-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-channel-ment-ebe1b-when-the-mention-is-removed-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-channel-ment-ebe1b-when-the-mention-is-removed-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-channel-ment-ebe1b-when-the-mention-is-removed-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-channel-ment-ebe1b-when-the-mention-is-removed-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [chrome] › tests/browser/file-scanning.spec.ts:9:1 › real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+       8 | test.setTimeout(180000);
+       9 | test("real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR",async({page,context})=>{
+    > 10 |   await page.goto(`/?channel=${channel}`);
+         |              ^
+      11 |   await page.getByLabel("Email address").fill("alice@acme.test");await page.getByLabel("Password",{exact:true}).fill("Development123!");await page.getByRole("button",{name:"Sign in",exact:true}).click();
+      12 |   await page.locator(".tabs").getByRole("button",{name:"Files",exact:true}).click();
+      13 |   const name=`scan-live-${Date.now()}.txt`,content="Real scanner integration, persistent clean bytes.";
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-scanning.spec.ts:10:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-scanning-real-scanner-7c37c-downloads-and-rejects-EICAR-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-scanning-real-scanner-7c37c-downloads-and-rejects-EICAR-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-scanning-real-scanner-7c37c-downloads-and-rejects-EICAR-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-scanning-real-scanner-7c37c-downloads-and-rejects-EICAR-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  19) [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      39 |   const other=await browser.newContext(),bob=await other.newPage();
+      40 |   const login=async(p:typeof page,email:string)=>{
+    > 41 |     await p.goto(`/?channel=${channel}`);await p.getByLabel("Email address").fill(email);await p.getByLabel("Password",{exact:true}).fill("Development123!");await p.getByRole("button",{name:"Sign in",exact:true}).click();
+         |             ^
+      42 |     await expect(p.getByRole("heading",{name:"General standard",exact:true})).toBeVisible();
+      43 |   };
+      44 |   try {
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-scanning.spec.ts:41:13)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-scanning.spec.ts:45:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-scanning-scanned-atta-ea1c5-sappear-after-file-deletion-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-scanning-scanned-atta-ea1c5-sappear-after-file-deletion-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-scanning-scanned-atta-ea1c5-sappear-after-file-deletion-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-scanning-scanned-atta-ea1c5-sappear-after-file-deletion-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-scanning-scanned-atta-ea1c5-sappear-after-file-deletion-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20) [chrome] › tests/browser/file-scanning.spec.ts:76:1 › upload lost-response recovery reuses the original operation after reload and file reselection 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      75 |
+      76 | test("upload lost-response recovery reuses the original operation after reload and file reselection",async({page,context})=>{
+    > 77 |   await page.goto(`/?channel=${channel}`);
+         |              ^
+      78 |   await page.getByLabel("Email address").fill("alice@acme.test");await page.getByLabel("Password",{exact:true}).fill("Development123!");await page.getByRole("button",{name:"Sign in",exact:true}).click();
+      79 |   await page.locator(".tabs").getByRole("button",{name:"Files",exact:true}).click();
+      80 |   const name=`retry-upload-${Date.now()}.txt`,file={name,mimeType:"text/plain",buffer:Buffer.from("Same operation after browser reload")};
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-scanning.spec.ts:77:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-scanning-upload-lost--d0c2d-reload-and-file-reselection-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-scanning-upload-lost--d0c2d-reload-and-file-reselection-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-scanning-upload-lost--d0c2d-reload-and-file-reselection-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-scanning-upload-lost--d0c2d-reload-and-file-reselection-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  21) [chrome] › tests/browser/file-scanning.spec.ts:104:1 › real scanned text previews escape markup, recover failures and withdraw deleted content 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444
+    Call log:
+      - navigating to "http://localhost:3101/?channel=44444444-4444-4444-8444-444444444444", waiting until "load"
+
+
+      105 |   const other=await browser.newContext(),bob=await other.newPage();
+      106 |   const login=async(p:typeof page,email:string)=>{
+    > 107 |     await p.goto(`/?channel=${channel}`);await p.getByLabel("Email address").fill(email);await p.getByLabel("Password",{exact:true}).fill("Development123!");await p.getByRole("button",{name:"Sign in",exact:true}).click();
+          |             ^
+      108 |     await p.locator(".tabs").getByRole("button",{name:"Files",exact:true}).click();
+      109 |   };
+      110 |   let file="";
+        at login (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-scanning.spec.ts:107:13)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-scanning.spec.ts:112:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-scanning-real-scanned-042f3-nd-withdraw-deleted-content-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-scanning-real-scanned-042f3-nd-withdraw-deleted-content-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-scanning-real-scanned-042f3-nd-withdraw-deleted-content-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-scanning-real-scanned-042f3-nd-withdraw-deleted-content-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-scanning-real-scanned-042f3-nd-withdraw-deleted-content-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  22) [chrome] › tests/browser/identity.spec.ts:25:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4100/v1/auth/login
+    Call log:
+      - navigating to "http://localhost:4100/v1/auth/login", waiting until "load"
+
+
+      27 |   context,
+      28 | }) => {
+    > 29 |   await page.goto("http://localhost:4100/v1/auth/login");
+         |              ^
+      30 |   const authUrl = new URL(page.url());
+      31 |   expect(authUrl.searchParams.get("code_challenge_method")).toBe("S256");
+      32 |   const state = authUrl.searchParams.get("state")!;
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/identity.spec.ts:29:14
+
+    Error Context: test-results/identity-live-OIDC-PKCE-lo-fcb63--logout-revokes-its-session-chrome/error-context.md
+
+  23) [chrome] › tests/browser/identity.spec.ts:78:1 › a valid provider identity without a provisioned subject gets no application session 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4100/v1/auth/login
+    Call log:
+      - navigating to "http://localhost:4100/v1/auth/login", waiting until "load"
+
+
+      80 |   context,
+      81 | }) => {
+    > 82 |   await page.goto("http://localhost:4100/v1/auth/login");
+         |              ^
+      83 |   await providerLogin(page, "unprovisioned@acme.test");
+      84 |   await expect(page).toHaveURL(/localhost:4100\/v1\/auth\/callback/);
+      85 |   await expect(page.locator("body")).toContainText("has not been provisioned");
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/identity.spec.ts:82:14
+
+    Error Context: test-results/identity-a-valid-provider--b2d03-gets-no-application-session-chrome/error-context.md
+
+  24) [chrome] › tests/browser/identity.spec.ts:91:1 › live password-only identity cannot satisfy a stronger configured assurance requirement 
+
+    AggregateError: apiRequestContext.get: connect ECONNREFUSED ::1:4100
+    connect ECONNREFUSED 127.0.0.1:4100
+    Call log:
+      - → GET http://localhost:4100/v1/session
+        - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at apiRequestContext.get: connect ECONNREFUSED ::1:4100
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/identity.spec.ts:171:30
+
+    Error Context: test-results/identity-live-password-onl-f56bd-gured-assurance-requirement-chrome/error-context.md
+
+  25) [chrome] › tests/browser/identity.spec.ts:183:1 › an in-flight provider login survives a real API container restart 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4100/v1/auth/login
+    Call log:
+      - navigating to "http://localhost:4100/v1/auth/login", waiting until "load"
+
+
+      186 | }) => {
+      187 |   test.setTimeout(90000);
+    > 188 |   await page.goto("http://localhost:4100/v1/auth/login");
+          |              ^
+      189 |   await expect(page.getByLabel(/Username or email/)).toBeVisible();
+      190 |   const { execFile } = await import("node:child_process");
+      191 |   const { promisify } = await import("node:util");
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/identity.spec.ts:188:14
+
+    Error Context: test-results/identity-an-in-flight-prov-4ec58--real-API-container-restart-chrome/error-context.md
+
+  26) [chrome] › tests/browser/identity.spec.ts:228:1 › real provider logout revokes the application session and active UI while another identity stays signed in 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4100/v1/auth/login
+    Call log:
+      - navigating to "http://localhost:4100/v1/auth/login", waiting until "load"
+
+
+      231 |   browser,
+      232 | }) => {
+    > 233 |   await page.goto("http://localhost:4100/v1/auth/login");
+          |              ^
+      234 |   await providerLogin(page, "alice@acme.test");
+      235 |   await expect(page).toHaveURL("http://localhost:3101/");
+      236 |   await expect(page.getByText("Live", { exact: true })).toBeVisible();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/identity.spec.ts:233:14
+
+    Error Context: test-results/identity-real-provider-log-b0a1b-er-identity-stays-signed-in-chrome/error-context.md
+
+  27) [chrome] › tests/browser/identity.spec.ts:299:1 › removing browser assurance hints cannot bypass the application client OTP minimum 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4100/v1/auth/login
+    Call log:
+      - navigating to "http://localhost:4100/v1/auth/login", waiting until "load"
+
+
+      301 |   context,
+      302 | }) => {
+    > 303 |   await page.goto("http://localhost:4100/v1/auth/login");
+          |              ^
+      304 |   const url = new URL(page.url());
+      305 |   url.searchParams.delete("claims");
+      306 |   url.searchParams.delete("acr_values");
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/identity.spec.ts:303:14
+
+    Error Context: test-results/identity-removing-browser--02c4a-lication-client-OTP-minimum-chrome/error-context.md
+
+  28) [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4100/v1/auth/login
+    Call log:
+      - navigating to "http://localhost:4100/v1/auth/login", waiting until "load"
+
+
+      10 | const base = "http://localhost:4100";
+      11 | async function password(page: Page, url = `${base}/v1/auth/login`) {
+    > 12 |   await page.goto(url);
+         |              ^
+      13 |   const username = page.getByLabel(/Username or email/);
+      14 |   if (await username.isVisible()) await username.fill("alice@acme.test");
+      15 |   await page.getByLabel("Password", { exact: true }).fill("Development123!");
+        at password (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/recovery.spec.ts:12:14)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/recovery.spec.ts:63:11
+
+    Error Context: test-results/recovery-provider-recovery-0fbe8-ng-codes-to-the-application-chrome/error-context.md
+
+  28 failed
+    [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft 
+    [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI 
+    [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit 
+    [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow 
+    [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both 
+    [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document 
+    [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication 
+    [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection 
+    [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists 
+    [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text 
+    [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it 
+    [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery 
+    [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails 
+    [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out 
+    [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text 
+    [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages 
+    [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed 
+    [chrome] › tests/browser/file-scanning.spec.ts:9:1 › real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR 
+    [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion 
+    [chrome] › tests/browser/file-scanning.spec.ts:76:1 › upload lost-response recovery reuses the original operation after reload and file reselection 
+    [chrome] › tests/browser/file-scanning.spec.ts:104:1 › real scanned text previews escape markup, recover failures and withdraw deleted content 
+    [chrome] › tests/browser/identity.spec.ts:25:1 › live OIDC PKCE login establishes the provisioned identity and local logout revokes its session 
+    [chrome] › tests/browser/identity.spec.ts:78:1 › a valid provider identity without a provisioned subject gets no application session 
+    [chrome] › tests/browser/identity.spec.ts:91:1 › live password-only identity cannot satisfy a stronger configured assurance requirement 
+    [chrome] › tests/browser/identity.spec.ts:183:1 › an in-flight provider login survives a real API container restart 
+    [chrome] › tests/browser/identity.spec.ts:228:1 › real provider logout revokes the application session and active UI while another identity stays signed in 
+    [chrome] › tests/browser/identity.spec.ts:299:1 › removing browser assurance hints cannot bypass the application client OTP minimum 
+    [chrome] › tests/browser/recovery.spec.ts:47:1 › provider recovery enrollment, one-time use and replacement retain MFA without exposing codes to the application 
+  2 skipped

@@ -1,0 +1,2 @@
+{"exercise":"concord-restore-1af00ec2","snapshotAt":"2026-10-14T00:53:15.441Z","revisionRootsVerified":["10ba0526-18d7-44a2-972d-c683566a32f4"],"revisionMetadataVerified":true,"filesVerified":65,"local":45,"s3":20,"countsMatch":true,"authorizedDownload":true,"crossTenantDenied":true,"durationMs":4172,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}

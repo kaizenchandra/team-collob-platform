@@ -1,0 +1,34 @@
+{"syntheticFixtureDisabledAndArchived":true,"jobAuditPreserved":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1339:18)
+      at afterConnectMultiple (node:net:1942:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:5185
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16) {
+        errno: -61,
+        code: 'ECONNREFUSED',
+        syscall: 'connect',
+        address: '::1',
+        port: 5185
+      },
+      Error: connect ECONNREFUSED 127.0.0.1:5185
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16) {
+        errno: -61,
+        code: 'ECONNREFUSED',
+        syscall: 'connect',
+        address: '127.0.0.1',
+        port: 5185
+      }
+    ]
+  }
+}
+
+Node.js v24.19.0

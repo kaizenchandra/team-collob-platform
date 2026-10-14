@@ -1,0 +1,26 @@
+file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/backup-common.mjs:13
+    child.on('close',code=>{clearTimeout(timer);if(failed)return;if(code!==0)reject(new Error(`Backup command ${cmd} failed (${code}): ${Buffer.concat(err).toString().slice(0,1000)}`));else resolve(Buffer.concat(out));});
+                                                                                    ^
+
+Error: Backup command docker failed (1): node:internal/fs/promises:1345
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: ENOENT: no such file or directory, open '/app/.data/files/92eca9e3-9d1c-4c88-a1ae-ce453cae9b14'
+    at async open (node:internal/fs/promises:1345:25)
+    at async localBytes (file:///app/services/core/file-content.ts:34:16)
+    at async file:///app/[eval1]:1:265 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/app/.data/files/92eca9e3-9d1c-4c88-a1ae-ce453cae9b14'
+}
+
+Node.js v24.21.0
+
+    at ChildProcess.<anonymous> (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/backup-common.mjs:13:85)
+    at ChildProcess.emit (node:events:509:28)
+    at maybeClose (node:internal/child_process:1141:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:306:5)
+
+Node.js v24.19.0

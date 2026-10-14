@@ -1,0 +1,6 @@
+{
+  "identities": [
+    {"name":"local-api-reader","credentials":[{"accessKey":"local-concord-reader","secretKey":"local-development-reader-only"}],"actions":["Read:concord-files"]},
+    {"name":"local-file-writer","credentials":[{"accessKey":"local-concord-writer","secretKey":"local-development-writer-only"}],"actions":["Read:concord-files","Write:concord-files","List:concord-files"]}
+  ]
+}

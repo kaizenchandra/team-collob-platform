@@ -1,0 +1,87 @@
+
+> team-collob-platform@0.1.17 test
+> node scripts/test-core.mjs
+
+✔ backup validation rejects missing, corrupt, duplicate and unsafe-path file data (5.463625ms)
+✔ version2 backups require valid scoped lineages and unique revision ordinals (0.913209ms)
+✔ anonymous and cross-origin requests are rejected (338.049ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (19.398041ms)
+✔ private-channel visibility excludes a team guest (19.414625ms)
+✔ concurrent retried writes commit one message and one ordered event (48.204708ms)
+✔ message edit ownership, threads, reactions and monotonic read position (28.410084ms)
+✔ search and draft persistence survive a fresh application instance (17.192541ms)
+✔ private tasks and forms enforce assignment and response permissions (20.585708ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (26.380833ms)
+✔ meeting attendees must be tenant members; only organizer cancels (25.113959ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (20.495583ms)
+✔ 32-person receipts include every opted-in authorized recipient (241.263ms)
+✔ live event replay and membership revocation close an active subscription (1089.729834ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (87.699791ms)
+✔ receipt privacy opt-out and session logout enforced (15.238625ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (577.310375ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (41.558584ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.565042ms)
+✔ authentication throttling does not consume the session-status and logout budget (122.242167ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (157.783958ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (65.446125ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (9.293708ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (23.290542ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (4.868792ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (3.579416ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (18.150792ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (13.063167ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (22.687625ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (46.337208ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (38.481042ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (6.703541ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (38.453875ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (42.178375ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (3.192709ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (105.681333ms)
+✔ durable scan jobs retry, reject, recover leases and never resurrect deleted files (95.127666ms)
+✔ attachments enforce scanned same-channel access, immutable retries and current history visibility (82.97225ms)
+✔ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (45.507125ms)
+✔ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (10.07175ms)
+✔ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (23.674ms)
+✔ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (2.82ms)
+✔ source previews enforce scan/ACL/integrity and bound literal Unicode text (53.545875ms)
+✔ file revisions serialize numbering, preserve retry identity and withdraw the whole lineage (118.196834ms)
+✔ quiet hours evaluate overnight, equal endpoints and timezone DST boundaries (0.995917ms)
+✔ notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup (117.085ms)
+✖ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (52.3135ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.593958ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.390917ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.126584ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (3.287ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.256291ms)
+✔ attachment references survive recovery and cannot change on an unconfirmed operation (0.5085ms)
+✔ upload recovery retains scoped identity without storing bytes and clears on logout (0.943125ms)
+✔ release evidence requires every service and actual expected images (1.284125ms)
+ℹ tests 55
+ℹ suites 0
+ℹ pass 54
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4359.143125
+
+✖ failing tests:
+
+test at tests/core.test.ts:12:28648
+✖ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (52.3135ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  5 !== 1
+  
+      at TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:1426:101)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 5,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

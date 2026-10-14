@@ -1,0 +1,12 @@
+
+Running 5 tests using 1 worker
+
+(node:11246) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-scanning.spec.ts:9:1 › real scanner persists queued uploads across worker restart, allows clean downloads and rejects EICAR (7.1s)
+  ✓  2 [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion (5.9s)
+  ✓  3 [chrome] › tests/browser/file-scanning.spec.ts:76:1 › upload lost-response recovery reuses the original operation after reload and file reselection (4.0s)
+  ✓  4 [chrome] › tests/browser/file-scanning.spec.ts:104:1 › real scanned text previews escape markup, recover failures and withdraw deleted content (10.0s)
+  ✓  5 [chrome] › tests/browser/file-scanning.spec.ts:139:1 › file versions preserve old bytes, recover accepted uploads and revoke history after root deletion (10.6s)
+
+  5 passed (38.3s)

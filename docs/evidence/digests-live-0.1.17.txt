@@ -1,0 +1,3 @@
+{"quietHoursDeferredBothRecipients":true}
+{"actualSmtpAccepted":true,"externalDelivery":false,"privateCountsVerified":true,"plaintextAndChannelNamesOmitted":true,"revokedRecipientNotSent":true,"providerOutageRecovered":true,"jobs":[{"state":"cancelled","attempts":2,"last_error":"smtp_unavailable"},{"state":"sent","attempts":2,"last_error":null}]}
+{"syntheticFixtureDisabledAndArchived":true,"jobAuditPreserved":true}

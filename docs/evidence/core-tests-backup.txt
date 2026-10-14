@@ -1,0 +1,60 @@
+
+> team-collob-platform@0.1.13 test
+> node scripts/test-core.mjs
+
+✔ backup validation rejects missing, corrupt, duplicate and unsafe-path file data (4.135333ms)
+✔ anonymous and cross-origin requests are rejected (359.702875ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (22.103583ms)
+✔ private-channel visibility excludes a team guest (19.100667ms)
+✔ concurrent retried writes commit one message and one ordered event (48.214792ms)
+✔ message edit ownership, threads, reactions and monotonic read position (23.22775ms)
+✔ search and draft persistence survive a fresh application instance (14.112625ms)
+✔ private tasks and forms enforce assignment and response permissions (18.935458ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (22.246459ms)
+✔ meeting attendees must be tenant members; only organizer cancels (31.27375ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (14.407833ms)
+✔ 32-person receipts include every opted-in authorized recipient (158.273333ms)
+✔ live event replay and membership revocation close an active subscription (1072.74275ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (68.857042ms)
+✔ receipt privacy opt-out and session logout enforced (13.045458ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (599.23675ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (32.266292ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.806ms)
+✔ authentication throttling does not consume the session-status and logout budget (121.103917ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (122.160167ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (61.528708ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (7.143708ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (21.494417ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (3.349125ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (3.0595ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (19.367708ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (11.624791ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (16.11075ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (35.1075ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (43.427416ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (6.530666ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (47.208875ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (51.652041ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (3.377375ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (140.742417ms)
+✔ durable scan jobs retry, reject, recover leases and never resurrect deleted files (98.158167ms)
+✔ attachments enforce scanned same-channel access, immutable retries and current history visibility (63.694209ms)
+✔ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (35.559791ms)
+✔ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (5.899875ms)
+✔ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (14.827834ms)
+✔ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (2.704458ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.30525ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.238292ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.106625ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (2.227291ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.183125ms)
+✔ attachment references survive recovery and cannot change on an unconfirmed operation (0.48475ms)
+✔ upload recovery retains scoped identity without storing bytes and clears on logout (0.748583ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 48
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3861.129875

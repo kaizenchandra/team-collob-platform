@@ -1,0 +1,56 @@
+{
+  "version": "0.1.20-local",
+  "sourceSha256": "61f31c63e39e543953d7640977f5eafc57944b9d26af5dfa0e2825ff37487897",
+  "containers": {
+    "web": {
+      "imageId": "sha256:8bcd0a4680a0eff41b2c9ea2ed0af0b92633a00b391da4f68fe4c0a553e34eb8",
+      "status": "running",
+      "health": "healthy"
+    },
+    "api": {
+      "imageId": "sha256:844ab704ea72df80d8b8b2f1f0d5eb0ead1450ae4f7026b8886d246ac5611c8c",
+      "status": "running",
+      "health": "healthy"
+    },
+    "postgres": {
+      "imageId": "sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929",
+      "status": "running",
+      "health": "healthy"
+    },
+    "keycloak": {
+      "imageId": "sha256:29be7252db0a106f1cd2ac17b9a56ff2668073da645638a38b9fc67deeb2d6c4",
+      "status": "running",
+      "health": "healthy"
+    },
+    "clamav": {
+      "imageId": "sha256:4ee87bd2b509d49aac16619468005cba43183d467dd7a7ceb5ef45e880bb54d0",
+      "status": "running",
+      "health": "healthy"
+    },
+    "file-worker": {
+      "imageId": "sha256:844ab704ea72df80d8b8b2f1f0d5eb0ead1450ae4f7026b8886d246ac5611c8c",
+      "status": "running",
+      "health": "healthy"
+    },
+    "file-reconciler": {
+      "imageId": "sha256:844ab704ea72df80d8b8b2f1f0d5eb0ead1450ae4f7026b8886d246ac5611c8c",
+      "status": "running",
+      "health": "healthy"
+    },
+    "object-store": {
+      "imageId": "sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d",
+      "status": "running",
+      "health": "healthy"
+    },
+    "mailpit": {
+      "imageId": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "status": "running",
+      "health": "healthy"
+    },
+    "digest-worker": {
+      "imageId": "sha256:844ab704ea72df80d8b8b2f1f0d5eb0ead1450ae4f7026b8886d246ac5611c8c",
+      "status": "running",
+      "health": "healthy"
+    }
+  }
+}
