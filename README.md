@@ -111,3 +111,5 @@ Release0.1.24 adds attendee checkboxes to **Calendar → Edit meeting**. Organiz
 Release0.1.25 removes the calendar's silent100-meeting cutoff. Use **Load more meetings** and optional inclusive **Calendar from/through** dates. Failed page loads offer Retry without discarding already loaded cards. Refresh restarts browsing; date ranges are limited to366days.
 
 Release0.1.26 automatically refreshes an open Calendar when relevant meetings or responses change. Updates return browsing to the first page and preserve open edit drafts. If change detection becomes unavailable, stale cards clear and reload on recovery. Hidden-tab/browser throttling can delay updates; external calendar sync remains unavailable.
+
+Release0.1.27 adds **Scheduling timezone** to meeting creation/editing. Nonexistent daylight-saving times are rejected. Repeated times require an explicit earlier/later choice, preventing silent clock-change adjustments. Calendar cards still display in your browser timezone and identify the saved scheduling zone.

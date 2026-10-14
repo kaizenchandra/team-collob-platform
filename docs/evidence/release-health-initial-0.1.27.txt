@@ -1,0 +1,4 @@
+Release recorder rejected API image mismatch after label-fix deployment.
+Running concord-collaboration-api-1 image: sha256:5cf3cec1612e17251a2ce67efa7debbaa1cbaef660e57ea0cd6fc3862e464e93
+Expected concord-api:0.1.27-local image: sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be
+Remediation: force-recreate only api/web/file-worker/file-reconciler/digest-worker without recreating dependencies; recheck exact images and rerun affected browser tests.

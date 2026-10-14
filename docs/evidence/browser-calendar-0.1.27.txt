@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:34001) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation (21.4s)
+  ✓  2 [chrome] › tests/browser/calendar.spec.ts:24:1 › calendar date range loads beyond the first page and retries an unavailable page (11.1s)
+  ✓  3 [chrome] › tests/browser/calendar.spec.ts:37:1 › scheduling rejects DST gaps and persists an explicitly chosen repeated-time occurrence (829ms)
+
+  3 passed (34.1s)

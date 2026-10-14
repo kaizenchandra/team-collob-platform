@@ -1,6 +1,6 @@
 {
   "name": "team-collob-platform",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3100",
@@ -21,6 +21,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.1150.0",
     "@fastify/cors": "11.3.1",
+    "@js-temporal/polyfill": "0.5.1",
     "fastify": "5.12.5",
     "jose": "6.2.12",
     "lucide-react": "1.55.0",

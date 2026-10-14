@@ -1,5 +1,5 @@
 {
-  "version": "0.1.26-local",
+  "version": "0.1.27-local",
   "checks": [
     {
       "url": "http://localhost:4100/health",
@@ -15,10 +15,10 @@
     }
   ],
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-14T07:33:51.478Z",
+  "recordedAt": "2026-10-14T07:53:37.387Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "d2494891eef615fc8c1a077573da71c4499e0fd45922931d668b6da976c3b356",
+  "sourceSha256": "2f5ec21ee41a1cb59a41547e1ff818b64e1660868957435a044076df2dccdf97",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
@@ -27,6 +27,7 @@
     "app/components/file-versions.tsx",
     "app/components/invitation-inbox.tsx",
     "app/components/meeting-editor.tsx",
+    "app/components/meeting-timezone.tsx",
     "app/components/membership-panels.tsx",
     "app/components/mention-picker.tsx",
     "app/components/message-content.tsx",
@@ -52,6 +53,7 @@
     "infra/seaweedfs/local-s3.json",
     "lib/contracts.ts",
     "lib/file-preview.ts",
+    "lib/meeting-time.ts",
     "lib/pending-messages.ts",
     "lib/pending-uploads.ts",
     "lib/upload-file.ts",
@@ -150,21 +152,22 @@
     "tests/clamav.test.ts",
     "tests/core.test.ts",
     "tests/helpers/local-otp.ts",
+    "tests/meeting-time.test.ts",
     "tests/pending-messages.test.ts",
     "tests/release-health.test.mjs",
     "tsconfig.json"
   ],
-  "baseCommit": "ee31709ebc46beeeff44627fd0e1af06bb7f73f5",
+  "baseCommit": "bdd79211e3b493a806cbc760c80b81f0aa9a6898",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.26-local": {
-      "imageId": "sha256:22b245247022a85b1a9e823deee5134f33c43e6307f856b4793c2b692cb81092",
-      "created": "2026-10-14T13:00:49.154477967+05:30",
+    "concord-web:0.1.27-local": {
+      "imageId": "sha256:6a4a573931562d1c899f6312b3592df7a69354dd8d40abc6c9e7d0429846f0f2",
+      "created": "2026-10-14T13:20:50.426291656+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.26-local": {
-      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
-      "created": "2026-10-14T13:00:52.960476571+05:30",
+    "concord-api:0.1.27-local": {
+      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
+      "created": "2026-10-14T13:17:09.119198721+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
@@ -185,12 +188,12 @@
   },
   "containers": {
     "web": {
-      "imageId": "sha256:22b245247022a85b1a9e823deee5134f33c43e6307f856b4793c2b692cb81092",
+      "imageId": "sha256:6a4a573931562d1c899f6312b3592df7a69354dd8d40abc6c9e7d0429846f0f2",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
+      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
       "status": "running",
       "health": "healthy"
     },
@@ -210,12 +213,12 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
+      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
       "status": "running",
       "health": "healthy"
     },
     "file-reconciler": {
-      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
+      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
       "status": "running",
       "health": "healthy"
     },
@@ -230,7 +233,7 @@
       "health": "healthy"
     },
     "digest-worker": {
-      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
+      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
       "status": "running",
       "health": "healthy"
     }

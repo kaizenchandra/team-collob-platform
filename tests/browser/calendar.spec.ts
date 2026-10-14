@@ -33,3 +33,17 @@ test('calendar date range loads beyond the first page and retries an unavailable
     await expect(page.getByText('Calendar updates unavailable. Retrying automatically; stale meetings have been cleared.',{exact:true})).toBeVisible({timeout:12000});await expect(cards).toHaveCount(0);await expect(cards).toHaveCount(50,{timeout:12000});await expect(page.getByRole('button',{name:'Load more meetings',exact:true})).toBeVisible();
   }finally{await db.query('DELETE FROM meetings WHERE id=ANY($1::uuid[])',[ids]);await db.end();}
 });
+
+test('scheduling rejects DST gaps and persists an explicitly chosen repeated-time occurrence',async({page})=>{
+  const title=`Timezone ${Date.now()}`;let id='',posts=0;
+  try{
+    await page.goto('/');await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('button',{name:'Calendar',exact:true}).click();await page.getByRole('button',{name:'Schedule meeting',exact:true}).click();
+    const dialog=page.getByRole('dialog',{name:'Schedule a meeting'});await dialog.getByLabel('Meeting title',{exact:true}).fill(title);await dialog.getByLabel('Scheduling timezone',{exact:true}).fill('America/New_York');
+    page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith(`/organizations/${org}/meetings`))posts++;});
+    await dialog.getByLabel('Starts',{exact:true}).fill('2026-03-08T02:30');await dialog.getByLabel('Ends',{exact:true}).fill('2026-03-08T03:30');await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('does not exist');expect(posts).toBe(0);
+    await dialog.getByLabel('Starts',{exact:true}).fill('2026-11-01T01:30');await dialog.getByLabel('Ends',{exact:true}).fill('2026-11-01T02:30');await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('occurs twice');expect(posts).toBe(0);
+    await dialog.getByLabel('Repeated clock time',{exact:true}).selectOption('later');await page.screenshot({path:'docs/evidence/meeting-timezone.png'});
+    const response=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/organizations/${org}/meetings`));await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();const saved=await response;expect(saved.status()).toBe(200);id=(await saved.json()).id;await expect(dialog).toHaveCount(0);
+    const rows=await (await page.request.get(`${api}/v1/organizations/${org}/meetings?from=2026-11-01T00:00:00Z&to=2026-11-02T00:00:00Z`)).json();const meeting=rows.meetings.find((m:{id:string})=>m.id===id);expect(meeting.starts_at).toBe('2026-11-01T06:30:00.000Z');expect(meeting.ends_at).toBe('2026-11-01T07:30:00.000Z');expect(meeting.timezone).toBe('America/New_York');
+  }finally{if(id)await page.request.patch(`${api}/v1/organizations/${org}/meetings/${id}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});}
+});

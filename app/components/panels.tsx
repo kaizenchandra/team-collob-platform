@@ -20,6 +20,8 @@ import {
 import { Empty, Modal, Unavailable } from "./primitives";
 import { FilePreviewDialog } from "./file-preview";
 import { previewMimeTypes } from "@/lib/file-preview";
+import {MeetingTimezone} from "./meeting-timezone";
+import {resolveMeetingTime,type RepeatedTime} from "@/lib/meeting-time";
 import { MeetingEditor } from "./meeting-editor";
 import { InvitationInbox } from "./invitation-inbox";
 import { AcceptInvitation } from "./membership-panels";
@@ -411,6 +413,7 @@ export function CalendarPanel({
   userId: string;
   report: Report;
 }) {
+  const [scheduleZone,setScheduleZone]=useState(Intl.DateTimeFormat().resolvedOptions().timeZone),[scheduleChoice,setScheduleChoice]=useState<RepeatedTime>('reject'),[scheduleError,setScheduleError]=useState('');
   const [editing,setEditing]=useState<Meeting|null>(null);
   const [rangeStart,setRangeStart]=useState(''),[rangeEnd,setRangeEnd]=useState(''),[range,setRange]=useState<{from?:string;to?:string}>({});
   const [cursor,setCursor]=useState<{startsAt:string;id:string}|null>(null),[loading,setLoading]=useState(false),[loadError,setLoadError]=useState('');
@@ -564,19 +567,19 @@ export function CalendarPanel({
           <form
             className="modal-body"
             onSubmit={async (e) => {
-              e.preventDefault();
+              e.preventDefault();setScheduleError('');
               try {
                 await api(`/organizations/${org}/meetings`, "POST", {
                   title,
-                  startsAt: new Date(start).toISOString(),
-                  endsAt: new Date(end).toISOString(),
-                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                  startsAt: resolveMeetingTime(start,scheduleZone,scheduleChoice),
+                  endsAt: resolveMeetingTime(end,scheduleZone,scheduleChoice),
+                  timezone: scheduleZone,
                   attendees,
                 });
                 setModal(false);
                 await load();
               } catch (e) {
-                report(e);
+                setScheduleError(e instanceof Error?e.message:'Meeting could not be scheduled');
               }
             }}
           >
@@ -588,6 +591,7 @@ export function CalendarPanel({
                 onChange={(e) => setTitle(e.target.value)}
               />
             </label>
+            <MeetingTimezone zone={scheduleZone} onZone={setScheduleZone} choice={scheduleChoice} onChoice={setScheduleChoice}/>
             <label>
               Starts
               <input
@@ -627,6 +631,7 @@ export function CalendarPanel({
                   </label>
                 ))}
             </fieldset>
+            {scheduleError&&<p role="alert">{scheduleError}</p>}
             <button className="primary">Schedule meeting</button>
           </form>
         </Modal>

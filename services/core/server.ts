@@ -157,7 +157,7 @@ export async function createApp() {
             correlationId: req.id,
         });
     });
-    app.get("/health", async () => ({status: "ok", release: "0.1.26"}));
+    app.get("/health", async () => ({status: "ok", release: "0.1.27"}));
     app.get("/ready", async () => {
         await pool.query("SELECT 1");
         return {status: "ready"};

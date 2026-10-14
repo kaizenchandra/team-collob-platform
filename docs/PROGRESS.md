@@ -1,6 +1,6 @@
 # Durable progress checkpoint — 2026-10-14
 
-**Current phase:** Phase 1 architecture gate complete. Phase 2 foundation and independent phase 3 collaboration increments partially delivered. Local container release `0.1.26-local` runs; full phase 2–9 gates have not passed. Full specification remains incomplete.
+**Current phase:** Phase 1 architecture gate complete. Phase 2 foundation and independent phase 3 collaboration increments partially delivered. Local container release `0.1.27-local` runs; full phase 2–9 gates have not passed. Full specification remains incomplete.
 
 **Verified whole requirement IDs:** FE-FR-02, BE-FR-11, WEB-01, WEB-15 (recorded local acceptance scope; production NFRs separate).
 
@@ -382,3 +382,14 @@ Completed ADR037 after checkpoint/repository/Next guide inspection. Migration020
 Changed: migration020, work.ts transactional counters/endpoint, CalendarPanel polling/recovery, core/browser tests, version/Compose and docs/register/evidence. No commit/external resources; unrelated work preserved. Phase2/3 partial;146entries4Verified/80In progress/15Blocked/47Not started. Whole verified IDs unchanged. Web3101/API4100/identity5180/mailcapture5185.
 
 Next executable work: recurrence/timezone UX, meeting invitation/reminder policies or configured calendar/editor integration. Automatic refresh is locally verified; do not repeat without new changes/failures. Hidden-tab throttling, full production polling/capacity/latency, external calendar/availability/media, E2EE/governance/staging/production/provider and observation objectives remain open. Older writers do not update counters: prefer compatible forward-fix deployments.
+
+
+## Latest continuation — explicit timezone/DST scheduling, 0.1.27-local
+
+Completed ADR038 after repository/Next guide inspection and official Temporal/polyfill references/npm compatibility verification. Pinned @js-temporal/polyfill0.5.1 with bundled types/lockfile. Shared meeting-time resolver rejects gaps for every choice, requires explicit earlier/later for folds, rejects invalid dates/zones and formats editor in stored meeting zone. Create/edit UI exposes scheduling zone and repeated-time choice with inline errors. Untouched editor fields preserve original instant; zone/choice changes resolve again. Server remains authoritative for UTC interval/permission rules. No schema/provider change.
+
+74/74 tests, typecheck/lint, production build and runtime audit0 passed. Initial browser suite20passed/1failed: repeated-time select nested label was not precisely addressable. Fixed explicit label association, rebuilt and all3 affected calendar tests passed. Release recorder then caught stale API container image versus final tag; force-recreated only app containers, recorder passed all10healthy/matching images, and final3 calendar tests passed again in34.1seconds. Actual browser test rejects gap/fold before any scheduling POST and verifies later NewYork fold stored06:30Z/07:30Z with saved timezone. Prior18collaboration checks passed before label-only fix; not claimed rerun on final image. Failure logs retained. Screenshot reviewed.
+
+Changed: lib/meeting-time.ts, shared timezone fields, create/edit UI, new helper tests/browser DST case/integrated runner, pinned dependency/version/Compose and docs/register/evidence. No commit/external service/secret; unrelated work preserved. Phase2/3 partial;146entries4Verified/80In progress/15Blocked/47Not started. Whole verified IDs unchanged. Web3101/API4100/identity5180/mailcapture5185. Source/image identities in release.json.
+
+Next executable work: recurrence using validated wall-time resolution, meeting reminders/policies, or configured calendar/editor provider integration. Current DST UX has one occurrence choice for both endpoints; tzdata follows runtime and future political rule changes require compatibility review. Bundle/resource budgets and all-browser timezone matrix not measured. External calendars/availability/media, E2EE/governance/staging/production/providers/observation requirements remain open. Do not repeat final timezone verification without new changes/failures.
