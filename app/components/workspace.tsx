@@ -1,4 +1,6 @@
 "use client";
+import { InvitationInbox, InvitationNotice } from "./invitation-inbox";
+import { BrowserMentionAlerts } from "./notifications";
 import { AttachmentPicker, MessageAttachments } from "./attachments";
 import { MentionPicker } from "./mention-picker";
 import { MessageContent, FormattingTools } from "./message-content";
@@ -85,6 +87,7 @@ type View =
   | "Calendar"
   | "Calls"
   | "Files"
+  | "Invitations"
   | "Settings"
   | "Help"
   | "Admin";
@@ -132,7 +135,7 @@ export default function Workspace() {
     [modal, setModal] = useState(""),
     [details, setDetails] = useState(false),
     [mobileNav, setMobileNav] = useState(false),
-    [activityFilter, setActivityFilter] = useState<"unread" | "mentions">("unread"),
+    [activityFilter, setActivityFilter] = useState<"unread" | "mentions" | "replies">("unread"),
     [activity, setActivity] = useState<
       {
         id: string;
@@ -143,6 +146,7 @@ export default function Workspace() {
         format: "plain" | "markdown-v1";
         mentions: {id:string;name:string}[];
         mentioned: boolean;
+        replied: boolean;
       }[]
     >([]),
     [audit, setAudit] = useState<
@@ -636,6 +640,7 @@ export default function Workspace() {
     ) ?? [];
   return (
     <div className="application">
+      {org && <BrowserMentionAlerts key={`${session.user.id}:${org}`} org={org} userId={session.user.id} />}
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -873,6 +878,7 @@ export default function Workspace() {
             </button>
           </div>
         )}
+        <InvitationNotice key={session.user.id} onReview={()=>{setResults(null);setView("Invitations");}} />
         {results !== null ? (
           <>
             <div className="page-heading">
@@ -1440,6 +1446,8 @@ export default function Workspace() {
             userId={session.user.id}
             report={report}
           />
+        ) : view === "Invitations" ? (
+          <><div className="page-heading"><h1>Your invitations</h1></div><div className="content-pad"><InvitationInbox onSave={refreshSession} /></div></>
         ) : view === "Settings" ? (
           <SettingsPanel
             session={session}
@@ -1470,7 +1478,7 @@ export default function Workspace() {
                 <span className="eyebrow">STAY IN THE LOOP</span>
                 <h1>Your activity</h1>
                 <p>Catch up on unread conversations or messages mentioning you.</p>
-                <label>Activity filter<select value={activityFilter} onChange={e=>setActivityFilter(e.target.value as "unread" | "mentions")}><option value="unread">Unread messages</option><option value="mentions">Mentions of me</option></select></label>
+                <label>Activity filter<select value={activityFilter} onChange={e=>setActivityFilter(e.target.value as "unread" | "mentions" | "replies")}><option value="unread">Unread messages</option><option value="mentions">Mentions of me</option><option value="replies">Replies to me</option></select></label>
               </div>
               <Bell size={28} />
             </div>
@@ -1482,6 +1490,7 @@ export default function Workspace() {
                       {a.author} <small>in #{a.channel_name}</small>
                     </strong>
                     {a.mentioned && <span className="mention">Mentioned you</span>}
+                    {a.replied && <span className="mention">Replied to you</span>}
                     <MessageContent body={a.body} format={a.format} mentions={a.mentions} />
                     <button onClick={() => select(a.channel_id)}>Open conversation</button>
                   </div>

@@ -15,7 +15,7 @@ services:
       retries: 20
       start_period: 120s
   file-worker:
-    image: concord-api:0.1.12-local
+    image: concord-api:0.1.23-local
     command: ['node','services/core/file-worker.ts']
     environment:
       DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord
@@ -32,12 +32,12 @@ services:
     mem_limit: 256m
     cpus: 0.5
     healthcheck:
-      test: ['CMD','node','-e',"const fs=require('node:fs');process.exit(Date.now()-Number(fs.readFileSync('/tmp/concord-file-worker-heartbeat','utf8'))<120000?0:1)"]
+      test: ['CMD','node','services/core/file-worker-health.ts']
       interval: 15s
-      timeout: 3s
+      timeout: 5s
       start_period: 30s
   file-reconciler:
-    image: concord-api:0.1.12-local
+    image: concord-api:0.1.23-local
     command: ['node','services/core/file-reconciler.ts']
     environment:
       DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord

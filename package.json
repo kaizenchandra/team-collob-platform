@@ -1,6 +1,6 @@
 {
   "name": "team-collob-platform",
-  "version": "0.1.12",
+  "version": "0.1.23",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3100",
@@ -13,14 +13,19 @@
     "typecheck": "tsc --noEmit",
     "test": "node scripts/test-core.mjs",
     "test:e2e": "playwright test",
-    "requirements": "node scripts/requirements.mjs"
+    "requirements": "node scripts/requirements.mjs",
+    "backup:local": "node scripts/coordinated-backup.mjs",
+    "restore:local": "node scripts/restore-coordinated-backup.mjs",
+    "test:recovery": "node scripts/test-coordinated-recovery.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1150.0",
     "@fastify/cors": "11.3.1",
     "fastify": "5.12.5",
     "jose": "6.2.12",
     "lucide-react": "1.55.0",
     "next": "16.4.0",
+    "nodemailer": "10.1.0",
     "openid-client": "6.8.8",
     "pg": "8.23.1",
     "react": "19.3.0",

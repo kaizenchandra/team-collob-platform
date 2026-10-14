@@ -2,7 +2,9 @@
 /* Remote snapshots and live subscriptions intentionally reset state on resource changes.
    This prevents showing the previous resource while asynchronous requests are pending. */
 /* eslint-disable react-hooks/set-state-in-effect */
-import {beginUpload,finishUpload} from "@/lib/pending-uploads";
+import {uploadFile} from "@/lib/upload-file";
+import {NotificationSettings} from "./notifications";
+import {FileVersionsDialog} from "./file-versions";
 import { useState, useEffect, useCallback, type FormEvent } from "react";
 import { Plus, CalendarDays, FileText, Upload } from "lucide-react";
 import {
@@ -16,6 +18,10 @@ import {
   type Channel,
 } from "@/lib/contracts";
 import { Empty, Modal, Unavailable } from "./primitives";
+import { FilePreviewDialog } from "./file-preview";
+import { previewMimeTypes } from "@/lib/file-preview";
+import { MeetingEditor } from "./meeting-editor";
+import { InvitationInbox } from "./invitation-inbox";
 import { AcceptInvitation } from "./membership-panels";
 
 type Report = (e: unknown) => void;
@@ -405,6 +411,7 @@ export function CalendarPanel({
   userId: string;
   report: Report;
 }) {
+  const [editing,setEditing]=useState<Meeting|null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]),
     [modal, setModal] = useState(false),
     [title, setTitle] = useState(""),
@@ -466,6 +473,7 @@ export function CalendarPanel({
                     minute: "2-digit",
                   })}
                 </p>
+                <p>{m.description}</p>
                 <small>
                   {m.response} · {m.timezone}
                 </small>
@@ -473,7 +481,7 @@ export function CalendarPanel({
               {!m.cancelled && (
                 <div className="meeting-actions">
                   {m.organizer_id === userId ? (
-                    <button
+                    <><button className="secondary" onClick={()=>setEditing(m)}>Edit meeting</button><button
                       className="secondary"
                       onClick={async () => {
                         try {
@@ -489,7 +497,7 @@ export function CalendarPanel({
                       }}
                     >
                       Cancel meeting
-                    </button>
+                    </button></>
                   ) : (
                     <>
                       <label className="sr-only" htmlFor={m.id}>
@@ -530,6 +538,7 @@ export function CalendarPanel({
           </Empty>
         )}
       </div>
+      {editing && <MeetingEditor key={editing.id} org={org} meeting={editing} onClose={()=>setEditing(null)} onSaved={load} />}
       {modal && (
         <Modal title="Schedule a meeting" onClose={() => setModal(false)}>
           <form
@@ -709,12 +718,13 @@ export function SettingsPanel({
           <button className="primary">Save preferences</button>
           {saved && <p role="status">Preferences saved.</p>}
           <Unavailable title="Additional preferences are not available yet">
-            Language/RTL, device preferences, browser notifications, and quiet
-            hours are pending implementation. Profile photos are not supported
+            Language/RTL and device preferences are pending implementation. Profile photos are not supported
             in this increment.
           </Unavailable>
         </form>
+        <NotificationSettings />
         <RecoverySettings />
+        <InvitationInbox onSave={onSave} />
         <AcceptInvitation onSave={onSave} report={report} />
       </div>
     </>
@@ -787,9 +797,11 @@ export function FilesPanel({
   report: Report;
 }) {
   const [files, setFiles] = useState<
-      { id: string; name: string; bytes: string; state: string; scan_status: string }[]
+      { id: string; name: string; mime: string; bytes: string; state: string; scan_status: string }[]
     >([]),
     [busy, setBusy] = useState(false);
+  const [versions, setVersions] = useState<{id:string;name:string} | null>(null);
+  const [preview, setPreview] = useState<{id:string;name:string} | null>(null);
   const load = useCallback(async () => {
     const response=await api<{files: typeof files}>(`/channels/${stream}/files`);
     setFiles(response.files);
@@ -819,26 +831,7 @@ export function FilesPanel({
               if (!file) return;
               setBusy(true);
               try {
-                if (file.size > 1024 * 1024)
-                  throw new Error("Local uploads are limited to 1 MB.");
-                const data = await new Promise<string>((resolve, reject) => {
-                  const r = new FileReader();
-                  r.onload = () => resolve(String(r.result).split(",")[1]);
-                  r.onerror = reject;
-                  r.readAsDataURL(file);
-                });
-                const mime=file.type || "application/octet-stream";
-                const digest=async(bytes:BufferSource)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)),v=>v.toString(16).padStart(2,"0")).join("");
-                const hash=await digest(await file.arrayBuffer());
-                const fingerprint=await digest(new TextEncoder().encode(JSON.stringify([file.name,mime,hash])));
-                const clientId=beginUpload(window.sessionStorage,userId,stream,fingerprint);
-                await api(`/channels/${stream}/files`, "POST", {
-                  clientId,
-                  name: file.name,
-                  mime,
-                  content: data,
-                });
-                finishUpload(window.sessionStorage,clientId);
+                await uploadFile(file,userId,stream);
                 await load();
               } catch (e) {
                 report(e);
@@ -851,7 +844,7 @@ export function FilesPanel({
         </label>
       </div>
       <Unavailable title="Scan before download">
-        Supported: TXT, MD, CSV, PDF, PNG and JPEG up to1MB. Files stay quarantined until a real malware scan succeeds. Rejected files cannot be downloaded. Scanning may take time or remain unavailable; failed jobs can be retried by the uploader. If an upload is interrupted, reselect the same file to retry safely, including after reload. Previews, versions and coauthoring remain unavailable.
+        Supported: TXT, MD, CSV, PDF, PNG and JPEG up to1MB. Files stay quarantined until a real malware scan succeeds. Rejected files cannot be downloaded. Scanning may take time or remain unavailable; failed jobs can be retried by the uploader. If an upload is interrupted, reselect the same file to retry safely, including after reload. TXT, MD and CSV have source-text previews after scanning. Original files stay at version 1; use Versions to view or upload revisions. Deleting an original deletes all its versions. PDF and image previews and coauthoring remain unavailable.
       </Unavailable>
       {files.length ? (
         files.map((f) => (
@@ -863,6 +856,10 @@ export function FilesPanel({
                 {Math.ceil(Number(f.bytes) / 1024)} KB · {f.state} · scan {f.scan_status}
               </small>
             </div>
+            <button className="secondary" onClick={()=>setVersions({id:f.id,name:f.name})}>Versions</button>
+            {f.state === "ready" && (previewMimeTypes.includes(f.mime)
+              ? <button className="secondary" onClick={()=>setPreview({id:f.id,name:f.name})}>Preview</button>
+              : <small>Preview unavailable for this format</small>)}
             {f.state === "ready" && <a className="secondary" href={`${API}/v1/channels/${stream}/files/${f.id}/download`}>Download</a>}
             {f.state === "quarantined" && f.scan_status === "dead" && <button className="secondary" onClick={async()=>{try{await api(`/channels/${stream}/files/${f.id}/retry`,"POST",{});await load();}catch(e){report(e);}}}>Retry scan</button>}
             <button
@@ -886,6 +883,8 @@ export function FilesPanel({
           status.
         </Empty>
       )}
+      {versions && <FileVersionsDialog key={versions.id} userId={userId} stream={stream} file={versions} onClose={()=>setVersions(null)} />}
+      {preview && <FilePreviewDialog key={preview.id} stream={stream} file={preview} onClose={()=>setPreview(null)} />}
     </div>
   );
 }

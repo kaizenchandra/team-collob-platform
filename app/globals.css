@@ -1975,3 +1975,26 @@ dialog > .notice {
 .formatting-tools > small { display: block; color: var(--muted); margin-top: .35rem; }
 .message-preview { max-height: 160px; overflow: auto; border: 1px solid var(--border); padding: .5rem; margin-top: .5rem; background: var(--bg); }
 .mention { display: inline; background: var(--accent-soft); color: var(--accent); border-radius: 4px; padding: 1px 4px; font-weight: 600; }
+
+.file-preview {
+  max-height: 45vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  unicode-bidi: plaintext;
+}
+dialog h2 { overflow-wrap: anywhere; min-width: 0; }
+
+.notification-status {
+  position: fixed;
+  bottom: 16px;
+  left: 80px;
+  right: 16px;
+  z-index: 20;
+  max-width: 620px;
+}

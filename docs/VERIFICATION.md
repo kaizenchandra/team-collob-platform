@@ -1,4 +1,4 @@
-# Verification report — 0.1.12-local
+# Verification report — 0.1.16-local
 
 Full specification is **not complete**. Phase 1 architecture gate passed. Foundation/core collaboration are partially implemented, with an independently useful local slice deployed. Phases 2–9 have **not** passed their full gates; local deployment is not equivalent to the required enterprise staging/production release.
 
@@ -10,11 +10,11 @@ Full specification is **not complete**. Phase 1 architecture gate passed. Founda
 | `npm run typecheck` | Pass | Strict TS frontend/backend/tests |
 | `npm run lint` | Pass | Narrow documented remote-state effect exception in UI; no blanket lint disable |
 | `npm run build` | Pass | Next 16.4 / React 19.3 standalone build, host and Linux image |
-| `npm test` | 46/46 pass | 39 core/security checks and 7 pending-storage unit checks; real PostgreSQL/event stream and JOSE validation |
-| `TEST_LOCAL_OIDC=true TEST_SCANNING=true npm run test:e2e` | 27 pass, 2 explicitly skipped in3.4minutes | Chrome 155.0.8059.40, real local deployment; administrator-enabled provider fault injection not rerun for0.1.12 |
+| `npm test` | 54/54 pass | 44 core/security,7 pending-storage,2 backup and1 release-health validation checks; real PostgreSQL/event stream and JOSE validation |
+| `TEST_LOCAL_OIDC=true TEST_SCANNING=true npm run test:e2e` | 30 pass, 2 explicitly skipped (see final duration below) | Chrome 155.0.8059.41, real S3-backed local deployment; administrator-enabled identity fault injection not run for0.1.16 |
 | Axe light/dark chat samples | Zero violations for selected WCAG A/AA tags | Not a complete WCAG2.2AA or screen-reader audit |
 | Desktop/mobile screenshot & overflow | Pass at Playwright desktop and 390x844 | Full tablet/browser/device/workflow matrix not executed |
-| Docker image build/deployment | Pass, web/API/Postgres/Keycloak/ClamAV/file-worker/file-reconciler health checks | Loopback local development only; image identities in release.json |
+| Docker image build/deployment | Pass, web/API/Postgres/Keycloak/ClamAV/file-worker/file-reconciler/object-store health checks | Loopback local development only; image identities in release.json |
 | `npm audit --omit=dev --audit-level=high` | 0 vulnerabilities at check | No OS-image security scan or independent security assessment |
 | Full `npm audit` | 5 high findings in dev dependency chain | Unpatched `braces` stack-exhaustion advisory via Next ESLint plugin/fast-glob/micromatch; do not downgrade Next blindly |
 | `node scripts/load-smoke.mjs` | 200 HTTP requests, concurrency 5, zero errors | Small development dataset, loopback, warm services; not target-scale sign-off |
@@ -222,3 +222,125 @@ Limits: private local filesystem only; no S3/object storage. Fsync calls and loc
 Evidence: `core-tests-0.1.12.txt`, `upload-browser-0.1.12.txt`, `browser-tests-0.1.12.txt`, `reconciliation-live-0.1.12.txt`, `build-0.1.12.txt`, `deploy-0.1.12.txt`, `runtime-audit-0.1.12.txt`, `release.json`. Register unchanged:146 entries,4 Verified,80 In progress,15 Blocked,47 Not started.
 
 Full0.1.12 regression:27 browser cases passed,2 provider-admin fault cases explicitly skipped in3.4minutes. Existing collaboration, attachment, OIDC/MFA/logout and recovery-code workflows passed alongside new upload recovery. Local release now has seven services; final observed health and immutable IDs are in release.json.
+
+
+## Object storage — 0.1.13-local (2026-10-13)
+
+ADR021 completed before production coding. Verified official SeaweedFS4.48 release/image/configuration and AWS SDK3.1150.0 Node>=20 compatibility; SDK pinned with lockfile, provider pinned by image digest. Separate internal storage network/no host ports, persistent object-data volume, bucket-scoped API reader and worker reader/writer credentials. Migration013 stores authoritative local/s3 pointers. Existing upload spool and retry IDs remain; clean scanning promotes bytes through PUT plus bounded SHA256-verified GET outside SQL before lease-guarded ready publication. Object-backed downloads never silently use retained local copies. Explicit migration command verifies/copies ready local rows and compare-and-sets their pointers.
+
+`npm test`:47/47 passed (40 core/security/database and7 pending-storage). Added key binding and incomplete/insecure/production-development-credential guards; existing scan/attachment/upload integrity and authorization tests remain passing. Typecheck/lint passed. First Docker production build failed on a test-only readonly NODE_ENV assignment; corrected the assignment and the repeat API/web build passed. Both logs retained. Runtime dependency audit0; existing5-high development advisory remains open. Local Docker was stopped at continuation start; the existing runtime was started, with no external resources created.
+
+`TEST_OBJECT_STORAGE=true node scripts/test-local-object-storage.mjs` uses actual signed S3 calls and actual application uploads/scanner. Verifies ready object bytes, anonymous403, reader PUT403, deliberate corruption503, recovery after restoring fixture bytes, provider stop/download503 without local fallback, messaging200 during the outage, restart persistence and repeated fixture promotion (first true/second false). The rollout migration command reported0 promoted/0 failed because there were no ready/local rows left; migration behavior is proven by the task-owned scanned fixture, not by the empty rollout. Local recovery copies were retained.
+
+Full browser regression:27 passed,2 provider-admin fault tests explicitly skipped in4.0minutes. Independent-user downloads, EICAR rejection, worker restart, attachment lost-response recovery, upload reselection recovery, messages/mentions/tasks/forms, organization isolation and identity/MFA/logout/recovery pass on the object-backed deployment. Live provider tests do not use a fake S3/scanner. Existing core tests intentionally remain local-only isolated SQL/filesystem tests.
+
+Boundaries:1MiB file cap; single-node local provider, no HA/encrypted-storage/production target. Spool and object copies remain; object orphan reclamation and retention-aware deletion are unfinished. No coordinated database/object/spool restore, power-loss test or replicated durability proof. No direct browser signed upload/download yet; current API path preserves immediate application ACL checks. Stateless multi-node uploads, versions/previews/coauthoring/E2EE and object-provider capacity/alerts remain open. Provider internal interfaces are isolated by a trusted Docker network, not asserted to be production-secured. No whole requirement newly verified; all146 primary IDs retained.
+
+Evidence: `core-tests-0.1.13.txt`, `object-live-0.1.13.txt`, `object-migration-0.1.13.txt`, `browser-tests-0.1.13.txt`, `build-initial-0.1.13.txt`, `build-0.1.13.txt`, `deploy-0.1.13.txt`, `object-start-0.1.13.txt`, `runtime-audit-0.1.13.txt`, `release.json`.
+
+Additional0.1.13 live outage evidence: a new upload accepted during provider downtime remains local/quarantined, records a failed queued attempt and denies download409. After provider restart it retries, becomes ready/s3 and returns exact bytes. This verifies fail-closed publication and recovery with the real provider, not only download outage behavior.
+
+
+## Coordinated encrypted recovery — operational increment,2026-10-13
+
+Application images remain0.1.13-local: no frontend/backend production code or dependency version changed. ADR022 documents snapshot consistency, immutable retained-byte assumption, standard authenticated JWE, bounded local scope and isolated restore before tool implementation. New scripts provide explicit local opt-in, exported PostgreSQL snapshot/custom dump, per-file integrity validation, encrypted versioned envelope and separate restricted key. No plaintext backup archive is written to host disk. Restored infrastructure uses immutable source image IDs, an internal network, fresh volumes and no published ports.
+
+Initial backup failed closed on one missing legacy local file (deleted metadata still required retained content). A pre-container host copy matched authoritative length/SHA256; the recovery helper restored it with exclusive create and audit. One missing/one recovered/zero unresolved. A helper quoting error was corrected before it executed any mutation. No missing content was silently omitted. Initial backup error and final recovery report are retained.
+
+Live exercise: snapshot161 messages,5 memberships,48 files,6 attachment references and31 scan jobs. Encrypted artifact441229bytes; export/encryption335ms. Isolated restore verified all48files:41local and7S3, matching database/manifest counts, actual restored development login, exact authorized object download and cross-tenant404. A source fixture deleted after snapshot still restored with its snapshot state. Restore provisioning/import/file/API checks2921ms on warmed local images, excluding decrypt and cleanup. These are laboratory timings, not RTO/RPO guarantees. Successful cleanup removed all exercise resources. A later cleanup-hardened restore also passed; see restore-cleanup-retest.txt.
+
+Changed ciphertext was specifically rejected by JWE authenticated decryption before target creation. A separate authenticated but inconsistent count manifest failed after infrastructure creation and all its resources were cleaned. Validation unit test rejects omitted/duplicate/corrupt/unsafe-path file manifests. Integrated backend suite48/48, strict typecheck and lint pass. Existing0.1.13 browser27pass/2skip evidence was not rerun because application behavior did not change; restored API checks exercise the operational change directly.
+
+Limits: no Keycloak identity-data/keyring/provider-secret recovery, schedule, offsite custody, key rotation, retention/holds, regional recovery or production durability proof. Key and artifacts are separate but currently on the same host. Larger than bounded local envelope/file budgets fails; streaming production tooling remains open. Existing older unencrypted smoke dumps remain; no retroactive encryption claim. Current GC retention assumptions must remain true for online snapshot consistency. No requirement newly marked wholly Verified.
+
+Evidence: coordinated-backup-initial-failure.txt, legacy-file-recovery.txt, coordinated-backup-0.1.13.txt, coordinated-restore-0.1.13.txt, restore-cleanup-retest.txt, backup-tamper.txt, restore-failure-cleanup.txt, core-tests-backup.txt. Encrypted artifacts and keys are under ignored .data directories, not committed. Requirements remain146total:4Verified,80In progress,15Blocked,47Not started.
+
+## Source previews — 0.1.14-local
+
+ADR023 and shared Zod contract implemented before release. `npm test`:49/49; strict typecheck/lint pass. Core preview test exercises quarantine/rejection, literal markup/source, cache/security headers, cross-tenant and wrong-channel denial, membership revocation, exact-size checksum corruption, Unicode-safe32,768-unit truncation, empty CSV, unsupported PDF and deletion. These API cases use explicit scan-state fixtures; real scanner coverage is separate.
+
+Real browser preview test passes against ClamAV and S3: Alice uploads, Bob views after ready, a network-failure test double triggers honest error/retry, actual API fetch then renders literal hostile markup without active elements, truncation is visible, Escape closes, and actual API deletion withdraws open preview within the15second test bound. The fetch fault is only a resilience test; source scanning/storage/content and deletion are real. Screenshot `file-preview.png` visually inspected. No complete browser/accessibility/capacity/security certification claim.
+
+Initial local release health gate caught missing shared-contract packaging (`ERR_MODULE_NOT_FOUND /app/lib/file-preview.ts`). Explicit Docker COPY corrected it; rebuilt image and final health-gated deployment succeeded. Initial deployment and unavailable-service browser results are retained in `deploy-initial-0.1.14.txt`/`browser-unavailable-0.1.14.txt`, not counted as successful tests. Final build/deploy/runtime audit evidence uses suffix0.1.14; runtime audit0. No database migration. No new full requirement verified:146 entries,4Verified/80In progress/15Blocked/47Not started. Source previews do not complete full file processing/version/editor/E2EE scope.
+
+Final0.1.14 browser regression:28 passed,2 explicit provider-administrator skips in4.1minutes. Interrupted release-record refresh resumed2026-10-14; Docker runtime was stopped on arrival; restarted the existing OrbStack runtime and resumed all eight services successfully.
+
+Release recorder hardening (ADR024,2026-10-14):50/50 integrated tests, typecheck/lint/146-register/diff checks pass. Missing/stopped/unhealthy services, absent identities and stale API/web/worker/provider image identities are rejected by test. Real recorder verifies8 healthy services, matching images, live API0.1.14 and successful API readiness/web HTTP checks before atomic evidence replacement. `core-tests-release-health.txt`, `resume-0.1.14.txt`, `release-health-0.1.14.txt`, and updated `release.json` contain evidence. No application source/image changed after the28-pass browser suite; no repeated browser run required for the recorder-only change. Workspace source checksum includes test/tooling files and does not assert these were packaged into images.
+
+
+## Immutable file revisions — 0.1.15-local
+
+ADR025 and migration014 implemented.51/51 tests, typecheck/lint, production image build, local health-gated migration/deployment and runtime audit0 pass. New backend case verifies uploader/tenant/channel/name/scan restrictions, concurrent numbering, accepted-retry dedup/conflicts, old/new byte stability, immutable attachment references, deleted ordinal nonreuse,100-version cap, root-cascade deletion and job cancellation. Core scan-ready states are fixtures; live scanner verification below is separate.
+
+New real ClamAV/S3 browser test passed in11.1seconds on Chrome155.0.8059.41: Alice creates a revision, an intentionally discarded accepted response is recovered after reload/reselection using the same operation ID; Bob downloads exact original/new contents, sees no uploader control, and open history loses links after actual root deletion. History contains exactly2versions. file-versions.png visually reviewed. Full regression completed successfully; final result below. No editor, restore-as-current, production-scale version storage, rich-preview or E2EE claims.
+
+Migration014 is additive but an old API's root-only deletion is incompatible once revisions exist. OPERATIONS.md requires forward-fix/compatible binaries or coordinated restore/reconciliation, not destructive down migration. Existing backup tools still dump all rows/bytes but a revision-specific restore was not executed in this increment. No full requirement newly verified;146 entries remain4Verified/80In progress/15Blocked/47Not started.
+
+Final0.1.15 regression: **29 passed (4.1m)**,2provider-admin fault cases explicitly skipped. All8services healthy; recorder verified matching images/API release and live readiness/web HTTP. Source hash/image IDs in release.json. No staging/production deployment claim.
+
+
+## Revision-aware backup/restore — application images unchanged0.1.15
+
+ADR026 completed before edits. Exporter writes version2 lineage fields; validator enforces graph/ordinal boundaries; restore verifies manifest/SQL equality and live restored history/per-version download/tenant denial. Live recovery fixture uses actual scanner and S3, then source root deletion after snapshot.65files restored (45local/20S3),183messages/5memberships/8attachment refs/48jobs,833462-byte encrypted artifact,386ms export and4021ms isolated restore. Fixture lineage specifically included in revisionRootsVerified. Ciphertext tamper rejected and all resources cleaned. See revision-recovery-0.1.15.txt.
+
+Version1 compatibility:48files restored from the previous0.1.13 artifact; revisionMetadataVerified=false, exact downloads/tenant denial and cleanup pass (legacy-backup-compatibility.txt). Invalid version2 ordinal test initially failed its diagnostic assertion because minified stack output obscured the cause; retained revision-restore-failure-initial.txt. Concise errors fixed, actual Manifest/database mismatch now asserted with cleanup success (revision-restore-failure.txt). Successful v2 restore rerun4172ms (revision-restore-recheck.txt); count-mismatch cleanup passes (revision-count-failure.txt).
+
+52/52 automated tests in core-tests-revision-recovery.txt, typecheck/lint pass. Prior29-pass/2-explicit-skip browser evidence remains applicable; production app/UI/images unchanged, so browser suite not repeated. No identity/offsite/production/observation-period recovery claim. Full requirement counts remain unchanged.
+
+## Opt-in mention alerts and quiet hours — 0.1.16-local
+
+ADR027 precedes implementation.54/54 automated tests in core-tests-0.1.16.txt, strict typecheck/lint, production image build and local deployment pass. Tests evaluate overnight/all-day/endpoint/timezone/DST rules, invalid times, enable-time cutoff, quiet suppression without claiming, muted/hidden/read/deleted exclusions, membership/tenant denial and6concurrent claims yielding one result. Browser content is metadata-only. Notification claim commits before response and can lose an alert on response/browser failure; no exactly-once or delivery-receipt claim.
+
+Browser permission automation plus a forwarding Proxy observes successful native Notification construction without substituting a mock constructor. This can verify the application invokes the real browser API, not that the operating system displays a toast or that every browser/mobile device supports it. Native permission prompts are triggered only by the Settings action in product code. Final browser result is recorded below. Runtime npm audit0; no new dependency. No full phase/requirement advancement.
+
+Notification browser test passed in11.8seconds on Chrome155.0.8059.41: persisted settings/reload, all-day quiet suppression, actual native constructor invocation after automated browser permission grant, two-tab dedup and metadata-only content. Screenshot notification-settings.png visually reviewed. This does not establish OS toast display, manual permission-prompt UX or other browser/device compatibility.
+
+Final0.1.16 browser regression: **30 passed (4.0m)**,2explicit provider-admin fault cases skipped. All8services healthy; actual API version/readiness/web HTTP and expected image identities pass the release recorder. Evidence release-health-0.1.16.txt/release.json. Full phase2/3 prerequisites remain incomplete, so no next-phase gate claimed.
+
+## Private-activity email digests — 0.1.17-local
+
+ADR028 and migration016 add opt-in settings, durable scheduling/reservations, quiet-hour deferral, authorization rechecks, bounded retries and explicit uncertain-send isolation. Nodemailer10.1.0 uses its bundled TypeScript types. Pinned Mailpit1.31.5 receives synthetic `.test` recipients locally; this is actual SMTP acceptance, not external mailbox delivery.
+
+55/55 core/storage/recovery/release-tool tests pass (`core-tests-0.1.17.txt`). Typecheck, lint, production image build and runtime dependency audit pass; runtime vulnerabilities0. The existing five high development dependency findings remain open. The initial repeated core fixture failure was corrected by isolated test-fixture cleanup. Generic SMTP connection closure is classified uncertain; only definitive transient responses, DNS lookup failure and connection refusal at connect are automatically retried. Unit tests cover that boundary and expired sending leases.
+
+The final deployed-image live check (`digests-live-0.1.17.txt`) passed: actual quiet-hour delay, actual SMTP outage and retry, private membership revoked before retry, one canceled recipient and exactly one accepted counts-only email for the authorized recipient. No message text or private channel name appeared. Synthetic fixture identities were disabled and memberships archived; job/audit evidence retained. The initial Mailpit UI network failure and correction are retained separately. Mailpit has a loopback UI, no host SMTP port, restricted recipients and no relay; its default-network attachment means it is not an egress-isolated service.
+
+Final browser regression: **30 passed (4.1m),2 explicitly skipped provider-admin cases**, Chrome155.0.8059.41. Saved digest opt-in survives reload and existing quiet-hour/native-notification dedup behavior passes. Settings screenshot visually reviewed. `browser-tests-0.1.17.txt` records the results. Final release recorder confirms **all10services healthy**, matching images/API0.1.17 and successful API health/readiness/web HTTP checks. `release-health-0.1.17.txt` and `release.json` retain image identities/source hash. GAP-04 remains blocked on external provider configuration/verification and operational delivery controls. No full requirement, full phase, production deployment, exactly-once delivery or operational SLO is newly claimed.
+
+## Scanner-aware worker readiness — 0.1.18-local
+
+ADR029 completed before implementation. `npm test`:60/60 pass, including five controlled TCP peer tests for fragmented protocol replies, fresh/stale/future/invalid signature metadata, capability failure, bounded responses, closed connections, deadlines, stream framing and definitive verdict handling. These fixtures do not claim actual antivirus coverage. `npm run typecheck`, `npm run lint`, production image builds and health-gated local deployment passed. No runtime dependency changed; the prior runtime audit is0.1.17 evidence, not a newly executed audit.
+
+`ALLOW_LOCAL_SCANNER_TEST=true node scripts/test-scanner-readiness.mjs`: actual scanner stop caused worker unhealthy while `/ready` remained HTTP200. Scanner restart restored scanner and worker health. The script restores the scanner in a finally block; this is local fault evidence, not production alert/SLO validation. `TEST_SCANNING=true npx playwright test tests/browser/file-scanning.spec.ts`: **5 passed (38.3seconds)** on the deployed release, including real EICAR rejection/clean downloads, worker restart, lost-response retry, attachment withdrawal, previews and immutable revisions. No UI changes; previous full30pass/2skip suite is explicitly0.1.17 evidence.
+
+Final release recorder verified all10containers healthy with matching expected images/API0.1.18 and web/readiness HTTP checks. Evidence: core-tests-0.1.18.txt, build-0.1.18.txt, deploy-0.1.18.txt, scanner-readiness-0.1.18.txt, browser-scanning-0.1.18.txt, release-health-0.1.18.txt and release.json. Whole requirement counts and incomplete phase gates remain unchanged. Docker unhealthy does not automatically restart the worker. Production monitoring/alerts, full scanning capacity and long-running signature-update reliability remain unverified.
+
+## Reply activity — 0.1.19-local
+
+ADR030 implemented an authorized immediate-parent reply projection and Activity UI filter/badge.61/61 tests passed; typecheck/lint, production image build and local health-gated deployment passed. Initial test failure expected403 where existing organization membership denial returns404; corrected fixture expectation and used existing schema constraints. Evidence retains initial and successful results. Negative tests cover self/other recipient, tenant denial, private membership revocation and parent/reply deletion.
+
+`npx playwright test tests/browser/collaboration.spec.ts`: **18 passed (50.8s)**. Independent users create parent/reply, discover it under Replies to me, open the conversation, then observe withdrawal after parent deletion. Screenshot visually reviewed. All10containers healthy and matching images/API release recorded with source hash. Evidence: core-tests-0.1.19.txt, browser-collaboration-0.1.19.txt, reply-activity.png, build-0.1.19.txt, deploy-0.1.19.txt, release-health-0.1.19.txt and release.json. No new full requirement verified; previous full browser/scanning/provider/audit results retain their earlier release labels. Browser reply alerts, participant subscriptions, pagination beyond50 and production objectives remain open.
+
+## Opt-in browser reply alerts — 0.1.20-local
+
+ADR031 and migration017 implemented separate reply consent/cutoff, backwards-compatible settings updates, shared claim deduplication and kind-aware metadata-only native notifications. `npm test`: **62 passed**. New integration test covers cutoff, independent toggles, omitted additive fields, concurrent allocation, overlapping mention/reply priority, quiet hours and parent deletion. Typecheck/lint, production image build, additive migration and local deployment passed. No dependency change; prior dependency-audit evidence retains its original release label.
+
+`npx playwright test tests/browser/notifications.spec.ts tests/browser/collaboration.spec.ts`: **20 passed (1.2m)**. Independent users plus two recipient tabs verify preference persistence and exactly one observed native Notification construction with `New reply in General`, without message text. The observer forwards to the real browser constructor; OS toast visibility is not verified. Existing quiet/mention behavior and collaboration regressions passed. Settings screenshot visually reviewed. Recorder confirmed all10services healthy, image/API version matches and API/web HTTP readiness. No whole requirement or full phase newly verified.
+
+Evidence: core-tests-0.1.20.txt, browser-notifications-0.1.20.txt, reply-alert-settings.png, build-0.1.20.txt, deploy-0.1.20.txt, release-health-0.1.20.txt and release.json. Limits: active-workspace polling only, no mobile/closed-tab push, no thread-wide subscriptions or invitation/call notifications; allocated-but-undisplayed claims fall back to Activity. Prior browser/provider/media matrices are not newly claimed.
+
+## Identity-bound invitation inbox — 0.1.21-local
+
+ADR032 implemented current-email invitation discovery and explicit acceptance through the existing identity/membership guard.63/63 automated tests pass, including recipient isolation, metadata minimization, expired/revoked denial, ambiguous body rejection, concurrent distinct invitation acceptance, membership uniqueness and refusal to reactivate inactive members. Typecheck/lint, production image builds, local deployment and diff checks pass. No migration/dependency change.
+
+`npx playwright test tests/browser/invitations.spec.ts tests/browser/notifications.spec.ts tests/browser/collaboration.spec.ts`: **21 passed (1.3m)**. Two users exercise real API invitation creation, recipient inbox discovery/explicit acceptance, session organization inclusion and authorized bootstrap. Fixture organization memberships disabled and invitations revoked afterwards; audit retained. Screenshot visually reviewed. Final recorder verifies all10services healthy with matching images/API0.1.21 and HTTP readiness. Evidence: core-tests-0.1.21.txt, browser-invitations-0.1.21.txt, invitation-inbox.png, build-0.1.21.txt, deploy-0.1.21.txt, release-health-0.1.21.txt and release.json.
+
+No full requirement/phase newly verified. Inbox metadata is intentionally addressed cross-organization information; it grants no membership until explicit acceptance. No external email/browser invitation delivery, self-provisioning, full provider matrix or production claims. Earlier scoped test/audit evidence keeps its prior release labels.
+
+## Invitation discovery and decline — 0.1.22-local
+
+ADR033 implemented global identity-scoped notice and audited recipient decline.65/65 automated tests passed; wrong-recipient/reused/accepted decline denial, no membership effects and concurrent accept/decline consistency verified. Concurrency review identified a possible audit foreign-key conflict with acceptance's stronger identity row lock; replaced it with FOR NO KEY UPDATE before final rebuild. Race tests exercise exactly one successful action and consistent membership/invitation state. No production deadlock incident claimed.
+
+Typecheck/lint, final production image build, local deployment and diff checks passed. `npx playwright test tests/browser/invitations.spec.ts tests/browser/notifications.spec.ts tests/browser/collaboration.spec.ts`: **21 passed (1.4m)**. Recipient opens notice from Chat, declines without membership, receives a newly issued invitation and accepts it. Screenshot reviewed. All10containers healthy, matching images/API0.1.22 and HTTP readiness recorded. Evidence: core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png, build-0.1.22.txt, deploy-0.1.22.txt, release-health-0.1.22.txt and release.json.
+
+No new whole requirement/phase verification. Global notice is in-app, not OS/browser push or external email. Count is bounded50+, cross-tab refresh is eventual, and production polling scale/retention remains open. Previous audits and unrelated provider/media/browser tests retain their original release labels.

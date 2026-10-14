@@ -1261,3 +1261,290 @@ test("failed upload metadata leaves recoverable bytes instead of eagerly unlinki
     await pool.query("DROP TRIGGER reject_test_upload ON files");await pool.query("DROP FUNCTION reject_test_upload()");
   }
 });
+
+test("object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed",async()=>{
+  const {objectKey,objectStorageConfigured,readObject}=await import("../services/core/object-storage.ts");
+  const file={id:randomUUID(),org_id:ids.org,sha256:"a".repeat(64),bytes:4};
+  assert.equal(objectKey(file),`${ids.org}/${file.id}/${file.sha256}`);
+  assert.throws(()=>objectKey({...file,org_id:"../other"}));
+  assert.throws(()=>objectKey({...file,sha256:"bad"}));
+  const keys=["S3_ENDPOINT","S3_BUCKET","S3_ACCESS_KEY_ID","S3_SECRET_ACCESS_KEY","S3_ALLOW_INSECURE_LOCAL","NODE_ENV"];
+  const saved=Object.fromEntries(keys.map(k=>[k,process.env[k]]));
+  try{
+    for(const k of keys)delete process.env[k];assert.equal(objectStorageConfigured(),false);
+    process.env.S3_BUCKET="concord-files";assert.throws(()=>objectStorageConfigured(),/incomplete/);
+    process.env.S3_ENDPOINT="http://invalid.test";process.env.S3_ACCESS_KEY_ID="local-reader";process.env.S3_SECRET_ACCESS_KEY="local-secret";
+    assert.throws(()=>objectStorageConfigured(),/HTTPS/);
+    process.env.S3_ALLOW_INSECURE_LOCAL="true";assert.equal(objectStorageConfigured(),true);
+    await assert.rejects(readObject({...file,object_key:"wrong",object_bucket:"concord-files"}),/pointer/);
+    process.env["NODE_"+"ENV"]="production";assert.throws(()=>objectStorageConfigured(),/HTTPS/);
+    process.env.S3_ENDPOINT="https://invalid.test";assert.throws(()=>objectStorageConfigured(),/Development/);
+  }finally{for(const k of keys){if(saved[k]===undefined)delete process.env[k];else process.env[k]=saved[k];}}
+});
+
+test("source previews enforce scan/ACL/integrity and bound literal Unicode text",async()=>{
+  const {writeFile}=await import("node:fs/promises");
+  const {fileRoot}=await import("../services/core/file-content.ts");
+  const root=`/v1/channels/${ids.channel}/files`;
+  const upload=async(name:string,mime:string,source:string)=>{
+    const r=await request("alice","POST",root,{name,mime,content:Buffer.from(source).toString("base64")});
+    assert.equal(r.statusCode,200,r.body);return r.json().id as string;
+  };
+  const source='<script>alert("preview")</script>\n[link](https://example.invalid)\n=SUM(A1)';
+  const file=await upload("preview.md","text/markdown",source),url=`${root}/${file}/preview`;
+  assert.equal((await request("alice","GET",url)).statusCode,409);
+  await pool.query("UPDATE files SET state='rejected' WHERE id=$1",[file]);
+  assert.equal((await request("alice","GET",url)).statusCode,409);
+  // Scan state is a fixture here. The browser suite verifies actual ClamAV/S3 publication.
+  await pool.query("UPDATE files SET state='ready' WHERE id=$1",[file]);
+  const r=await request("bob","GET",url);
+  assert.equal(r.statusCode,200,r.body);
+  assert.deepEqual(r.json(),{text:source,truncated:false,bytes:Buffer.byteLength(source),limit:32768});
+  assert.match(String(r.headers["cache-control"]),/no-store/);
+  assert.equal(r.headers["x-content-type-options"],"nosniff");
+  assert.equal((await request("eve","GET",url)).statusCode,404);
+  assert.equal((await request("alice","GET",`/v1/channels/${ids.private}/files/${file}/preview`)).statusCode,404);
+  await pool.query("UPDATE memberships SET active=false WHERE user_id=$1 AND org_id=$2",[ids.bob,ids.org]);
+  try {assert.equal((await request("bob","GET",url)).statusCode,404);} finally {await pool.query("UPDATE memberships SET active=true WHERE user_id=$1 AND org_id=$2",[ids.bob,ids.org]);}
+  await writeFile(`${fileRoot()}/${file}`,"x".repeat(Buffer.byteLength(source)));
+  assert.equal((await request("alice","GET",url)).statusCode,503);
+  const long=await upload("long.txt","text/plain","x".repeat(32767)+"😀end");
+  const empty=await upload("empty.csv","text/csv","");
+  const pdf=await upload("unsupported.pdf","application/pdf","%PDF-1.7\nfixture");
+  await pool.query("UPDATE files SET state='ready' WHERE id=ANY($1::uuid[])",[[long,empty,pdf]]);
+  const bounded=(await request("alice","GET",`${root}/${long}/preview`)).json();
+  assert.equal(bounded.text,"x".repeat(32767));assert.equal(bounded.truncated,true);
+  assert.equal((await request("alice","GET",`${root}/${empty}/preview`)).json().text,"");
+  assert.equal((await request("alice","GET",`${root}/${pdf}/preview`)).statusCode,415);
+  assert.equal((await request("alice","DELETE",`${root}/${long}`)).statusCode,200);
+  assert.equal((await request("alice","GET",`${root}/${long}/preview`)).statusCode,404);
+});
+
+test("file revisions serialize numbering, preserve retry identity and withdraw the whole lineage",async()=>{
+  const root=`/v1/channels/${ids.channel}/files`;
+  const body={name:'versioned.txt',mime:'text/plain',content:Buffer.from('original bytes').toString('base64')};
+  const initial=await request('alice','POST',root,body);assert.equal(initial.statusCode,200,initial.body);const original=initial.json().id;
+  const revision={...body,versionOf:original,content:Buffer.from('new bytes').toString('base64'),clientId:randomUUID()};
+  assert.equal((await request('alice','POST',root,revision)).statusCode,404);
+  await pool.query("UPDATE files SET state='ready' WHERE id=$1",[original]);
+  assert.equal((await request('bob','POST',root,revision)).statusCode,404);
+  assert.equal((await request('eve','POST',root,revision)).statusCode,404);
+  assert.equal((await request('alice','POST',`/v1/channels/${ids.private}/files`,revision)).statusCode,404);
+  assert.equal((await request('alice','POST',root,{...revision,name:'renamed.txt'})).statusCode,400);
+  const accepted=await Promise.all(Array.from({length:5},()=>request('alice','POST',root,revision)));
+  accepted.forEach(r=>assert.equal(r.statusCode,200,r.body));const second=accepted[0].json().id;assert.equal(new Set(accepted.map(r=>r.json().id)).size,1);
+  assert.equal((await request('alice','POST',root,{...revision,versionOf:undefined})).statusCode,409);
+  assert.equal((await request('alice','POST',root,{...revision,content:body.content})).statusCode,409);
+  assert.equal((await request('alice','GET',`${root}/${second}/download`)).statusCode,409);
+  const next=await Promise.all(Array.from({length:4},()=>request('alice','POST',root,{...revision,clientId:randomUUID()})));
+  next.forEach(r=>assert.equal(r.statusCode,200,r.body));
+  const history=(await request('bob','GET',`${root}/${original}/versions`)).json();assert.equal(history.canUpload,false);
+  assert.deepEqual(history.versions.map((v:{revision_number:number})=>v.revision_number),[6,5,4,3,2,1]);
+  assert.equal((await request('eve','GET',`${root}/${original}/versions`)).statusCode,404);
+  assert.equal((await request('alice','GET',`${root}/${second}/versions`)).statusCode,404);
+  assert.equal((await request('alice','POST',root,{...revision,versionOf:second,clientId:randomUUID()})).statusCode,404);
+  assert.equal((await request('alice','GET',`${root}/${original}/download`)).body,'original bytes');
+  await pool.query("UPDATE files SET state='ready' WHERE id=$1",[second]);
+  assert.equal((await request('bob','GET',`${root}/${second}/download`)).body,'new bytes');
+  const sent=await request('alice','POST',`/v1/channels/${ids.channel}/messages`,{clientId:randomUUID(),body:'Version attachment',attachmentIds:[second]});assert.equal(sent.statusCode,201,sent.body);
+  // Deleted ordinals are not reused and the original stays available.
+  assert.equal((await request('alice','DELETE',`${root}/${next[0].json().id}`)).statusCode,200);
+  assert.equal((await request('alice','GET',`${root}/${original}/download`)).statusCode,200);
+  assert.equal((await request('alice','POST',root,{...revision,clientId:randomUUID()})).statusCode,200);
+  assert.equal((await request('alice','GET',`${root}/${original}/versions`)).json().versions[0].revision_number,7);
+  await pool.query("UPDATE files SET revision_number=100 WHERE revision_root=$1 AND revision_number=7",[original]);
+  assert.equal((await request('alice','POST',root,{...revision,clientId:randomUUID()})).statusCode,409);
+  assert.equal((await request('alice','DELETE',`${root}/${original}`)).statusCode,200);
+  assert.equal((await request('bob','GET',`${root}/${second}/download`)).statusCode,404);
+  assert.equal((await request('alice','GET',`${root}/${original}/versions`)).statusCode,404);
+  assert.equal((await request('alice','POST',root,revision)).json().state,'deleted');
+  assert.equal((await request('alice','POST',root,{...revision,clientId:randomUUID()})).statusCode,404);
+  const rows=await pool.query("SELECT f.state,j.status FROM files f JOIN file_scan_jobs j ON j.file_id=f.id WHERE f.id=$1 OR f.revision_root=$1",[original]);
+  assert.equal(rows.rowCount,7);rows.rows.forEach(r=>{assert.equal(r.state,'deleted');assert.equal(r.status,'cancelled');});
+  const messages=(await request('bob','GET',`/v1/channels/${ids.channel}/messages`)).json().messages;
+  assert.equal(messages.find((m:{id:string})=>m.id===sent.json().id).attachments[0].state,'unavailable');
+});
+
+test('quiet hours evaluate overnight, equal endpoints and timezone DST boundaries',async()=>{
+  const {isQuietHours}=await import('../services/core/notifications.ts');
+  assert.equal(isQuietHours('UTC','22:00','08:00',new Date('2026-01-01T23:00:00Z')),true);
+  assert.equal(isQuietHours('UTC','22:00','08:00',new Date('2026-01-01T08:00:00Z')),false);
+  assert.equal(isQuietHours('Asia/Kolkata','09:00','10:00',new Date('2026-01-01T03:30:00Z')),true);
+  assert.equal(isQuietHours('UTC','00:00','00:00'),true);
+  assert.equal(isQuietHours('America/New_York','01:00','03:00',new Date('2026-03-08T06:59:00Z')),true);
+  assert.equal(isQuietHours('America/New_York','01:00','03:00',new Date('2026-03-08T07:00:00Z')),false);
+});
+test('notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup',async()=>{
+  const claim=`/v1/organizations/${ids.org}/notification-claims`,messages=`/v1/channels/${ids.channel}/messages`;
+  const setting={browser_enabled:true,quiet_enabled:true,quiet_start:'00:00',quiet_end:'00:00'};
+  const mention=async()=>{const r=await request('alice','POST',messages,{clientId:randomUUID(),format:'markdown-v1',body:`New [Bob](concord-mention:${ids.bob}) ${randomUUID()}`});assert.equal(r.statusCode,201,r.body);return r.json().id;};
+  await request('bob','PUT','/v1/notification-settings',{...setting,browser_enabled:false});
+  const old=await mention();
+  assert.equal((await request('bob','POST',claim,{})).json().suppressed,'disabled');
+  assert.equal((await request('bob','PUT','/v1/notification-settings',{...setting,quiet_start:'25:00'})).statusCode,400);
+  assert.equal((await request('bob','PUT','/v1/notification-settings',setting)).statusCode,200);
+  const id=await mention();
+  assert.equal((await request('bob','POST',claim,{})).json().suppressed,'quiet-hours');
+  assert.equal((await pool.query('SELECT 1 FROM notification_claims WHERE message_id=$1',[id])).rowCount,0);
+  await request('bob','PUT','/v1/notification-settings',{...setting,quiet_enabled:false});
+  await pool.query('INSERT INTO channel_preferences(channel_id,user_id,muted) VALUES($1,$2,true) ON CONFLICT(channel_id,user_id) DO UPDATE SET muted=true',[ids.channel,ids.bob]);
+  assert.equal((await request('bob','POST',claim,{})).json().items.length,0);
+  await pool.query('UPDATE channel_preferences SET muted=false,hidden=false WHERE channel_id=$1 AND user_id=$2',[ids.channel,ids.bob]);
+  const claims=await Promise.all(Array.from({length:6},()=>request('bob','POST',claim,{})));
+  const items=claims.flatMap(r=>{assert.equal(r.statusCode,200,r.body);return r.json().items;});
+  assert.deepEqual(items.map(i=>i.id),[id]);assert.ok(!JSON.stringify(items).includes('body'));
+  assert.equal((await pool.query('SELECT 1 FROM notification_claims WHERE message_id=$1',[old])).rowCount,0);
+  const deleted=await mention();await request('alice','DELETE',`${messages}/${deleted}`);
+  assert.equal((await request('bob','POST',claim,{})).json().items.length,0);
+  const read=await mention();await pool.query('INSERT INTO read_positions(channel_id,user_id,seq) SELECT channel_id,$2,seq FROM messages WHERE id=$1 ON CONFLICT(channel_id,user_id) DO UPDATE SET seq=excluded.seq',[read,ids.bob]);
+  assert.equal((await request('bob','POST',claim,{})).json().items.length,0);
+  const hidden=await mention();
+  await pool.query('UPDATE channel_preferences SET hidden=true WHERE channel_id=$1 AND user_id=$2',[ids.channel,ids.bob]);
+  assert.equal((await request('bob','POST',claim,{})).json().items.length,0);
+  await request('alice','DELETE',`${messages}/${hidden}`);
+  await pool.query('UPDATE channel_preferences SET hidden=false WHERE channel_id=$1 AND user_id=$2',[ids.channel,ids.bob]);
+  await pool.query('UPDATE memberships SET active=false WHERE user_id=$1 AND org_id=$2',[ids.bob,ids.org]);
+  try{assert.equal((await request('bob','POST',claim,{})).statusCode,404);}finally{await pool.query('UPDATE memberships SET active=true WHERE user_id=$1 AND org_id=$2',[ids.bob,ids.org]);}
+  assert.equal((await request('eve','POST',claim,{})).statusCode,404);
+  await request('bob','PUT','/v1/notification-settings',{...setting,browser_enabled:false});
+});
+
+test('digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation',async()=>{
+  const {scheduleDigest,runDigestJob}=await import('../services/core/digest-jobs.ts');
+  const {emailConfiguration,emailFailure}=await import('../services/core/email.ts');
+  assert.throws(()=>emailConfiguration({}),/unconfigured/);
+  assert.throws(()=>emailConfiguration({SMTP_HOST:'mailpit',SMTP_LOCAL_CAPTURE:'true',NODE_ENV:'production'}),/development/);
+  assert.throws(()=>emailConfiguration({SMTP_HOST:'external.example'}),/requires/);
+  assert.equal(emailFailure({code:'ESOCKET',originalCode:'ECONNREFUSED',syscall:'connect',command:'CONN'}),'retry');assert.equal(emailFailure({code:'ECONNECTION',command:'CONN'}),'uncertain');assert.equal(emailFailure({responseCode:451}),'retry');assert.equal(emailFailure({responseCode:550}),'dead');assert.equal(emailFailure({code:'ETIMEDOUT'}),'uncertain');
+  await pool.query('UPDATE notification_settings SET digest_enabled=false');
+  await pool.query('DELETE FROM digest_items WHERE user_id=$1',[ids.bob]);
+  await pool.query('DELETE FROM digest_jobs WHERE user_id=$1',[ids.bob]);
+  await pool.query('INSERT INTO channel_members(org_id,channel_id,user_id) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[ids.org,ids.private,ids.bob]);
+  const setting={browser_enabled:false,quiet_enabled:true,quiet_start:'00:00',quiet_end:'00:00',digest_enabled:true};
+  assert.equal((await request('bob','PUT','/v1/notification-settings',setting)).statusCode,200);
+  const fresh=async()=>{const r=await request('alice','POST',`/v1/channels/${ids.private}/messages`,{clientId:randomUUID(),body:'Private digest fixture '+randomUUID()});assert.equal(r.statusCode,201,r.body);return r.json().id;};
+  const message=await fresh();
+  await Promise.all([scheduleDigest(),scheduleDigest(),scheduleDigest()]);
+  const jobs=(await pool.query('SELECT * FROM digest_jobs WHERE user_id=$1',[ids.bob])).rows;assert.equal(jobs.length,1);const id=jobs[0].id;
+  assert.equal((await pool.query('SELECT 1 FROM digest_items WHERE job_id=$1 AND message_id=$2',[id,message])).rowCount,1);
+  let sends=0;
+  await runDigestJob(async()=>{sends++;});assert.equal(sends,0);
+  assert.equal((await pool.query('SELECT attempts FROM digest_jobs WHERE id=$1',[id])).rows[0].attempts,0);
+  await request('bob','PUT','/v1/notification-settings',{...setting,quiet_enabled:false});
+  await pool.query('UPDATE digest_jobs SET available_at=now() WHERE id=$1',[id]);
+  await Promise.all([runDigestJob(async mail=>{sends++;assert.equal(mail.privateCount,1);assert.equal(mail.count,1);assert.equal(mail.to,'bob@acme.test');assert.ok(!('body' in mail));}),runDigestJob(async()=>{sends++;})]);assert.equal(sends,1);
+  assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[id])).rows[0].state,'sent');
+  assert.equal((await request('eve','GET','/v1/digest-jobs')).json().jobs.length,0);
+  let bucket=1;
+  const queued=async()=>{const message=await fresh(),job=randomUUID();await pool.query("INSERT INTO digest_jobs(id,user_id,org_id,bucket) VALUES($1,$2,$3,date_trunc('hour',now())-($4*interval '1 hour'))",[job,ids.bob,ids.org,bucket++]);await pool.query('INSERT INTO digest_items(user_id,message_id,job_id) VALUES($1,$2,$3)',[ids.bob,message,job]);return job;};
+  const revoked=await queued();await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[ids.private,ids.bob]);await runDigestJob(async()=>{throw new Error('Revoked recipient must never reach transport');});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[revoked])).rows[0].state,'cancelled');
+  await pool.query('INSERT INTO channel_members(org_id,channel_id,user_id) VALUES($1,$2,$3)',[ids.org,ids.private,ids.bob]);
+  const retry=await queued();await runDigestJob(async()=>{throw {code:'ESOCKET',originalCode:'ECONNREFUSED',syscall:'connect',command:'CONN'};});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[retry])).rows[0].state,'queued');
+  await pool.query('UPDATE digest_jobs SET attempts=4,available_at=now() WHERE id=$1',[retry]);await runDigestJob(async()=>{throw {code:'ESOCKET',originalCode:'ECONNREFUSED',syscall:'connect',command:'CONN'};});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[retry])).rows[0].state,'dead');
+  const uncertain=await queued();await runDigestJob(async()=>{throw {code:'ETIMEDOUT'};});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[uncertain])).rows[0].state,'uncertain');
+  const crashed=await queued();await pool.query("UPDATE digest_jobs SET state='sending',lease_id=$2,lease_until=now()-interval '1 second' WHERE id=$1",[crashed,randomUUID()]);await runDigestJob(async()=>{throw new Error('Uncertain sends must not retry');});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[crashed])).rows[0].state,'uncertain');
+  await request('bob','PUT','/v1/notification-settings',{...setting,digest_enabled:false});
+});
+
+test('reply activity enforces recipient, current channel access and parent/reply deletion',async()=>{
+  const path=`/v1/channels/${ids.channel}/messages`,feed=`/v1/organizations/${ids.org}/activity?filter=replies`;
+  const post=async(user:string,body:string,parentId?:string)=>{const r=await request(user,'POST',path,{clientId:randomUUID(),body,parentId});assert.equal(r.statusCode,201,r.body);return r.json().id;};
+  const parent=await post('bob','reply activity parent'),reply=await post('alice','reply activity child',parent),self=await post('bob','self reply',parent);
+  const items=(await request('bob','GET',feed)).json().items;
+  assert.equal(items.filter((r:{id:string})=>r.id===reply).length,1);assert.equal(items.find((r:{id:string})=>r.id===reply).replied,true);
+  assert.ok(!items.some((r:{id:string})=>r.id===self));
+  assert.ok(!(await request('alice','GET',feed)).json().items.some((r:{id:string})=>r.id===reply));
+  assert.equal((await request('eve','GET',feed)).statusCode,404);
+  await request('bob','DELETE',`${path}/${parent}`);
+  assert.ok(!(await request('bob','GET',feed)).json().items.some((r:{id:string})=>r.id===reply));
+  const p2=await post('bob','second parent'),r2=await post('alice','second reply',p2);
+  await request('alice','DELETE',`${path}/${r2}`);
+  assert.ok(!(await request('bob','GET',feed)).json().items.some((r:{id:string})=>r.id===r2));
+  const privateChannel=randomUUID();
+  await pool.query("INSERT INTO channels(id,org_id,team_id,name,kind) SELECT $1,org_id,team_id,'Reply ACL fixture','private' FROM channels WHERE id=$2",[privateChannel,ids.channel]);
+  await pool.query('INSERT INTO channel_members(org_id,channel_id,user_id) VALUES($4,$1,$2),($4,$1,$3)',[privateChannel,ids.alice,ids.bob,ids.org]);
+  const privatePath=`/v1/channels/${privateChannel}/messages`;
+  const p=(await request('bob','POST',privatePath,{clientId:randomUUID(),body:'private parent'})).json();
+  const r=await request('alice','POST',privatePath,{clientId:randomUUID(),body:'private reply',parentId:p.id});assert.equal(r.statusCode,201,r.body);
+  assert.ok((await request('bob','GET',feed)).json().items.some((i:{id:string})=>i.id===r.json().id));
+  await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[privateChannel,ids.bob]);
+  assert.ok(!(await request('bob','GET',feed)).json().items.some((i:{id:string})=>i.id===r.json().id));
+});
+
+test('reply alert opt-in is independent, cutoff-bound and deduplicates overlapping categories',async()=>{
+  const path=`/v1/channels/${ids.channel}/messages`,claim=`/v1/organizations/${ids.org}/notification-claims`;
+  const previous=(await request('bob','GET','/v1/notification-settings')).json();
+  const setting={browser_enabled:false,browser_replies_enabled:false,quiet_enabled:false,quiet_start:'22:00',quiet_end:'08:00'};
+  const post=async(user:string,body:string,parentId?:string)=>{const r=await request(user,'POST',path,{clientId:randomUUID(),body,parentId,format:'markdown-v1'});assert.equal(r.statusCode,201,r.body);return r.json().id;};
+  try{
+    await request('bob','PUT','/v1/notification-settings',setting);
+    const parent=await post('bob','reply alert parent'),old=await post('alice','before opt-in',parent);
+    await request('bob','PUT','/v1/notification-settings',{...setting,browser_replies_enabled:true});
+    // Older clients do not erase new preferences when the additive field is omitted.
+    const {browser_replies_enabled: omitted,...legacy}=setting;assert.equal(omitted,false);
+    await request('bob','PUT','/v1/notification-settings',legacy);
+    assert.equal((await request('bob','GET','/v1/notification-settings')).json().browser_replies_enabled,true);
+    const reply=await post('alice','new reply',parent),mention=await post('alice',`[Bob](concord-mention:${ids.bob}) mention only`);
+    const results=await Promise.all([request('bob','POST',claim,{}),request('bob','POST',claim,{})]);
+    const items=results.flatMap(r=>r.json().items);
+    assert.deepEqual(items.filter(i=>i.id===reply).map(i=>i.kind),['reply']);assert.ok(!items.some(i=>[old,mention].includes(i.id)));
+    await request('bob','PUT','/v1/notification-settings',{...setting,browser_enabled:true,browser_replies_enabled:true,quiet_enabled:true,quiet_start:'00:00',quiet_end:'00:00'});
+    const both=await post('alice',`[Bob](concord-mention:${ids.bob}) both categories`,parent);
+    assert.equal((await request('bob','POST',claim,{})).json().suppressed,'quiet-hours');
+    await request('bob','PUT','/v1/notification-settings',{...setting,browser_enabled:true,browser_replies_enabled:true});
+    const overlap=(await request('bob','POST',claim,{})).json().items.filter((i:{id:string})=>i.id===both);assert.equal(overlap.length,1);assert.equal(overlap[0].kind,'mention');
+    const withdrawn=await post('alice','parent deleted before claim',parent);
+    await request('bob','DELETE',`${path}/${parent}`);
+    assert.ok(!(await request('bob','POST',claim,{})).json().items.some((i:{id:string})=>i.id===withdrawn));
+    await request('bob','PUT','/v1/notification-settings',setting);
+    assert.equal((await request('bob','POST',claim,{})).json().suppressed,'disabled');
+  }finally{await request('bob','PUT','/v1/notification-settings',previous);}
+});
+
+test('invitation inbox isolates recipients and serializes concurrent identity acceptance',async()=>{
+  const org=randomUUID();await pool.query("INSERT INTO organizations(id,name) VALUES($1,'Inbox test')",[org]);await pool.query("INSERT INTO memberships VALUES($1,$2,'owner',true)",[org,ids.alice]);
+  const invite=async()=>{const r=await request('alice','POST',`/v1/organizations/${org}/invitations`,{email:'bob@acme.test',role:'guest'});assert.equal(r.statusCode,200,r.body);return r.json();};
+  const first=await invite(),second=await invite(),expired=await invite(),revoked=await invite();
+  await pool.query("UPDATE invitations SET expires_at=now()-interval '1 minute' WHERE id=$1",[expired.id]);await request('alice','DELETE',`/v1/organizations/${org}/invitations/${revoked.id}`);
+  const inbox=(await request('bob','GET','/v1/invitations')).json().invitations.filter((i:{org_id:string})=>i.org_id===org);
+  assert.equal(inbox.length,2);assert.ok(inbox.every((i:Record<string,unknown>)=>!('token' in i)&&!('token_hash' in i)&&!('email' in i)));
+  assert.ok(!(await request('eve','GET','/v1/invitations')).json().invitations.some((i:{org_id:string})=>i.org_id===org));
+  assert.equal((await request('eve','POST','/v1/invitations/accept',{invitationId:first.id})).statusCode,404);
+  assert.equal((await request('bob','POST','/v1/invitations/accept',{invitationId:expired.id})).statusCode,404);
+  assert.equal((await request('bob','POST','/v1/invitations/accept',{invitationId:revoked.id})).statusCode,404);
+  assert.equal((await request('bob','POST','/v1/invitations/accept',{invitationId:first.id,token:first.token})).statusCode,400);
+  const results=await Promise.all([request('bob','POST','/v1/invitations/accept',{invitationId:first.id}),request('bob','POST','/v1/invitations/accept',{token:second.token})]);assert.deepEqual(results.map(r=>r.statusCode).sort(),[200,409]);
+  assert.equal((await pool.query('SELECT 1 FROM memberships WHERE org_id=$1 AND user_id=$2',[org,ids.bob])).rowCount,1);
+  assert.ok(!(await request('bob','GET','/v1/invitations')).json().invitations.some((i:{org_id:string})=>i.org_id===org));
+  await pool.query('UPDATE memberships SET active=false WHERE org_id=$1 AND user_id=$2',[org,ids.bob]);
+  const later=await invite();assert.equal((await request('bob','POST','/v1/invitations/accept',{invitationId:later.id})).statusCode,409);
+  assert.ok(!(await request('bob','GET','/v1/invitations')).json().invitations.some((i:{org_id:string})=>i.org_id===org));
+});
+
+test('recipient decline is scoped, audited and cannot grant or revoke membership',async()=>{
+  const org=randomUUID();await pool.query("INSERT INTO organizations(id,name) VALUES($1,'Decline test')",[org]);await pool.query("INSERT INTO memberships VALUES($1,$2,'owner',true)",[org,ids.alice]);
+  const invite=(await request('alice','POST',`/v1/organizations/${org}/invitations`,{email:'bob@acme.test',role:'guest'})).json();
+  assert.equal((await request('eve','DELETE',`/v1/invitations/${invite.id}`)).statusCode,404);
+  assert.equal((await request('bob','DELETE',`/v1/invitations/${invite.id}`)).statusCode,200);
+  assert.equal((await request('bob','DELETE',`/v1/invitations/${invite.id}`)).statusCode,404);
+  assert.equal((await request('bob','POST','/v1/invitations/accept',{token:invite.token})).statusCode,404);
+  assert.equal((await pool.query('SELECT 1 FROM memberships WHERE org_id=$1 AND user_id=$2',[org,ids.bob])).rowCount,0);
+  assert.equal((await pool.query("SELECT 1 FROM audit WHERE org_id=$1 AND actor_id=$2 AND action='invitation.declined'",[org,ids.bob])).rowCount,1);
+  const next=(await request('alice','POST',`/v1/organizations/${org}/invitations`,{email:'bob@acme.test',role:'guest'})).json();
+  assert.equal((await request('bob','POST','/v1/invitations/accept',{invitationId:next.id})).statusCode,200);
+  assert.equal((await request('bob','DELETE',`/v1/invitations/${next.id}`)).statusCode,404);
+  assert.equal((await pool.query('SELECT 1 FROM memberships WHERE org_id=$1 AND user_id=$2 AND active',[org,ids.bob])).rowCount,1);
+});
+
+
+test('accept and decline races serialize without audit foreign-key deadlocks',async()=>{
+  for(let n=0;n<4;n++){
+    const org=randomUUID();await pool.query("INSERT INTO organizations(id,name) VALUES($1,'Invitation race')",[org]);await pool.query("INSERT INTO memberships VALUES($1,$2,'owner',true)",[org,ids.alice]);
+    const invite=(await request('alice','POST',`/v1/organizations/${org}/invitations`,{email:'bob@acme.test',role:'guest'})).json();
+    const results=await Promise.all([request('bob','POST','/v1/invitations/accept',{invitationId:invite.id}),request('bob','DELETE',`/v1/invitations/${invite.id}`)]);
+    assert.deepEqual(results.map(r=>r.statusCode).sort(),[200,404]);
+    const stored=(await pool.query('SELECT revoked,accepted_by FROM invitations WHERE id=$1',[invite.id])).rows[0];
+    assert.notEqual(stored.revoked,stored.accepted_by===ids.bob);
+    assert.equal((await pool.query('SELECT 1 FROM memberships WHERE org_id=$1 AND user_id=$2',[org,ids.bob])).rowCount,stored.revoked?0:1);
+  }
+});

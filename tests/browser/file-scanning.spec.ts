@@ -100,3 +100,68 @@ test("upload lost-response recovery reuses the original operation after reload a
   await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem("concord.pending-uploads.v1"))).toBeNull();
   await row.getByRole("button",{name:"Delete",exact:true}).click();
 });
+
+test("real scanned text previews escape markup, recover failures and withdraw deleted content",async({page,context,browser})=>{
+  const other=await browser.newContext(),bob=await other.newPage();
+  const login=async(p:typeof page,email:string)=>{
+    await p.goto(`/?channel=${channel}`);await p.getByLabel("Email address").fill(email);await p.getByLabel("Password",{exact:true}).fill("Development123!");await p.getByRole("button",{name:"Sign in",exact:true}).click();
+    await p.locator(".tabs").getByRole("button",{name:"Files",exact:true}).click();
+  };
+  let file="";
+  try {
+    await login(page,"alice@acme.test");await login(bob,"bob@acme.test");
+    const name=`preview-${Date.now()}.md`,source='<img src="https://example.invalid/beacon" onerror="alert(1)">\n[link](https://example.invalid)\n'+"x".repeat(40000);
+    const uploaded=await context.request.post(`${api}/v1/channels/${channel}/files`,{headers:{origin:"http://localhost:3101"},data:{name,mime:"text/markdown",content:Buffer.from(source).toString("base64")}});
+    expect(uploaded.status()).toBe(200);file=(await uploaded.json()).id;
+    const row=bob.locator(".file-row").filter({hasText:name});
+    await expect(row).toContainText("ready",{timeout:120000});
+    const pattern=`**/v1/channels/${channel}/files/${file}/preview`;
+    await bob.route(pattern,route=>route.abort("failed"));
+    await row.getByRole("button",{name:"Preview",exact:true}).click();
+    const dialog=bob.getByRole("dialog",{name:`Preview: ${name}`,exact:true});
+    await expect(dialog.getByRole("alert")).toBeVisible();
+    await bob.unroute(pattern);await dialog.getByRole("button",{name:"Retry preview"}).click();
+    await expect(dialog.getByLabel("File source text")).toHaveText(source.slice(0,32768));
+    await expect(dialog.getByRole("status")).toContainText("Preview truncated");
+    await expect(dialog.locator("img,script,a,iframe")).toHaveCount(0);
+    await dialog.getByLabel("File source text").focus();await bob.keyboard.press("Escape");await expect(dialog).toHaveCount(0);
+    await row.getByRole("button",{name:"Preview",exact:true}).click();await expect(dialog.getByLabel("File source text")).toBeVisible();
+    await bob.screenshot({path:"docs/evidence/file-preview.png"});
+    expect((await context.request.delete(`${api}/v1/channels/${channel}/files/${file}`,{headers:{origin:"http://localhost:3101"}})).status()).toBe(200);
+    await expect(dialog.getByRole("alert")).toContainText("File unavailable",{timeout:15000});
+    await expect(dialog.getByLabel("File source text")).toHaveCount(0);
+  } finally {
+    if(file)await context.request.delete(`${api}/v1/channels/${channel}/files/${file}`,{headers:{origin:"http://localhost:3101"}});
+    await other.close();
+  }
+});
+
+test('file versions preserve old bytes, recover accepted uploads and revoke history after root deletion',async({page,context,browser})=>{
+  const other=await browser.newContext(),bob=await other.newPage();let root='';
+  const login=async(p:typeof page,email:string)=>{
+    await p.goto(`/?channel=${channel}`);await p.getByLabel('Email address').fill(email);await p.getByLabel('Password',{exact:true}).fill('Development123!');await p.getByRole('button',{name:'Sign in',exact:true}).click();await p.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();
+  };
+  try{
+    await login(page,'alice@acme.test');await login(bob,'bob@acme.test');
+    const name=`versions-${Date.now()}.txt`;
+    const upload=await context.request.post(`${api}/v1/channels/${channel}/files`,{headers:{origin:'http://localhost:3101'},data:{name,mime:'text/plain',content:Buffer.from('original version').toString('base64')}});expect(upload.status()).toBe(200);root=(await upload.json()).id;
+    const row=page.locator('.file-row').filter({hasText:name});await expect(row).toContainText('ready',{timeout:120000});
+    await row.getByRole('button',{name:'Versions',exact:true}).click();
+    const dialog=page.getByRole('dialog',{name:`Versions: ${name}`,exact:true});
+    const pattern=`**/v1/channels/${channel}/files`;let operation='';
+    await page.route(pattern,async route=>{if(route.request().method()==='POST'){operation=route.request().postDataJSON().clientId;await route.fetch();await route.abort('failed');await page.unroute(pattern);}else await route.continue();});
+    const selection={name,mimeType:'text/plain',buffer:Buffer.from('updated version')};
+    await dialog.getByLabel('Upload new version',{exact:true}).setInputFiles(selection);await expect(dialog.getByRole('alert')).toBeVisible();
+    await page.reload();await page.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();await row.getByRole('button',{name:'Versions',exact:true}).click();
+    const retry=page.waitForRequest(r=>r.method()==='POST' && r.url()===`${api}/v1/channels/${channel}/files`);
+    await dialog.getByLabel('Upload new version',{exact:true}).setInputFiles(selection);expect((await retry).postDataJSON().clientId).toBe(operation);
+    await expect(dialog.getByRole('link',{name:'Download version 2',exact:true})).toBeVisible({timeout:120000});
+    await bob.locator('.file-row').filter({hasText:name}).getByRole('button',{name:'Versions',exact:true}).click();
+    const bobDialog=bob.getByRole('dialog',{name:`Versions: ${name}`,exact:true});await expect(bobDialog.getByText('Version 2',{exact:true})).toBeVisible();await expect(bobDialog.getByLabel('Upload new version',{exact:true})).toHaveCount(0);
+    for(const [number,content] of [[1,'original version'],[2,'updated version']] as const){const pending=bob.waitForEvent('download');await bobDialog.getByRole('link',{name:`Download version ${number}`,exact:true}).click();expect(await readFile((await (await pending).path())!,'utf8')).toBe(content);}
+    const history=await context.request.get(`${api}/v1/channels/${channel}/files/${root}/versions`);expect((await history.json()).versions).toHaveLength(2);
+    await bob.screenshot({path:'docs/evidence/file-versions.png'});
+    expect((await context.request.delete(`${api}/v1/channels/${channel}/files/${root}`,{headers:{origin:'http://localhost:3101'}})).status()).toBe(200);
+    await expect(bobDialog.getByRole('alert')).toContainText('File unavailable');await expect(bobDialog.getByRole('link')).toHaveCount(0);
+  }finally{if(root)await context.request.delete(`${api}/v1/channels/${channel}/files/${root}`,{headers:{origin:'http://localhost:3101'}});await other.close();}
+});

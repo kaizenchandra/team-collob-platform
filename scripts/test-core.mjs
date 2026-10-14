@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 const child = spawn(
   process.execPath,
-  ["--import", "tsx", "--test", "tests/core.test.ts", "tests/pending-messages.test.ts"],
+  ["--import", "tsx", "--test", "tests/core.test.ts", "tests/clamav.test.ts", "tests/pending-messages.test.ts", "tests/backup.test.mjs", "tests/release-health.test.mjs"],
   {
     stdio: "inherit",
     env: {

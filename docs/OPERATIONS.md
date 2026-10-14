@@ -50,9 +50,9 @@ Production prerequisites: encrypted managed backups, restricted recovery identit
 
 ## Release and rollback
 
-Release label `0.1.12-local`, image digests and actual verification recorded in `evidence/release.json`. Tags are convenience references; promote by immutable image digest. Build context excludes secrets, .git, local data and browser output. Do not rebuild an old tag and assume it identifies identical code.
+Release label `0.1.13-local`, image digests and actual verification recorded in `evidence/release.json`. Tags are convenience references; promote by immutable image digest. Build context excludes secrets, .git, local data and browser output. Do not rebuild an old tag and assume it identifies identical code.
 
-For a local rollback, retain previous image IDs with `docker image tag <image-id> concord-web:rollback` and equivalent API; update an override to those immutable images and `compose up -d --no-build`. Migrations are forward-only and checksum-verified. Migrations001–012 are forward-only; assess the specific schema compatibility before rollback. An app rollback is valid only while its database contract is compatible. Do not delete migration records or apply a destructive down migration. Use a forward-fix for incompatible schemas; restore an isolated verified backup before traffic cutover if necessary, then reconcile outbox/idempotency records.
+For a local rollback, retain previous image IDs with `docker image tag <image-id> concord-web:rollback` and equivalent API; update an override to those immutable images and `compose up -d --no-build`. Migrations are forward-only and checksum-verified. Migrations001–013 are forward-only; assess the specific schema compatibility before rollback. An app rollback is valid only while its database contract is compatible. Do not delete migration records or apply a destructive down migration. Use a forward-fix for incompatible schemas; restore an isolated verified backup before traffic cutover if necessary, then reconcile outbox/idempotency records.
 
 ## Enterprise provider setup (blocked)
 
@@ -228,3 +228,116 @@ Only files with no metadata row, UUID names, regular-file type and age over one 
 Migration012 adds nullable client_id plus a scoped partial unique index; legacy rows are untouched. Deploy the API before the new UI. Stop the reconciler when rolling back to an API that does not hold the storage lock, even though old orphan ages are usually young; mixed-version cleanup safety is not promised. Preserve migrations and old immutable image identities; prefer a forward-fix if retry semantics are needed by active clients. A downgrade can ignore clientId and duplicate retried uploads. Physical retention/hold policy and object-storage rollout remain open; cleanup does not reclaim referenced soft-deleted data.
 
 `npm test` now sets FILE_ROOT to `.data/test-files` (override only with TEST_FILE_ROOT) as well as the isolated concord_test database. Never point test reconciliation at application storage. The old host `.data/files` and container `files-data` remain untouched by tests. `TEST_SCANNING=true npx playwright test tests/browser/file-scanning.spec.ts` includes lost HTTP acceptance, reload and explicit file reselection with the original upload ID. Browser tests use real local application storage and delete only their own labeled files through normal APIs.
+
+
+## Object storage (0.1.13)
+
+Use the five Compose files shown in README. `object-store` is pinned SeaweedFS4.48 with a persistent `object-data` volume and1GiB/1CPU limits. No provider port is published. Only API and file-worker join the internal objects network; the provider does not join the default network. `infra/seaweedfs/local-s3.json` contains synthetic development-only bucket-scoped reader/writer credentials. API uses the reader, worker the writer; live tests verify anonymous read and reader-write denial. Internal filer/master interfaces are trusted-runtime surfaces, not production authentication boundaries. Admin UI is disabled. Never expose this topology or reuse these credentials externally.
+
+All S3 configuration stays server-side. Endpoint/bucket/key/secret must be supplied together. HTTP requires explicit S3_ALLOW_INSECURE_LOCAL=true and non-production mode. Production forbids the synthetic local-* credentials and requires HTTPS; encrypted storage, IAM/secret-manager rotation and network policies are still target prerequisites. Generic errors omit raw provider responses. API readiness remains database-based so messaging survives object outages; separate object-provider health and file-job status must be monitored. The local provider health checks master liveness, not authenticated bucket round-trip; application integration tests provide that separate evidence.
+
+Uploads stage locally and enqueue scanning. On clean scan, the worker writes and checksum-verifies S3 bytes, then atomically marks ready/s3. Failure stays quarantined with existing bounded retries/dead-job recovery. Worker lease and storage-overlay shutdown grace are120seconds to cover scan and two bounded15second object operations. This is not a distributed exactly-once guarantee. API/worker still need the persistent local spool; independent stateless upload replicas are not supported by this increment.
+
+Migration of existing ready local files:
+
+```sh
+docker exec concord-collaboration-file-worker-1 node services/core/migrate-object-storage.ts
+TEST_OBJECT_STORAGE=true node scripts/test-local-object-storage.mjs
+TEST_LOCAL_OIDC=true TEST_SCANNING=true npm run test:e2e
+```
+
+Migration emits promoted/skipped/failed counts and nonzero exit for failures; rerun after resolving storage/integrity problems. It preserves IDs, ACL, metadata and local bytes; only verified pointers switch. The live test uses its own labeled fixture, tests permissions/corruption/provider stop-start/no-fallback/messaging availability and repeated promotion, then soft-deletes it. It intentionally interrupts the local provider, so run only in this development environment. An initial rollout command found0 existing ready/local rows; repeatability is established by the actual scanned fixture test, not by that empty command.
+
+Do not rollback to an API/worker that does not understand s3 rows, or remove the storage overlay after promotion. Old binaries would read local copies and defeat the authoritative-pointer boundary. Retain a compatible image or forward-fix. Data recovery must restore PostgreSQL, object-data and local quarantine spool consistently; the coordinated local core/file restore exercise below is verified, while enterprise identity and offsite recovery remain incomplete. Object restart persistence and a task-owned corruption/repair test are not DR acceptance. Production encryption, replication/RPO, versioning/retention and monitoring remain open. Local copies and unreferenced objects are deliberately retained until a separate retention/intent-aware reclamation design is implemented; the existing orphan reconciler only handles unreferenced local UUID files.
+
+
+## Coordinated encrypted core backups (operational increment on0.1.13)
+
+The earlier restore-smoke.sh verifies only an unencrypted database dump. Prefer these new local tools for the current core database + authoritative file set:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run backup:local
+ALLOW_LOCAL_BACKUP=true npm run restore:local -- .data/backups/core-REPORTED-ID.jwe
+ALLOW_LOCAL_BACKUP=true npm run test:recovery
+```
+
+The commands are deliberately restricted to the existing loopback development installation. Backup checks the task API container's development mode, reads the source PostgreSQL service at127.0.0.1:55432, exports a REPEATABLE READ snapshot, uses that snapshot for pg_dump and file metadata, and exports bytes through the existing checksum-verifying storage dispatcher. Concurrent normal writes can continue because referenced local/object bytes remain immutable and physically retained. **Do not add physical garbage collection without coordinating snapshot readers.** Missing or corrupt referenced data fails the entire backup rather than producing a partial success.
+
+Artifact: `.data/backups/core-UUID.jwe`, authenticated JWE dir/A256GCM using pinned jose. Recovery key: `.data/backup-keys/local-core.key`, random32bytes, separate from artifact, mode0600. Directories are created mode0700; key permissions are checked. Do not print/commit the key or package it with the artifact. Losing it loses recovery access. Copy keys to a separately controlled recovery system before treating this as a dependable operational backup; that process is not implemented here. Older plaintext smoke dumps remain unchanged and need their own retention decision. No plaintext database/file backup is persisted on host disk by the new exporter; data exists in bounded memory and child-process pipes.
+
+Limits:10000 file rows,32MiB aggregate file bytes,64MiB JSON envelope, bounded command buffers and3minute child deadlines. Larger datasets fail explicitly; production needs streaming encryption/managed backups rather than increasing limits without review. Version1 historical envelope includes source immutable image IDs, database archive/checksum, snapshot time, selected relational counts and all file pointers/verified bytes, including soft-deleted entries. Provider accounts/keyrings, Keycloak's identity-data, object orphans and nonauthoritative retained copies are not backed up. Full enterprise identity recovery therefore remains incomplete.
+
+Restore authenticates and validates before creating resources. It creates a randomly named `concord-restore-*` internal Docker network, fresh PostgreSQL/object services and file volumes without publishing ports; loads the archive; writes local bytes and S3 objects; verifies every pointer/size/hash/count; and tests restored development sign-in plus available authorized/cross-tenant downloads. It never overwrites the live database or volumes. Finally removes only its own named verifier, service containers, volumes and network. Reported cleanup failures name remaining exercise resources and return nonzero; inspect that report before manual cleanup. Use the exact reported names, never broad Docker prune commands.
+
+`test:recovery` uploads its own scan-verified fixture, makes a backup, deletes the source fixture after the snapshot, restores it independently, and checks tampered ciphertext rejection. `ALLOW_LOCAL_BACKUP=true node scripts/test-restore-failure.mjs ARTIFACT` checks rejection/cleanup after an authenticated manifest/database count mismatch. Measured2.9seconds restore is a warmed local exercise from already available images, excluding decryption/cleanup; it is not RTO/RPO acceptance. No automatic schedule, offsite copy, rotation/retention policy, legal hold or region recovery is configured.
+
+A discovered legacy file was missing from the container volume. `recover-legacy-local-files.mjs` recovers only missing local records with matching host `.data/files` size/SHA256, uses exclusive-create writes and records `file.bytes_restored`. One deleted record was recovered; no fabricated bytes or metadata deletion. This helper is optional repair for that specific historical layout, not normal restore. It requires ALLOW_LOCAL_BACKUP=true and a development container. If no valid copy exists, preserve the blocker and do not mark backup complete.
+
+## Source preview operations (0.1.14)
+
+No schema or provider configuration changes. Deploy API/web together; worker/reconciler use the same updated core image. GET previews rereads and checksum-validates authoritative bytes (max1MiB) every5seconds per open visible modal. This is bounded per request but not a demonstrated large-scale preview capacity; monitor storage traffic before increasing audience/file limits. Browser requests time out at8seconds while backend S3 operations retain their15second deadline. Storage outage/corruption clears the UI and fails closed. Download errors now use the same shared access function. No source text is logged/cached/stored by the preview feature. Roll back to0.1.13-compatible API/web images without a database migration; retained S3 pointers still require the storage overlay.
+
+
+## Recording a local release
+
+Run `node scripts/record-release.mjs` only after build, health-gated deployment and required checks pass. The recorder derives version from package.json; validates all8containers are running/healthy; matches API/web/workers/scanner/object-provider image identities; checks API version, readiness and web HTTP; then atomically writes docs/evidence/release.json. Missing runtime, wrong image or failed health leaves the previous record untouched. Old evidence remains historical and must not be treated as current health. Docker inspection has15second command deadlines; HTTP has10second deadlines. The workspace source hash includes tools/tests and is not an image-build attestation. Local checks never authorize or prove production deployment.
+
+## Revision rollout (0.1.15)
+
+Migration014 is additive and treats all existing files as version1 originals. API startup runs migrations before readiness; scan/maintenance workers use the same release. Roll API/web/worker together. Root lists remain bounded100 and histories bounded100 accepted versions, including deleted ordinals for the cap. New versions consume logical quota and retained physical storage independently. No cleanup or object-key rewrite occurs. Backups continue to capture every row and referenced immutable byte set; the version2 revision-aware local restore exercise below now verifies history and exact downloads; full production recovery remains open.
+
+After creating revisions, do not roll back to0.1.14 delete semantics: old root deletion would leave revisions accessible. Forward-fix with compatible0.1.15 semantics, or restore a coordinated pre-migration database/file snapshot into an isolated environment and reconcile intervening writes. Dropping revision columns is not a safe rollback. Scanning leases and root deletion use the same channel lock; canceled/deleted children cannot be published ready by an outstanding worker. Pending/rejected new versions never remove prior ready downloads. Coauthoring/version-conflict integration remains unfinished.
+
+
+## Revision-aware encrypted recovery (tooling on0.1.15)
+
+New backups write envelope version2, including revision_root/revision_number for every file. Validation rejects missing metadata, absent/nested/cross-tenant/cross-channel roots, repeated ordinals and accessible children of deleted roots before target creation. Restore compares manifest revision metadata to restored SQL and verifies eligible local-channel history/downloads plus cross-tenant history denial. Existing version1 backups remain readable but report revisionMetadataVerified=false; do not present them as revision recovery evidence.
+
+`ALLOW_LOCAL_BACKUP=true npm run test:recovery` now creates an original and revision, waits for actual scanning/S3 publication, snapshots both, deletes the source lineage and verifies that exact lineage in the isolated restore. `ALLOW_LOCAL_BACKUP=true node scripts/test-restore-failure.mjs ARTIFACT --revision` re-encrypts a test copy with a valid but incorrect ordinal, verifies database mismatch and cleanup, then removes only that copy. Omit --revision for the existing count-mismatch exercise. Errors are concise; no minified verifier source or content dump is needed in failure reports.
+
+2026-10-14 evidence:65files (45local/20S3) restored, both fixture revisions downloaded exactly, authorized history and cross-tenant denial pass, all temporary infrastructure removed. Snapshot export386ms; isolated restore4021ms and repeat4172ms exclude decryption/cleanup and use warmed local images. Version1 compatibility restored48files (41local/7S3). These are laboratory measurements, not production RTO/RPO. Key custody, Keycloak/provider data, offsite/schedule/retention and large-volume streaming remain unfinished. Encrypted artifact path/digest appears in evidence; recovery key stays in ignored separate mode0600 storage and must never be printed or committed.
+
+## Mention alerts rollout (0.1.16)
+
+Migration015 adds notification_settings and notification_claims; API migrates before readiness. No provider credential, dependency or separate worker is added. Quiet hours use saved user timezone and server time; keep server clock synchronized. Browser constructor support varies: desktop secure-context permission is required, mobile/service-worker delivery remains unavailable. OS toast delivery is outside server acknowledgement; the claim ledger means at-most-once allocation, not exactly-once delivery. API denial and loss never remove Activity entries.
+
+Claims/settings are included in the full PostgreSQL backup archive but no new notification-specific restore exercise was run. Claim retention/cleanup remains pending under enterprise retention scope. The bridge checks only the active organization, at10second intervals; load/cost at target concurrency is unmeasured. Rollback to0.1.15-compatible app images leaves additive tables intact and stops alert construction; no column/table drop is required. Recovery by replaying claims is intentionally not automatic because it would risk duplicate notifications.
+
+## Local SMTP digest deployment (0.1.17)
+
+Use all six overlays:
+
+```sh
+docker compose -f compose.yaml -f compose.local.yaml -f compose.identity.yaml -f compose.scanning.yaml -f compose.storage.yaml -f compose.email.yaml up -d --build --wait
+ALLOW_LOCAL_EMAIL_TEST=true node --import tsx scripts/test-local-digests.mjs
+```
+
+Mailpit1.31.5 is pinned by digest; UI is loopback http://localhost:5185, SMTP has no host port. It joins default and internal mail networks because this runtime does not publish ports from internal-only networks. No relay/forwarding configuration is supplied. Sender adapter and Mailpit independently restrict recipients to .test; local mode is rejected in production. Capture storage has a persistent volume and500-message cap. It contains synthetic local test mail, not verified external delivery. Do not use Mailpit as an enterprise outbound relay. Nodemailer10.1.0 uses no file/URL content access, one configured sender and the directory recipient address; credentials stay server-side and SMTP errors are reduced to codes.
+
+Digest worker owns no new service schema: it is another process in the modular core, with192MiB/0.5CPU,40second shutdown grace, heartbeat and configured SMTP guard. API exposes configured/unconfigured status and personal recent jobs. Production requires a verified sender/domain, implicit TLS SMTP465, user/password secrets and HTTPS application origin; SPF/DKIM/DMARC, regional obligations, bounce/complaint processing, costs and deliverability are unverified. Do not set SMTP_LOCAL_CAPTURE in production. No external provider account or chargeable resource is created by this release.
+
+Investigate uncertain jobs against provider logs/Message-ID before any manual action. Never blindly reset sending/uncertain jobs: SMTP may already have accepted them. Dead means permanent rejection or exhausted retries; canceled means no currently eligible recipient/activity. A sending lease expiry becomes uncertain, not a retry. Sent means SMTP acceptance only. Already submitted email cannot be recalled by later access changes. Authorization is checked just before submission; current application links still enforce revocation on opening.
+
+Migration016 is additive; rollback to0.1.16 stops the digest worker and email overlay while retaining tables for audit/investigation. Do not drop jobs/reservations to force resend. Backup database dumps include new tables but email-specific restore/provider-volume recovery has not been exercised. Claim/job retention, scheduled monitoring/alerts and representative load/cost remain unfinished. The live test creates isolated synthetic users/workspace, disables/archives them afterward and preserves job/audit evidence; it never sends to external recipients or rewrites unrelated preferences.
+
+### Scanner-aware worker readiness (0.1.18)
+
+`compose.scanning.yaml` now runs `node services/core/file-worker-health.ts` for the worker health check. It requires a valid heartbeat younger than120seconds (at most5seconds ahead) and a successful three-second scanner capability/signature probe. The existing seven-day signature age policy is unchanged. An unavailable scanner or stale/unverifiable signatures mark the worker unhealthy even while its loop continues; uploads remain quarantined and existing bounded scan retries apply. Docker health alone does not restart the worker. Investigate scanner service health, signature refresh/network access and queued/dead scan jobs; do not bypass quarantine or mark files clean manually. The core API remains independently available.
+
+Local fault exercise (temporarily stops the task-owned scanner and restarts it in a finally block): `ALLOW_LOCAL_SCANNER_TEST=true node scripts/test-scanner-readiness.mjs`. It requires initially healthy scanner/worker containers, observes worker unhealthy with API ready, then verifies restored health. Do not run it concurrently with file scanning tests or active uploads. If interrupted externally, restore with `docker start concord-collaboration-clamav-1` and verify both services. This exercise does not establish production alert delivery, signature-update availability or a monthly SLO.
+
+### Browser reply alerts (0.1.20)
+
+Migration017 adds default-disabled reply preferences and a separate enablement timestamp. Deploy through the existing migration-on-start process; no new service or secret. In Settings, grant browser notifications and explicitly enable browser reply alerts. Mention and reply toggles are independent; quiet hours apply to both. Keep the workspace open. Messages predating category enablement are not newly alerted, and each claim is reserved once across tabs/categories. Claims lost after allocation are not automatically replayed; Activity is the recovery path. Existing received notifications cannot be recalled after later permission changes. Rolling back to0.1.19 leaves additive columns intact and stops reply notifications; avoid deleting claims or dropping columns to force replay.
+
+### Invitation inbox (0.1.21)
+
+Already-provisioned identities can open Settings → Workspace invitations to see and explicitly accept invitations addressed to their account email. The assigned role and expiry are displayed before acceptance. Invitations are rechecked every5seconds; invalid/used invitations disappear. The existing manual token path remains supported. Email delivery and account self-provisioning remain unavailable. Existing inactive memberships are intentionally hidden from the inbox and cannot be reactivated through either acceptance path; an administrator must resolve them.
+
+No migration/provider/secret changes. Concurrent acceptance is serialized per identity; invitation revocation and acceptance are ordered by row locking. Revoking an invitation after acceptance does not remove membership: use membership administration. Browser fixture creates a synthetic organization and ends by revoking its invitations and disabling its memberships; evidence records are retained. This is local behavior, not an external identity/mailbox-verification claim.
+
+### Invitation discovery and decline (0.1.22)
+
+Pending invitations produce an in-app notice across authenticated screens, explicitly labeled across workspaces. Review opens Your invitations; Settings remains available. The notice polls every5seconds with an8second request deadline and clears counts on failure. It holds no persisted local data, resets on identity changes and displays50+ when the bounded inbox is full. Acceptance/decline updates may take one polling interval to reach another tab.
+
+Recipients may decline valid invitations; the existing revoked state and invitation.declined audit record the decision. This action never changes membership, and cannot decline an already accepted invitation. Admins can issue a new invitation. No migration/secret/provider change. This remains an in-app notification only, with no email/browser invitation push. Production polling load/alerting and full retention remain open.

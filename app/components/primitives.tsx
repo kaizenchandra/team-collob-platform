@@ -66,7 +66,7 @@ export function Modal({
     return () => dialog?.close();
   }, []);
   return (
-    <dialog ref={ref} onCancel={onClose}>
+    <dialog ref={ref} aria-label={title} onCancel={onClose}>
       <header>
         <h2>{title}</h2>
         <button

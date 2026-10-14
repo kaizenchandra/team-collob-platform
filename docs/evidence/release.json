@@ -1,17 +1,35 @@
 {
-  "version": "0.1.12-local",
+  "version": "0.1.22-local",
+  "checks": [
+    {
+      "url": "http://localhost:4100/health",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4100/ready",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:3101",
+      "status": 200
+    }
+  ],
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-12T05:48:32.997Z",
+  "recordedAt": "2026-10-14T06:35:39.558Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "aaa6132d136931d523c2130e2a1102682bd149dd3df51cd900c58087e8d7e1dc",
+  "sourceSha256": "fecb6dd12569eb6e914e93a1e9616b905f342ebb4d271f7bed397cf21635b9ec",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
     "app/components/attachments.tsx",
+    "app/components/file-preview.tsx",
+    "app/components/file-versions.tsx",
+    "app/components/invitation-inbox.tsx",
     "app/components/membership-panels.tsx",
     "app/components/mention-picker.tsx",
     "app/components/message-content.tsx",
+    "app/components/notifications.tsx",
     "app/components/panels.tsx",
     "app/components/primitives.tsx",
     "app/components/workspace.tsx",
@@ -19,18 +37,23 @@
     "app/globals.css",
     "app/layout.tsx",
     "app/page.tsx",
+    "compose.email.yaml",
     "compose.identity.yaml",
     "compose.local.yaml",
     "compose.scanning.yaml",
+    "compose.storage.yaml",
     "compose.yaml",
     "eslint.config.mjs",
     "infra/clamav/Dockerfile",
     "infra/clamav/clamd.conf",
     "infra/keycloak/concord-local-realm.json",
     "infra/production.env.example",
+    "infra/seaweedfs/local-s3.json",
     "lib/contracts.ts",
+    "lib/file-preview.ts",
     "lib/pending-messages.ts",
     "lib/pending-uploads.ts",
+    "lib/upload-file.ts",
     "migrations/001_core.sql",
     "migrations/002_membership.sql",
     "migrations/003_oidc_transactions.sql",
@@ -43,42 +66,66 @@
     "migrations/010_file_scanning.sql",
     "migrations/011_message_attachments.sql",
     "migrations/012_upload_identity.sql",
+    "migrations/013_object_storage.sql",
+    "migrations/014_file_revisions.sql",
+    "migrations/015_notifications.sql",
+    "migrations/016_email_digests.sql",
+    "migrations/017_reply_alerts.sql",
     "next.config.ts",
     "package-lock.json",
     "package.json",
     "playwright.config.ts",
+    "scripts/backup-common.mjs",
     "scripts/configure-local-logout.mjs",
     "scripts/configure-local-mfa.mjs",
+    "scripts/coordinated-backup.mjs",
     "scripts/init-requirements.py",
     "scripts/load-smoke.mjs",
     "scripts/local-identity-admin.mjs",
     "scripts/prepare-standalone.mjs",
     "scripts/provision-local-identity.ts",
     "scripts/record-release.mjs",
+    "scripts/recover-legacy-local-files.mjs",
+    "scripts/release-health.mjs",
     "scripts/requirements.mjs",
     "scripts/reset-local-test-otp.mjs",
+    "scripts/restore-coordinated-backup.mjs",
     "scripts/restore-smoke.sh",
     "scripts/start-web.mjs",
+    "scripts/test-coordinated-recovery.mjs",
     "scripts/test-core.mjs",
+    "scripts/test-local-digests.mjs",
+    "scripts/test-local-object-storage.mjs",
     "scripts/test-local-reconciliation.mjs",
+    "scripts/test-restore-failure.mjs",
+    "scripts/test-scanner-readiness.mjs",
     "scripts/wait-ready.mjs",
     "services/core/attachments.ts",
     "services/core/clamav.ts",
     "services/core/config.ts",
     "services/core/db.ts",
+    "services/core/digest-jobs.ts",
+    "services/core/digest-worker.ts",
+    "services/core/email.ts",
     "services/core/file-content.ts",
     "services/core/file-jobs.ts",
     "services/core/file-reconciler.ts",
     "services/core/file-reconciliation.ts",
+    "services/core/file-worker-health.ts",
     "services/core/file-worker.ts",
     "services/core/files.ts",
     "services/core/identity-actions.ts",
     "services/core/identity-audit.ts",
     "services/core/membership.ts",
     "services/core/mentions.ts",
+    "services/core/migrate-object-storage.ts",
     "services/core/migrate.ts",
+    "services/core/notification-time.ts",
+    "services/core/notifications.ts",
+    "services/core/object-storage.ts",
     "services/core/oidc-state.ts",
     "services/core/oidc.ts",
+    "services/core/promote-files.ts",
     "services/core/provider-reconciliation.ts",
     "services/core/provider-sessions.ts",
     "services/core/security.ts",
@@ -87,43 +134,58 @@
     "services/core/session-policy.ts",
     "services/core/token-vault.ts",
     "services/core/work.ts",
+    "tests/backup.test.mjs",
     "tests/browser/collaboration.spec.ts",
     "tests/browser/file-scanning.spec.ts",
     "tests/browser/identity.spec.ts",
+    "tests/browser/invitations.spec.ts",
+    "tests/browser/notifications.spec.ts",
     "tests/browser/provider-reconciliation.spec.ts",
     "tests/browser/recovery.spec.ts",
+    "tests/clamav.test.ts",
     "tests/core.test.ts",
     "tests/helpers/local-otp.ts",
     "tests/pending-messages.test.ts",
+    "tests/release-health.test.mjs",
     "tsconfig.json"
   ],
-  "baseCommit": "e7ca5bebdb2d6f791e1887df2ea3b4ea92d9db5a",
+  "baseCommit": "3485b107da46114820e8acb321ce52bfcde7301c",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.12-local": {
-      "imageId": "sha256:0b30c007de26be22e763483a612e09bdadf33032c1ffee112f9dd03b48f9b61b",
-      "created": "2026-10-12T11:12:00.404594494+05:30",
+    "concord-web:0.1.22-local": {
+      "imageId": "sha256:e35b70c275139d968b9696bdc5aa879b0169e41a5ba980a0cad6ae8cf26541d1",
+      "created": "2026-10-14T12:02:59.235368215+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.12-local": {
-      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
-      "created": "2026-10-12T11:12:05.851612272+05:30",
+    "concord-api:0.1.22-local": {
+      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
+      "created": "2026-10-14T12:03:02.430391896+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
       "imageId": "sha256:4ee87bd2b509d49aac16619468005cba43183d467dd7a7ceb5ef45e880bb54d0",
       "created": "2026-10-12T10:40:30.01452253+05:30",
       "platform": "linux/amd64"
+    },
+    "chrislusf/seaweedfs:4.48": {
+      "imageId": "sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d",
+      "created": "2026-09-28T18:35:46.805100908Z",
+      "platform": "linux/arm64"
+    },
+    "axllent/mailpit:v1.31.5": {
+      "imageId": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "created": "2026-10-11T00:59:06.835702493Z",
+      "platform": "linux/arm64"
     }
   },
   "containers": {
     "web": {
-      "imageId": "sha256:0b30c007de26be22e763483a612e09bdadf33032c1ffee112f9dd03b48f9b61b",
+      "imageId": "sha256:e35b70c275139d968b9696bdc5aa879b0169e41a5ba980a0cad6ae8cf26541d1",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
+      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
       "status": "running",
       "health": "healthy"
     },
@@ -143,12 +205,27 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
+      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
       "status": "running",
       "health": "healthy"
     },
     "file-reconciler": {
-      "imageId": "sha256:ff0427b399f0b982a672354e07bb67cb020484e490faab80bb6efa615bbffff1",
+      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
+      "status": "running",
+      "health": "healthy"
+    },
+    "object-store": {
+      "imageId": "sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d",
+      "status": "running",
+      "health": "healthy"
+    },
+    "mailpit": {
+      "imageId": "sha256:94f6b70c1436defae6799d9ac7ff0eeff9540465b842026d5cdb018f1c0234ea",
+      "status": "running",
+      "health": "healthy"
+    },
+    "digest-worker": {
+      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
       "status": "running",
       "health": "healthy"
     }

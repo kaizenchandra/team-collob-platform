@@ -485,3 +485,20 @@ test("channel mention picker creates authorized activity that updates when the m
     await expect(bob.locator(".result-card").filter({hasText:marker})).toHaveCount(0);
   } finally {await a.close();await b.close();}
 });
+
+test('reply activity shows another user response and withdraws it after parent deletion',async({browser})=>{
+  const a=await browser.newContext(),b=await browser.newContext();
+  let parent='';const path=`http://localhost:4100/v1/channels/${channel}/messages`;
+  try{
+    const alice=await a.newPage(),bob=await b.newPage();await login(alice);await login(bob,'bob@acme.test');
+    const marker=`Reply activity ${Date.now()}`;
+    const posted=await b.request.post(path,{headers:{origin:'http://localhost:3101'},data:{clientId:crypto.randomUUID(),body:marker+' parent'}});expect(posted.status()).toBe(201);parent=(await posted.json()).id;
+    await bob.getByRole('button',{name:'Activity',exact:true}).click();await bob.getByLabel('Activity filter').selectOption('replies');
+    const reply=await a.request.post(path,{headers:{origin:'http://localhost:3101'},data:{clientId:crypto.randomUUID(),body:marker+' response',parentId:parent}});expect(reply.status()).toBe(201);
+    const card=bob.locator('.result-card').filter({hasText:marker+' response'});await expect(card).toBeVisible({timeout:12000});await expect(card.getByText('Replied to you',{exact:true})).toBeVisible();
+    await bob.screenshot({path:'docs/evidence/reply-activity.png'});
+    await card.getByRole('button',{name:'Open conversation',exact:true}).click();await expect(bob.getByRole('heading',{name:'General standard',exact:true})).toBeVisible();
+    await bob.getByRole('button',{name:'Activity',exact:true}).click();await bob.getByLabel('Activity filter').selectOption('replies');await expect(card).toBeVisible();
+    await b.request.delete(`${path}/${parent}`,{headers:{origin:'http://localhost:3101'}});await expect(card).toHaveCount(0,{timeout:12000});
+  }finally{if(parent)await b.request.delete(`${path}/${parent}`,{headers:{origin:'http://localhost:3101'}});await a.close();await b.close();}
+});

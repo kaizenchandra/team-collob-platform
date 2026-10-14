@@ -275,7 +275,9 @@
       "evidence": [
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
-        "tests/browser/collaboration.spec.ts"
+        "tests/browser/collaboration.spec.ts",
+        "0.1.21 ADR032: identity-email-bound Settings invitation inbox, metadata-only listing and explicit ID acceptance sharing token-route validation/audit. Existing/inactive memberships excluded; acceptance serialized per identity.63 tests pass including recipient isolation, expiry/revocation and concurrent acceptance.21 browser tests pass including two-user invitation discovery, acceptance and new-workspace bootstrap. Evidence core-tests-0.1.21.txt, browser-invitations-0.1.21.txt, invitation-inbox.png. Email/browser invitation delivery and full requirements remain incomplete.",
+        "0.1.22 ADR033: identity-scoped global pending invitation notice labeled across workspaces, dedicated review view and recipient decline with audit/no membership mutation.65 tests pass including accept/decline races with compatible identity locks.21 browser tests pass including Chat notice discovery, decline/denied bootstrap and new invitation acceptance. Evidence core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png. Full cross-tenant notifications/email/browser push and capacity remain open."
       ],
       "status": "In progress",
       "blockers": [],
@@ -599,13 +601,15 @@
         "tests/browser/collaboration.spec.ts",
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
         "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete.",
-        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim.",
+        "0.1.14 source preview implementation: services/core/files.ts, lib/file-preview.ts, app/components/file-preview.tsx; bounded literal TXT/MD/CSV with scan/ACL/integrity checks. API tests: docs/evidence/core-tests-0.1.14.txt. Real scanner/S3 independent-user browser test passes: literal markup, retry, truncation, keyboard close and active deletion withdrawal. Evidence: docs/evidence/browser-tests-0.1.14.txt and file-preview.png."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Real upload/quarantine/status, clean attachment download, rejected-file denial and scanned same-channel message attachment sending implemented; see current verification evidence.",
-      "remaining_work": "Upload progress, previews, broader sharing controls, object storage and full file lifecycle remain incomplete."
+      "verification_scope": "Real uploads, retry deduplication, scanner quarantine/status, authoritative S3 downloads, same-channel message sharing and bounded TXT/MD/CSV source previews verified locally.",
+      "remaining_work": "Upload progress, rich PDF/image previews, broader sharing controls, full file lifecycle and production capacity/security acceptance remain incomplete."
     },
     {
       "id": "FE-FR-16",
@@ -639,15 +643,16 @@
       "evidence": [
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
-        "tests/browser/collaboration.spec.ts"
+        "tests/browser/collaboration.spec.ts",
+        "0.1.15 immutable file revisions: migration014, services/core/files.ts, lib/upload-file.ts, app/components/file-versions.tsx. Ordered history, uploader-authorized append, scanned per-version downloads, root deletion cascade and retry identity. Core concurrency/authorization tests in core-tests-0.1.15.txt; real scanner/S3 two-user browser test passed: lost-response/reload/reselection dedup, exact old/new downloads, owner-only upload UI, and history withdrawal on root deletion. See browser-tests-0.1.15.txt/file-versions.png."
       ],
       "status": "Blocked",
       "blockers": [
         "B-EDITOR"
       ],
       "optional_subscope": null,
-      "verification_scope": "No implementation/verification evidence yet; architecture and acceptance criteria only.",
-      "remaining_work": "No implementation/verification evidence yet; architecture and acceptance criteria only."
+      "verification_scope": "Local immutable revision upload/history/download verified with actual scanner/S3 and independent users; full document coauthoring/provider permission propagation remains open.",
+      "remaining_work": "Integrated collaborative editor and editing-conflict workflows remain unfinished; local immutable version history is verified."
     },
     {
       "id": "FE-FR-17",
@@ -716,13 +721,19 @@
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
-        "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete."
+        "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete.",
+        "0.1.16: migration015, notifications backend/UI, persisted opt-in browser mention preferences and timezone-aware quiet hours. Current ACL/unread/mute/hide/deletion filters plus cross-tab persistent claim dedup. Core tests in docs/evidence/core-tests-0.1.16.txt; browser test passed: persisted settings after reload, quiet suppression, native Notification construction and two-tab dedup with no message plaintext. docs/evidence/browser-tests-0.1.16.txt, notification-settings.png. OS toast display is not verified. Claim is not confirmed OS delivery; email/digests/other alert categories remain open.",
+        "0.1.17 ADR028: durable PostgreSQL digest jobs/items, opt-in hourly settings, current private/shared/standard ACL and quiet-hour checks, metadata-only counts, bounded definite retries and ambiguous-send quarantine. Actual local Nodemailer/Mailpit SMTP verifies private counts, outage recovery and revocation before send; no external delivery. docs/evidence/digests-live-0.1.17.txt and core-tests-0.1.17.txt; final deployed-image SMTP rerun passed; browser-tests-0.1.17.txt records30 passed/2 provider-admin skips; release-health-0.1.17.txt confirms10 healthy local services.",
+        "0.1.19 ADR030: Activity replies filter and replied badge for other-user replies to own nondeleted immediate parent, with current tenant/channel ACL. Core tests cover self/tenant/private revocation and parent/reply deletion;61 tests pass. Two-user browser discovery/open/withdrawal passes within18 collaboration regressions. Evidence core-tests-0.1.19.txt, browser-collaboration-0.1.19.txt, reply-activity.png. Browser reply alerts, thread subscriptions and other notification categories remain incomplete.",
+        "0.1.20 ADR031/migration017: independently opted-in browser reply alerts with separate cutoff, current parent/channel ACL, existing quiet/unread/mute/hide limits and shared cross-category/tab claim dedup.62 core tests pass;20 collaboration/notification browser tests pass including actual native Notification invocation for one reply across two tabs. Evidence core-tests-0.1.20.txt, browser-notifications-0.1.20.txt, reply-alert-settings.png. OS toast visibility, closed-tab/mobile delivery, other categories and full requirement remain unverified/incomplete.",
+        "0.1.21 ADR032: identity-email-bound Settings invitation inbox, metadata-only listing and explicit ID acceptance sharing token-route validation/audit. Existing/inactive memberships excluded; acceptance serialized per identity.63 tests pass including recipient isolation, expiry/revocation and concurrent acceptance.21 browser tests pass including two-user invitation discovery, acceptance and new-workspace bootstrap. Evidence core-tests-0.1.21.txt, browser-invitations-0.1.21.txt, invitation-inbox.png. Email/browser invitation delivery and full requirements remain incomplete.",
+        "0.1.22 ADR033: identity-scoped global pending invitation notice labeled across workspaces, dedicated review view and recipient decline with audit/no membership mutation.65 tests pass including accept/decline races with compatible identity locks.21 browser tests pass including Chat notice discovery, decline/denied bootstrap and new invitation acceptance. Evidence core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png. Full cross-tenant notifications/email/browser push and capacity remain open."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Unread activity only; semantic mentions/invite/missed-call notifications, browser push/quiet hours missing.",
-      "remaining_work": "Authorized unread and structured mention activity implemented locally; invitations, replies, missed-call notification lifecycle, browser push/preferences/quiet hours remain incomplete."
+      "verification_scope": "Authorized unread/structured-mention activity and opt-in active-workspace desktop mention alert construction with persisted preferences and quiet hours verified locally.",
+      "remaining_work": "Reply/invitation/missed-call notification lifecycle, closed-tab/mobile push, simultaneous cross-workspace delivery, OS toast visibility and complete browser/device evidence remain open."
     },
     {
       "id": "FE-FR-19",
@@ -1177,13 +1188,16 @@
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
-        "0.1.5-local: Settings launches allowlisted Keycloak recovery action through PKCE. tests/browser/recovery.spec.ts verifies real enrollment, invalid/reused-code rejection, replacement invalidation, cancellation and MFA-authenticated recovery; tests/core.test.ts rejects arbitrary actions/redirects/unconfigured providers. Provider owns all recovery secrets. See recovery-lifecycle-tests.txt and browser-tests.txt."
+        "0.1.5-local: Settings launches allowlisted Keycloak recovery action through PKCE. tests/browser/recovery.spec.ts verifies real enrollment, invalid/reused-code rejection, replacement invalidation, cancellation and MFA-authenticated recovery; tests/core.test.ts rejects arbitrary actions/redirects/unconfigured providers. Provider owns all recovery secrets. See recovery-lifecycle-tests.txt and browser-tests.txt.",
+        "0.1.16: migration015, notifications backend/UI, persisted opt-in browser mention preferences and timezone-aware quiet hours. Current ACL/unread/mute/hide/deletion filters plus cross-tab persistent claim dedup. Core tests in docs/evidence/core-tests-0.1.16.txt; browser test passed: persisted settings after reload, quiet suppression, native Notification construction and two-tab dedup with no message plaintext. docs/evidence/browser-tests-0.1.16.txt, notification-settings.png. OS toast display is not verified. Claim is not confirmed OS delivery; email/digests/other alert categories remain open.",
+        "0.1.17 ADR028: durable PostgreSQL digest jobs/items, opt-in hourly settings, current private/shared/standard ACL and quiet-hour checks, metadata-only counts, bounded definite retries and ambiguous-send quarantine. Actual local Nodemailer/Mailpit SMTP verifies private counts, outage recovery and revocation before send; no external delivery. docs/evidence/digests-live-0.1.17.txt and core-tests-0.1.17.txt; final deployed-image SMTP rerun passed; browser-tests-0.1.17.txt records30 passed/2 provider-admin skips; release-health-0.1.17.txt confirms10 healthy local services.",
+        "0.1.20 ADR031/migration017: independently opted-in browser reply alerts with separate cutoff, current parent/channel ACL, existing quiet/unread/mute/hide limits and shared cross-category/tab claim dedup.62 core tests pass;20 collaboration/notification browser tests pass including actual native Notification invocation for one reply across two tabs. Evidence core-tests-0.1.20.txt, browser-notifications-0.1.20.txt, reply-alert-settings.png. OS toast visibility, closed-tab/mobile delivery, other categories and full requirement remain unverified/incomplete."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Profile/theme/read-receipt preference; language/accessibility/device/notification/privacy controls incomplete.",
-      "remaining_work": "Profile/theme/read-receipt preference; language/accessibility/device/notification/privacy controls incomplete."
+      "verification_scope": "Profile/theme/read-receipt preferences and browser mention alert settings/quiet interval persisted and verified locally.",
+      "remaining_work": "Language/RTL, accessibility/device preferences and broader privacy/notification category controls remain incomplete."
     },
     {
       "id": "FE-FR-32",
@@ -1504,7 +1518,9 @@
       "evidence": [
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
-        "tests/browser/collaboration.spec.ts"
+        "tests/browser/collaboration.spec.ts",
+        "0.1.21 ADR032: identity-email-bound Settings invitation inbox, metadata-only listing and explicit ID acceptance sharing token-route validation/audit. Existing/inactive memberships excluded; acceptance serialized per identity.63 tests pass including recipient isolation, expiry/revocation and concurrent acceptance.21 browser tests pass including two-user invitation discovery, acceptance and new-workspace bootstrap. Evidence core-tests-0.1.21.txt, browser-invitations-0.1.21.txt, invitation-inbox.png. Email/browser invitation delivery and full requirements remain incomplete.",
+        "0.1.22 ADR033: identity-scoped global pending invitation notice labeled across workspaces, dedicated review view and recipient decline with audit/no membership mutation.65 tests pass including accept/decline races with compatible identity locks.21 browser tests pass including Chat notice discovery, decline/denied bootstrap and new invitation acceptance. Evidence core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png. Full cross-tenant notifications/email/browser push and capacity remain open."
       ],
       "status": "In progress",
       "blockers": [],
@@ -1816,13 +1832,19 @@
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
-        "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete."
+        "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete.",
+        "0.1.16: migration015, notifications backend/UI, persisted opt-in browser mention preferences and timezone-aware quiet hours. Current ACL/unread/mute/hide/deletion filters plus cross-tab persistent claim dedup. Core tests in docs/evidence/core-tests-0.1.16.txt; browser test passed: persisted settings after reload, quiet suppression, native Notification construction and two-tab dedup with no message plaintext. docs/evidence/browser-tests-0.1.16.txt, notification-settings.png. OS toast display is not verified. Claim is not confirmed OS delivery; email/digests/other alert categories remain open.",
+        "0.1.17 ADR028: durable PostgreSQL digest jobs/items, opt-in hourly settings, current private/shared/standard ACL and quiet-hour checks, metadata-only counts, bounded definite retries and ambiguous-send quarantine. Actual local Nodemailer/Mailpit SMTP verifies private counts, outage recovery and revocation before send; no external delivery. docs/evidence/digests-live-0.1.17.txt and core-tests-0.1.17.txt; final deployed-image SMTP rerun passed; browser-tests-0.1.17.txt records30 passed/2 provider-admin skips; release-health-0.1.17.txt confirms10 healthy local services.",
+        "0.1.19 ADR030: Activity replies filter and replied badge for other-user replies to own nondeleted immediate parent, with current tenant/channel ACL. Core tests cover self/tenant/private revocation and parent/reply deletion;61 tests pass. Two-user browser discovery/open/withdrawal passes within18 collaboration regressions. Evidence core-tests-0.1.19.txt, browser-collaboration-0.1.19.txt, reply-activity.png. Browser reply alerts, thread subscriptions and other notification categories remain incomplete.",
+        "0.1.20 ADR031/migration017: independently opted-in browser reply alerts with separate cutoff, current parent/channel ACL, existing quiet/unread/mute/hide limits and shared cross-category/tab claim dedup.62 core tests pass;20 collaboration/notification browser tests pass including actual native Notification invocation for one reply across two tabs. Evidence core-tests-0.1.20.txt, browser-notifications-0.1.20.txt, reply-alert-settings.png. OS toast visibility, closed-tab/mobile delivery, other categories and full requirement remain unverified/incomplete.",
+        "0.1.21 ADR032: identity-email-bound Settings invitation inbox, metadata-only listing and explicit ID acceptance sharing token-route validation/audit. Existing/inactive memberships excluded; acceptance serialized per identity.63 tests pass including recipient isolation, expiry/revocation and concurrent acceptance.21 browser tests pass including two-user invitation discovery, acceptance and new-workspace bootstrap. Evidence core-tests-0.1.21.txt, browser-invitations-0.1.21.txt, invitation-inbox.png. Email/browser invitation delivery and full requirements remain incomplete.",
+        "0.1.22 ADR033: identity-scoped global pending invitation notice labeled across workspaces, dedicated review view and recipient decline with audit/no membership mutation.65 tests pass including accept/decline races with compatible identity locks.21 browser tests pass including Chat notice discovery, decline/denied bootstrap and new invitation acceptance. Evidence core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png. Full cross-tenant notifications/email/browser push and capacity remain open."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Authorized unread query only; notification delivery jobs and email digests missing.",
-      "remaining_work": "Authorized unread/mention queries and active-view refresh implemented; notification delivery jobs, complete preferences/quiet hours and email digests remain missing."
+      "verification_scope": "Unread/mention queries plus current-ACL-filtered browser claim allocation, durable dedup and timezone quiet hours verified locally.",
+      "remaining_work": "External email provider/deliverability, broader notification categories, production scheduling/retention and complete policy acceptance remain open. Browser claims and SMTP acceptance do not confirm OS/mailbox delivery."
     },
     {
       "id": "BE-FR-14",
@@ -1862,13 +1884,17 @@
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
-        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim.",
+        "2026-10-13 operational recovery increment: exported PostgreSQL snapshot + verified local/S3 file envelope encrypted with pinned jose JWE; isolated actual restore of48files (41local/7S3), SQL counts, authorized/cross-tenant APIs, ciphertext tamper denial and failure cleanup. See coordinated-restore-0.1.13.txt, restore-failure-cleanup.txt and VERIFICATION.md. No production RTO/RPO/schedule/offsite/identity recovery claim.",
+        "0.1.15 immutable file revisions: migration014, services/core/files.ts, lib/upload-file.ts, app/components/file-versions.tsx. Ordered history, uploader-authorized append, scanned per-version downloads, root deletion cascade and retry identity. Core concurrency/authorization tests in core-tests-0.1.15.txt; real scanner/S3 two-user browser test passed: lost-response/reload/reselection dedup, exact old/new downloads, owner-only upload UI, and history withdrawal on root deletion. See browser-tests-0.1.15.txt/file-versions.png.",
+        "ADR026: version2 encrypted backup validates revision lineage and verifies restored API history/exact per-version bytes/tenant denial for a real scanner/S3 fixture after source deletion.65files restored; valid-but-wrong ordinal and count mismatch rejected with cleanup; version1 compatibility48files restored. Evidence docs/evidence/revision-recovery-0.1.15.txt, revision-restore-failure.txt, legacy-backup-compatibility.txt. Local evidence only; identity/offsite and production recovery objectives remain open."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Local private binary metadata/quota, checksum-verified ready downloads and soft deletion implemented; live clean download verified.",
-      "remaining_work": "Object storage, versions, controlled links, physical quota/reclamation and lifecycle remain incomplete."
+      "verification_scope": "Local upload quarantine/quota/idempotency and real S3 clean-file publication/downloads with authoritative pointers and checksum validation. Fixture promotion/restart/outage verified locally.",
+      "remaining_work": "Versions, controlled sharing links, physical quota/reclamation, encrypted/replicated production storage, direct scalable uploads and lifecycle/restore remain incomplete."
     },
     {
       "id": "BE-FR-15",
@@ -1908,13 +1934,16 @@
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
         "tests/browser/collaboration.spec.ts",
-        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion."
+        "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim.",
+        "0.1.14 source preview implementation: services/core/files.ts, lib/file-preview.ts, app/components/file-preview.tsx; bounded literal TXT/MD/CSV with scan/ACL/integrity checks. API tests: docs/evidence/core-tests-0.1.14.txt. Real scanner/S3 independent-user browser test passes: literal markup, retry, truncation, keyboard close and active deletion withdrawal. Evidence: docs/evidence/browser-tests-0.1.14.txt and file-preview.png.",
+        "0.1.18 ADR029: scanner-aware file-worker readiness reuses bounded capability/signature validation. tests/clamav.test.ts covers controlled TCP framing, fragmentation, invalid/stale/future metadata, bounds and deadlines; core-tests-0.1.18.txt records60 passing tests. scanner-readiness-0.1.18.txt verifies actual scanner outage makes worker unhealthy while API remains ready, then recovery. browser-scanning-0.1.18.txt records5 passing real ClamAV/S3 file regressions. Operational alert delivery and full requirement scope remain open."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Allowlisted basic file signatures/UTF-8; real ClamAV clean/EICAR verdicts and fail-closed quarantine verified locally.",
-      "remaining_work": "Authorized previews, comprehensive format processing, E2EE handling and production scanner operations remain incomplete."
+      "verification_scope": "Basic file signatures/UTF-8, actual ClamAV clean/EICAR verdicts, quarantine and authorized bounded source previews verified locally; source is literal text without active content.",
+      "remaining_work": "Rich PDF/image previews, comprehensive format processing, E2EE processing rules and production scanner operations remain incomplete."
     },
     {
       "id": "BE-FR-16",
@@ -2630,7 +2659,9 @@
       ],
       "evidence": [
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
-        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim.",
+        "0.1.17 ADR028: durable PostgreSQL digest jobs/items, opt-in hourly settings, current private/shared/standard ACL and quiet-hour checks, metadata-only counts, bounded definite retries and ambiguous-send quarantine. Actual local Nodemailer/Mailpit SMTP verifies private counts, outage recovery and revocation before send; no external delivery. docs/evidence/digests-live-0.1.17.txt and core-tests-0.1.17.txt; final deployed-image SMTP rerun passed; browser-tests-0.1.17.txt records30 passed/2 provider-admin skips; release-health-0.1.17.txt confirms10 healthy local services."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3588,7 +3619,8 @@
         "docs/VERIFICATION.md (limited evidence; not full sign-off)",
         "0.1.7-local: services/core/identity-audit.ts and server/provider session/reconciliation wiring append atomic verified-identity events to active membership scopes. Authentication failures record only global bounded route/status/generated UUID. tests/core.test.ts covers tenant/member denial, secret minimization, inactive memberships and transaction rollback; tests/browser/identity.spec.ts checks real OIDC scoped events and callback replay evidence. See docs/VERIFICATION.md and release-specific evidence. Partial requirement coverage only.",
         "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete.",
-        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete."
+        "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3746,7 +3778,8 @@
         "0.1.9-local: migration009/mentions.ts derive bounded structured recipients from CommonMark inline mention links; server validates active channel access and disabled identity state. Normalized references commit with message/outbox, edits replace and deletion clears; retries deduplicate before revalidation. Authorized activity mentions filter rechecks current ACL; channel-only picker and5-second active-view refresh. Core and browser evidence in docs/VERIFICATION.md and0.1.9 evidence files. Email/push/preferences/quiet-hours remain incomplete.",
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
         "0.1.11-local: migration011/attachments.ts validates ready same-channel references under the message transaction, immutable retry snapshots and current-state history projection. Composer picker/history links and pending recovery implemented. Core tests cover denial, rollback, concurrent deduplication and deletion. Live browser evidence recorded in docs/VERIFICATION.md; full file/object-storage scope remains incomplete.",
-        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3819,7 +3852,9 @@
         "BE-NFR-13: positive, negative authorization, persistence/recovery and UI acceptance for every criterion"
       ],
       "evidence": [
-        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim.",
+        "2026-10-13 operational recovery increment: exported PostgreSQL snapshot + verified local/S3 file envelope encrypted with pinned jose JWE; isolated actual restore of48files (41local/7S3), SQL counts, authorized/cross-tenant APIs, ciphertext tamper denial and failure cleanup. See coordinated-restore-0.1.13.txt, restore-failure-cleanup.txt and VERIFICATION.md. No production RTO/RPO/schedule/offsite/identity recovery claim."
       ],
       "status": "Blocked",
       "blockers": [
@@ -3862,7 +3897,8 @@
         "services/core/config.ts and tests/core.test.ts: production configuration and authentication rate-limit guards",
         "0.1.6-local: services/core/provider-reconciliation.ts, token-vault.ts and migration007; tests/core.test.ts exercises bound JWE, key rotation, coalescing, lease races, inactive sessions and fail-closed outages. tests/browser/provider-reconciliation.spec.ts uses real Keycloak disable/logout with an undeliverable callback, API restart and provider outage; see docs/evidence/browser-tests.txt and VERIFICATION.md. Local partial scope only.",
         "0.1.10-local: migration010, file-content/clamav/file-jobs/file-worker modules; core queue/integrity/denial tests and real scanner browser clean/EICAR/restart check. See docs/evidence/core-tests-0.1.10.txt, scanning-browser-0.1.10.txt and docs/VERIFICATION.md. Limited local evidence, not whole requirement completion.",
-        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete."
+        "0.1.12-local: migration012/scoped upload clientId with exact-payload retry checks; fsync local writes and conservative orphan reconciliation under storage locks. Core tests cover concurrency, conflicts, real SQL rollback, grace/protected bytes and lock exclusion; frontend metadata-only reselection recovery. See docs/VERIFICATION.md and0.1.12 evidence. Object storage, retention and production durability remain incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3898,7 +3934,9 @@
         "BE-NFR-15: positive, negative authorization, persistence/recovery and UI acceptance for every criterion"
       ],
       "evidence": [
-        "docs/VERIFICATION.md (limited evidence; not full sign-off)"
+        "docs/VERIFICATION.md (limited evidence; not full sign-off)",
+        "2026-10-13 operational recovery increment: exported PostgreSQL snapshot + verified local/S3 file envelope encrypted with pinned jose JWE; isolated actual restore of48files (41local/7S3), SQL counts, authorized/cross-tenant APIs, ciphertext tamper denial and failure cleanup. See coordinated-restore-0.1.13.txt, restore-failure-cleanup.txt and VERIFICATION.md. No production RTO/RPO/schedule/offsite/identity recovery claim.",
+        "ADR026: version2 encrypted backup validates revision lineage and verifies restored API history/exact per-version bytes/tenant denial for a real scanner/S3 fixture after source deletion.65files restored; valid-but-wrong ordinal and count mismatch rejected with cleanup; version1 compatibility48files restored. Evidence docs/evidence/revision-recovery-0.1.15.txt, revision-restore-failure.txt, legacy-backup-compatibility.txt. Local evidence only; identity/offsite and production recovery objectives remain open."
       ],
       "status": "In progress",
       "blockers": [],
@@ -3933,13 +3971,15 @@
         "BE-NFR-16: positive, negative authorization, persistence/recovery and UI acceptance for every criterion"
       ],
       "evidence": [
-        "docs/VERIFICATION.md (limited evidence; not full sign-off)"
+        "docs/VERIFICATION.md (limited evidence; not full sign-off)",
+        "2026-10-13 operational recovery increment: exported PostgreSQL snapshot + verified local/S3 file envelope encrypted with pinned jose JWE; isolated actual restore of48files (41local/7S3), SQL counts, authorized/cross-tenant APIs, ciphertext tamper denial and failure cleanup. See coordinated-restore-0.1.13.txt, restore-failure-cleanup.txt and VERIFICATION.md. No production RTO/RPO/schedule/offsite/identity recovery claim.",
+        "ADR026: version2 encrypted backup validates revision lineage and verifies restored API history/exact per-version bytes/tenant denial for a real scanner/S3 fixture after source deletion.65files restored; valid-but-wrong ordinal and count mismatch rejected with cleanup; version1 compatibility48files restored. Evidence docs/evidence/revision-recovery-0.1.15.txt, revision-restore-failure.txt, legacy-backup-compatibility.txt. Local evidence only; identity/offsite and production recovery objectives remain open."
       ],
       "status": "In progress",
       "blockers": [],
       "optional_subscope": null,
-      "verification_scope": "Mode0600 local dump and restore only; encrypted restricted scheduled production backups absent.",
-      "remaining_work": "Mode0600 local dump and restore only; encrypted restricted scheduled production backups absent."
+      "verification_scope": "Restricted authenticated-encrypted local core backup and isolated database/local/S3 restoration verified; missing legacy bytes detected and recovered from checksum-matching original.",
+      "remaining_work": "Automatic backup schedule, offsite restricted key custody, retention/rotation, provider identity/secrets recovery and production restoration exercises remain incomplete."
     },
     {
       "id": "BE-NFR-17",
@@ -4005,7 +4045,8 @@
       ],
       "evidence": [
         "docs/VERIFICATION.md (limited evidence; not full sign-off)",
-        "0.1.7-local: services/core/identity-audit.ts and server/provider session/reconciliation wiring append atomic verified-identity events to active membership scopes. Authentication failures record only global bounded route/status/generated UUID. tests/core.test.ts covers tenant/member denial, secret minimization, inactive memberships and transaction rollback; tests/browser/identity.spec.ts checks real OIDC scoped events and callback replay evidence. See docs/VERIFICATION.md and release-specific evidence. Partial requirement coverage only."
+        "0.1.7-local: services/core/identity-audit.ts and server/provider session/reconciliation wiring append atomic verified-identity events to active membership scopes. Authentication failures record only global bounded route/status/generated UUID. tests/core.test.ts covers tenant/member denial, secret minimization, inactive memberships and transaction rollback; tests/browser/identity.spec.ts checks real OIDC scoped events and callback replay evidence. See docs/VERIFICATION.md and release-specific evidence. Partial requirement coverage only.",
+        "0.1.18 ADR029: scanner-aware file-worker readiness reuses bounded capability/signature validation. tests/clamav.test.ts covers controlled TCP framing, fragmentation, invalid/stale/future metadata, bounds and deadlines; core-tests-0.1.18.txt records60 passing tests. scanner-readiness-0.1.18.txt verifies actual scanner outage makes worker unhealthy while API remains ready, then recovery. browser-scanning-0.1.18.txt records5 passing real ClamAV/S3 file regressions. Operational alert delivery and full requirement scope remain open."
       ],
       "status": "In progress",
       "blockers": [],
@@ -4187,7 +4228,10 @@
         "docs/VERIFICATION.md (limited evidence; not full sign-off)",
         "services/core/oidc-state.ts and migrations/003_oidc_transactions.sql: durable expiring single-consumer PKCE state",
         "tests/browser/identity.spec.ts: live local Keycloak PKCE, subject denial, assurance downgrade rejection and API restart recovery; no full enterprise MFA/revocation claim",
-        "services/core/config.ts and tests/core.test.ts: production configuration and authentication rate-limit guards"
+        "services/core/config.ts and tests/core.test.ts: production configuration and authentication rate-limit guards",
+        "2026-10-13 operational recovery increment: exported PostgreSQL snapshot + verified local/S3 file envelope encrypted with pinned jose JWE; isolated actual restore of48files (41local/7S3), SQL counts, authorized/cross-tenant APIs, ciphertext tamper denial and failure cleanup. See coordinated-restore-0.1.13.txt, restore-failure-cleanup.txt and VERIFICATION.md. No production RTO/RPO/schedule/offsite/identity recovery claim.",
+        "ADR024: fail-closed local release recorder validates8service health, expected images and API version before atomic evidence replacement. Negative tests and actual local checks pass: docs/evidence/core-tests-release-health.txt, release-health-0.1.14.txt and release.json. Full staging/production deployment/rollback gate remains open.",
+        "0.1.18 ADR029: scanner-aware file-worker readiness reuses bounded capability/signature validation. tests/clamav.test.ts covers controlled TCP framing, fragmentation, invalid/stale/future metadata, bounds and deadlines; core-tests-0.1.18.txt records60 passing tests. scanner-readiness-0.1.18.txt verifies actual scanner outage makes worker unhealthy while API remains ready, then recovery. browser-scanning-0.1.18.txt records5 passing real ClamAV/S3 file regressions. Operational alert delivery and full requirement scope remain open."
       ],
       "status": "In progress",
       "blockers": [],
@@ -4265,7 +4309,8 @@
         "tests/core.test.ts: signature/claims/freshness failures, scoped/idempotent revocation, callback race prevention and endpoint bounds; tests/browser/identity.spec.ts: actual Keycloak logout clears active UI/pending data without revoking another identity",
         "0.1.4-local: real Keycloak password+OTP enrollment/challenge and LoA2 ACR mapping; six live identity tests include invalid-code rejection and browser hint tampering. services/core/session-policy.ts and migration006 enforce current issuer/client/ACR for requests and SSE; legacy/weak/foreign bindings rejected. See docs/evidence/mfa-browser-tests.txt and core-tests.txt. Account recovery and enterprise operation remain unfinished.",
         "0.1.5-local: Settings launches allowlisted Keycloak recovery action through PKCE. tests/browser/recovery.spec.ts verifies real enrollment, invalid/reused-code rejection, replacement invalidation, cancellation and MFA-authenticated recovery; tests/core.test.ts rejects arbitrary actions/redirects/unconfigured providers. Provider owns all recovery secrets. See recovery-lifecycle-tests.txt and browser-tests.txt.",
-        "0.1.6-local: services/core/provider-reconciliation.ts, token-vault.ts and migration007; tests/core.test.ts exercises bound JWE, key rotation, coalescing, lease races, inactive sessions and fail-closed outages. tests/browser/provider-reconciliation.spec.ts uses real Keycloak disable/logout with an undeliverable callback, API restart and provider outage; see docs/evidence/browser-tests.txt and VERIFICATION.md. Local partial scope only."
+        "0.1.6-local: services/core/provider-reconciliation.ts, token-vault.ts and migration007; tests/core.test.ts exercises bound JWE, key rotation, coalescing, lease races, inactive sessions and fail-closed outages. tests/browser/provider-reconciliation.spec.ts uses real Keycloak disable/logout with an undeliverable callback, API restart and provider outage; see docs/evidence/browser-tests.txt and VERIFICATION.md. Local partial scope only.",
+        "2026-10-13 operational recovery increment: exported PostgreSQL snapshot + verified local/S3 file envelope encrypted with pinned jose JWE; isolated actual restore of48files (41local/7S3), SQL counts, authorized/cross-tenant APIs, ciphertext tamper denial and failure cleanup. See coordinated-restore-0.1.13.txt, restore-failure-cleanup.txt and VERIFICATION.md. No production RTO/RPO/schedule/offsite/identity recovery claim."
       ],
       "status": "In progress",
       "blockers": [],
@@ -4369,7 +4414,9 @@
       ],
       "evidence": [
         "docs/VERIFICATION.md (limited evidence; not full sign-off)",
-        "0.1.6-local: workspace SSE reconnects explicitly after terminal HTTP503 handshakes with bounded backoff/jitter and stale callback guards. Real provider outage/recovery test verifies Live resumes with draft intact; authorization fails closed while freshness is expired. See tests/browser/provider-reconciliation.spec.ts and docs/evidence/browser-tests.txt. Broader resilience remains incomplete."
+        "0.1.6-local: workspace SSE reconnects explicitly after terminal HTTP503 handshakes with bounded backoff/jitter and stale callback guards. Real provider outage/recovery test verifies Live resumes with draft intact; authorization fails closed while freshness is expired. See tests/browser/provider-reconciliation.spec.ts and docs/evidence/browser-tests.txt. Broader resilience remains incomplete.",
+        "0.1.13-local: real SeaweedFS4.48 S3 with pinned AWS SDK3.1150.0, migration013 authoritative pointers, clean-file verified promotion and fail-closed object reads. Actual provider tests cover anonymous/reader-write denial, corruption, outage/no-local-fallback, restart persistence and repeatable fixture migration; see object-live-0.1.13.txt and VERIFICATION.md. Local spool/objects retained; no production durability/DR claim.",
+        "0.1.18 ADR029: scanner-aware file-worker readiness reuses bounded capability/signature validation. tests/clamav.test.ts covers controlled TCP framing, fragmentation, invalid/stale/future metadata, bounds and deadlines; core-tests-0.1.18.txt records60 passing tests. scanner-readiness-0.1.18.txt verifies actual scanner outage makes worker unhealthy while API remains ready, then recovery. browser-scanning-0.1.18.txt records5 passing real ClamAV/S3 file regressions. Operational alert delivery and full requirement scope remain open."
       ],
       "status": "In progress",
       "blockers": [],
@@ -4522,14 +4569,16 @@
       "tests": [
         "GAP-04: positive, negative authorization, persistence/recovery and UI acceptance for every criterion"
       ],
-      "evidence": [],
+      "evidence": [
+        "0.1.17 ADR028: durable PostgreSQL digest jobs/items, opt-in hourly settings, current private/shared/standard ACL and quiet-hour checks, metadata-only counts, bounded definite retries and ambiguous-send quarantine. Actual local Nodemailer/Mailpit SMTP verifies private counts, outage recovery and revocation before send; no external delivery. docs/evidence/digests-live-0.1.17.txt and core-tests-0.1.17.txt; final deployed-image SMTP rerun passed; browser-tests-0.1.17.txt records30 passed/2 provider-admin skips; release-health-0.1.17.txt confirms10 healthy local services."
+      ],
       "status": "Blocked",
       "blockers": [
         "B-EMAIL"
       ],
       "optional_subscope": null,
-      "verification_scope": "No implementation/verification evidence yet; architecture and acceptance criteria only.",
-      "remaining_work": "No implementation/verification evidence yet; architecture and acceptance criteria only."
+      "verification_scope": "Local capture SMTP digest includes authorized private unread counts, with preference/quiet-hour enforcement and pre-send access withdrawal tested. No message plaintext or private channel name enters email.",
+      "remaining_work": "External delivery provider/domain/secrets and deliverability, bounce handling, production operating/load/retention and complete integration acceptance remain blocked or unfinished. Local capture is not external mailbox delivery."
     },
     {
       "id": "GAP-05",
@@ -5240,7 +5289,8 @@
       "evidence": [
         "docs/VERIFICATION.md (partial scope unless Verified)",
         "tests/core.test.ts",
-        "tests/browser/collaboration.spec.ts"
+        "tests/browser/collaboration.spec.ts",
+        "0.1.22 ADR033: identity-scoped global pending invitation notice labeled across workspaces, dedicated review view and recipient decline with audit/no membership mutation.65 tests pass including accept/decline races with compatible identity locks.21 browser tests pass including Chat notice discovery, decline/denied bootstrap and new invitation acceptance. Evidence core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png. Full cross-tenant notifications/email/browser push and capacity remain open."
       ],
       "status": "In progress",
       "blockers": [],

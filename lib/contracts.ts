@@ -81,6 +81,8 @@ export type FormRecord = {
   created_by: string;
 };
 export type Meeting = {
+  revision: number;
+  description: string;
   id: string;
   title: string;
   starts_at: string;
@@ -102,9 +104,11 @@ export async function api<T>(
   path: string,
   method = "GET",
   body?: unknown,
+  signal?: AbortSignal,
 ): Promise<T> {
   const response = await fetch(`${API}/v1${path}`, {
     method,
+    signal,
     credentials: "include",
     headers: body === undefined ? {} : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
