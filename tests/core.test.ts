@@ -1548,3 +1548,73 @@ test('accept and decline races serialize without audit foreign-key deadlocks',as
     assert.equal((await pool.query('SELECT 1 FROM memberships WHERE org_id=$1 AND user_id=$2',[org,ids.bob])).rowCount,stored.revoked?0:1);
   }
 });
+
+test('organizer edits enforce revisions, reset rescheduled responses and serialize cancellation',async()=>{
+  const base=`/v1/organizations/${ids.org}/meetings`,body={title:'Edit meeting',startsAt:'2026-12-20T10:00:00Z',endsAt:'2026-12-20T11:00:00Z',timezone:'UTC',description:'Original',attendees:[ids.bob]};
+  const created=await request('alice','POST',base,body);assert.equal(created.statusCode,200,created.body);const id=created.json().id,path=`${base}/${id}`,edit={revision:1,title:body.title,startsAt:body.startsAt,endsAt:body.endsAt,timezone:'UTC',description:'Changed'};
+  assert.equal((await request('bob','PUT',`${path}/details`,edit)).statusCode,404);assert.equal((await request('eve','PUT',`${path}/details`,edit)).statusCode,404);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...edit,timezone:'invalid/timezone'})).statusCode,400);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...edit,startsAt:'2026-12-20T11:00:00.900Z',endsAt:'2026-12-20T11:00:00Z'})).statusCode,400);
+  await request('bob','PATCH',path,{response:'accepted'});
+  assert.equal((await request('alice','PUT',`${path}/details`,edit)).statusCode,200);
+  assert.equal((await pool.query('SELECT response FROM meeting_attendees WHERE meeting_id=$1 AND user_id=$2',[id,ids.bob])).rows[0].response,'accepted');
+  assert.equal((await request('alice','PUT',`${path}/details`,edit)).statusCode,409);
+  const rescheduled={...edit,revision:2,startsAt:'2026-12-20T12:00:00Z',endsAt:'2026-12-20T13:00:00Z'};
+  const concurrent=await Promise.all([request('alice','PUT',`${path}/details`,rescheduled),request('alice','PUT',`${path}/details`,{...rescheduled,title:'Concurrent'})]);assert.deepEqual(concurrent.map(r=>r.statusCode).sort(),[200,409]);
+  assert.equal((await pool.query('SELECT response FROM meeting_attendees WHERE meeting_id=$1 AND user_id=$2',[id,ids.bob])).rows[0].response,'pending');
+  assert.equal((await request('alice','PATCH',path,{})).statusCode,400);
+  assert.equal((await request('alice','PATCH',path,{cancelled:true,response:'accepted'})).statusCode,400);
+  assert.equal((await request('alice','PATCH',path,{cancelled:true})).statusCode,200);
+  assert.equal((await request('bob','PATCH',path,{response:'accepted'})).statusCode,409);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...rescheduled,revision:4})).statusCode,409);
+  assert.equal((await pool.query('SELECT revision FROM meetings WHERE id=$1',[id])).rows[0].revision,4);
+});
+
+test('meeting roster edits preserve retained RSVP and revoke removed attendee access',async()=>{
+  const base=`/v1/organizations/${ids.org}/meetings`,body={title:'Roster test',startsAt:'2026-11-22T10:00:00Z',endsAt:'2026-11-22T11:00:00Z',timezone:'UTC',attendees:[ids.bob]};
+  const created=await request('alice','POST',base,body);assert.equal(created.statusCode,200,created.body);const id=created.json().id,path=`${base}/${id}`,edit={revision:1,title:body.title,description:'',startsAt:body.startsAt,endsAt:body.endsAt,timezone:'UTC',attendees:[ids.bob,ids.guest,ids.guest]};
+  await request('bob','PATCH',path,{response:'accepted'});
+  assert.equal((await request('bob','PUT',`${path}/details`,edit)).statusCode,404);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...edit,attendees:[ids.eve]})).statusCode,404);
+  const disabled=randomUUID();await pool.query("INSERT INTO users(id,email,name,disabled) VALUES($1,$2,'Disabled roster fixture',true)",[disabled,`${disabled}@test.invalid`]);await pool.query("INSERT INTO memberships VALUES($1,$2,'member',true)",[ids.org,disabled]);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...edit,attendees:[disabled]})).statusCode,404);
+  assert.equal((await request('alice','POST',base,{...body,attendees:[disabled]})).statusCode,404);
+  assert.equal((await request('alice','PUT',`${path}/details`,edit)).statusCode,200);
+  const rows=(await pool.query('SELECT user_id,response FROM meeting_attendees WHERE meeting_id=$1',[id])).rows;assert.equal(rows.length,3);assert.equal(rows.find(r=>r.user_id===ids.bob).response,'accepted');assert.equal(rows.find(r=>r.user_id===ids.guest).response,'pending');assert.equal(rows.find(r=>r.user_id===ids.alice).response,'accepted');
+  const attendeeView=(await request('bob','GET',base)).json().meetings.find((m:{id:string})=>m.id===id);assert.equal(attendeeView.attendee_ids,null);
+  const ownerView=(await request('alice','GET',base)).json().meetings.find((m:{id:string})=>m.id===id);assert.equal(ownerView.attendee_ids.length,3);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...edit,revision:2,attendees:[ids.guest]})).statusCode,200);
+  assert.ok(!(await request('bob','GET',base)).json().meetings.some((m:{id:string})=>m.id===id));assert.equal((await request('bob','PATCH',path,{response:'accepted'})).statusCode,404);
+  const {attendees,...legacy}=edit;assert.ok(attendees.length);assert.equal((await request('alice','PUT',`${path}/details`,{...legacy,revision:3})).statusCode,200);assert.equal((await pool.query('SELECT 1 FROM meeting_attendees WHERE meeting_id=$1',[id])).rowCount,2);
+  assert.equal((await request('alice','PUT',`${path}/details`,{...edit,revision:4,attendees:[ids.bob]})).statusCode,200);assert.equal((await pool.query('SELECT response FROM meeting_attendees WHERE meeting_id=$1 AND user_id=$2',[id,ids.bob])).rows[0].response,'pending');
+});
+
+test('calendar keyset pages preserve microsecond ordering, range bounds and current access',async()=>{
+  const org=randomUUID(),meetingIds=Array.from({length:105},()=>randomUUID());await pool.query("INSERT INTO organizations(id,name) VALUES($1,'Calendar pages')",[org]);await pool.query("INSERT INTO memberships VALUES($1,$2,'owner',true),($1,$3,'member',true)",[org,ids.alice,ids.bob]);
+  await pool.query("INSERT INTO meetings(id,org_id,title,starts_at,ends_at,timezone,organizer_id) SELECT id,$2,'Page fixture','2032-01-01T10:00:00.000001Z','2032-01-01T11:00:00Z','UTC',$3 FROM unnest($1::uuid[]) id",[meetingIds,org,ids.alice]);
+  await pool.query("INSERT INTO meeting_attendees(meeting_id,user_id,response) SELECT id,$2,'pending' FROM unnest($1::uuid[]) id",[meetingIds,ids.bob]);
+  const base=`/v1/organizations/${org}/meetings`;let cursor:{startsAt:string;id:string}|null=null;const seen:string[]=[];
+  do{const query=new URLSearchParams({limit:'37'});if(cursor){query.set('afterStart',cursor.startsAt);query.set('afterId',cursor.id);}const r=await request('bob','GET',`${base}?${query}`);assert.equal(r.statusCode,200,r.body);const page=r.json();assert.ok(page.meetings.length<=37);seen.push(...page.meetings.map((m:{id:string})=>m.id));cursor=page.nextCursor;if(cursor)assert.equal(cursor.startsAt,'2032-01-01T10:00:00.000001Z');assert.ok(seen.length<=105);}while(cursor);
+  assert.deepEqual(seen,[...meetingIds].sort());assert.equal(new Set(seen).size,105);
+  for(const query of ['limit=101','afterId='+meetingIds[0],'from=2032-01-01T00:00:00Z','from=2032-01-01T00:00:00Z&to=2034-01-01T00:00:00Z'])assert.equal((await request('bob','GET',`${base}?${query}`)).statusCode,400);
+  assert.equal((await request('bob','GET',`${base}?from=2032-01-01T10:30:00Z&to=2032-01-01T11:30:00Z`)).json().meetings.length,50);
+  assert.equal((await request('bob','GET',`${base}?from=2032-01-01T11:00:00Z&to=2032-01-01T12:00:00Z`)).json().meetings.length,0);
+  const first=(await request('bob','GET',`${base}?limit=100`)).json();await pool.query('DELETE FROM meeting_attendees WHERE meeting_id=$1 AND user_id=$2',[seen[104],ids.bob]);const query=new URLSearchParams({afterStart:first.nextCursor.startsAt,afterId:first.nextCursor.id});assert.equal((await request('bob','GET',`${base}?${query}`)).json().meetings.length,4);
+  assert.equal((await request('eve','GET',`${base}?${query}`)).statusCode,404);
+});
+
+test('calendar change counters are durable, recipient-scoped and transactional',async()=>{
+  const org=randomUUID();await pool.query("INSERT INTO organizations(id,name) VALUES($1,'Calendar changes')",[org]);await pool.query("INSERT INTO memberships VALUES($1,$2,'owner',true),($1,$3,'member',true),($1,$4,'guest',true)",[org,ids.alice,ids.bob,ids.guest]);
+  const base=`/v1/organizations/${org}`,version=async(user:string)=>{const r=await request(user,'GET',`${base}/calendar-version`);assert.equal(r.statusCode,200,r.body);return r.json().revision;};
+  assert.equal(await version('bob'),'0');assert.equal((await request('eve','GET',`${base}/calendar-version`)).statusCode,404);
+  const body={title:'Counter meeting',startsAt:'2026-12-21T10:00:00Z',endsAt:'2026-12-21T11:00:00Z',timezone:'UTC',attendees:[ids.bob]};const id=(await request('alice','POST',`${base}/meetings`,body)).json().id;
+  assert.equal(await version('alice'),'1');assert.equal(await version('bob'),'1');assert.equal(await version('guest'),'0');
+  const edit={...body,revision:1,description:'Update',attendees:[ids.guest]};
+  assert.equal((await request('alice','PUT',`${base}/meetings/${id}/details`,{...edit,attendees:[ids.eve]})).statusCode,404);assert.equal(await version('bob'),'1');
+  assert.equal((await request('alice','PUT',`${base}/meetings/${id}/details`,edit)).statusCode,200);assert.equal(await version('bob'),'2');assert.equal(await version('guest'),'1');assert.equal(await version('alice'),'2');
+  assert.equal((await request('alice','PUT',`${base}/meetings/${id}/details`,edit)).statusCode,409);assert.equal(await version('alice'),'2');
+  await request('guest','PATCH',`${base}/meetings/${id}`,{response:'accepted'});assert.equal(await version('guest'),'2');assert.equal(await version('alice'),'3');assert.equal(await version('bob'),'2');
+  await request('alice','PATCH',`${base}/meetings/${id}`,{cancelled:true});assert.equal(await version('guest'),'3');assert.equal(await version('alice'),'4');assert.equal(await version('bob'),'2');
+  await request('alice','PATCH',`${base}/meetings/${id}`,{cancelled:true});assert.equal(await version('alice'),'4');
+  assert.equal((await pool.query('SELECT revision FROM calendar_versions WHERE org_id=$1 AND user_id=$2',[org,ids.alice])).rows[0].revision,'4');
+});

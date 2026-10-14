@@ -81,6 +81,7 @@ export type FormRecord = {
   created_by: string;
 };
 export type Meeting = {
+  attendee_ids: string[] | null;
   revision: number;
   description: string;
   id: string;

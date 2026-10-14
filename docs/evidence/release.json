@@ -1,5 +1,5 @@
 {
-  "version": "0.1.22-local",
+  "version": "0.1.26-local",
   "checks": [
     {
       "url": "http://localhost:4100/health",
@@ -15,10 +15,10 @@
     }
   ],
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-14T06:35:39.558Z",
+  "recordedAt": "2026-10-14T07:33:51.478Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "fecb6dd12569eb6e914e93a1e9616b905f342ebb4d271f7bed397cf21635b9ec",
+  "sourceSha256": "d2494891eef615fc8c1a077573da71c4499e0fd45922931d668b6da976c3b356",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
@@ -26,6 +26,7 @@
     "app/components/file-preview.tsx",
     "app/components/file-versions.tsx",
     "app/components/invitation-inbox.tsx",
+    "app/components/meeting-editor.tsx",
     "app/components/membership-panels.tsx",
     "app/components/mention-picker.tsx",
     "app/components/message-content.tsx",
@@ -71,6 +72,9 @@
     "migrations/015_notifications.sql",
     "migrations/016_email_digests.sql",
     "migrations/017_reply_alerts.sql",
+    "migrations/018_meeting_revisions.sql",
+    "migrations/019_calendar_pagination.sql",
+    "migrations/020_calendar_versions.sql",
     "next.config.ts",
     "package-lock.json",
     "package.json",
@@ -135,6 +139,7 @@
     "services/core/token-vault.ts",
     "services/core/work.ts",
     "tests/backup.test.mjs",
+    "tests/browser/calendar.spec.ts",
     "tests/browser/collaboration.spec.ts",
     "tests/browser/file-scanning.spec.ts",
     "tests/browser/identity.spec.ts",
@@ -149,17 +154,17 @@
     "tests/release-health.test.mjs",
     "tsconfig.json"
   ],
-  "baseCommit": "3485b107da46114820e8acb321ce52bfcde7301c",
+  "baseCommit": "ee31709ebc46beeeff44627fd0e1af06bb7f73f5",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.22-local": {
-      "imageId": "sha256:e35b70c275139d968b9696bdc5aa879b0169e41a5ba980a0cad6ae8cf26541d1",
-      "created": "2026-10-14T12:02:59.235368215+05:30",
+    "concord-web:0.1.26-local": {
+      "imageId": "sha256:22b245247022a85b1a9e823deee5134f33c43e6307f856b4793c2b692cb81092",
+      "created": "2026-10-14T13:00:49.154477967+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.22-local": {
-      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
-      "created": "2026-10-14T12:03:02.430391896+05:30",
+    "concord-api:0.1.26-local": {
+      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
+      "created": "2026-10-14T13:00:52.960476571+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
@@ -180,12 +185,12 @@
   },
   "containers": {
     "web": {
-      "imageId": "sha256:e35b70c275139d968b9696bdc5aa879b0169e41a5ba980a0cad6ae8cf26541d1",
+      "imageId": "sha256:22b245247022a85b1a9e823deee5134f33c43e6307f856b4793c2b692cb81092",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
+      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
       "status": "running",
       "health": "healthy"
     },
@@ -205,12 +210,12 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
+      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
       "status": "running",
       "health": "healthy"
     },
     "file-reconciler": {
-      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
+      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
       "status": "running",
       "health": "healthy"
     },
@@ -225,7 +230,7 @@
       "health": "healthy"
     },
     "digest-worker": {
-      "imageId": "sha256:28dc390f4555081dc48846828cee344c22c815134f32aa106f8e5ef322a86c72",
+      "imageId": "sha256:8a1f65575f30147018b015264591740aafb5ab3975fa7b00ba05bbbcc1607e0f",
       "status": "running",
       "health": "healthy"
     }

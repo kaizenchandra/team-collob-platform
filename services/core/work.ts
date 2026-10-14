@@ -7,6 +7,20 @@ import {idParam} from "./server.ts";
 
 const uuid = z.string().uuid();
 const text = z.string().trim().min(1).max(500);
+async function eligibleAttendees(db:DB,org:string,users:string[]){
+    const unique=[...new Set(users)];
+    const r=await db.query("SELECT u.id FROM users u JOIN memberships m ON m.user_id=u.id WHERE m.org_id=$1 AND m.active AND NOT u.disabled AND u.id=ANY($2::uuid[])",[org,unique]);
+    if(r.rowCount!==unique.length)throw new HttpError(404,"One or more attendees are unavailable in this workspace");
+}
+
+async function calendarChanged(db:DB,org:string,users:string[]){
+    await db.query(`INSERT INTO calendar_versions(org_id,user_id,revision)
+        SELECT $1,m.user_id,1 FROM memberships m WHERE m.org_id=$1 AND m.user_id=ANY($2::uuid[]) ORDER BY m.user_id
+        ON CONFLICT(org_id,user_id) DO UPDATE SET revision=calendar_versions.revision+1`,[org,[...new Set(users)]]);
+}
+async function calendarRecipients(db:DB,id:string,organizer:string){
+    return [organizer,...(await db.query("SELECT user_id FROM meeting_attendees WHERE meeting_id=$1",[id])).rows.map(r=>r.user_id)];
+}
 
 async function readers(
     db: DB,
@@ -249,17 +263,27 @@ export async function registerWork(app: FastifyInstance) {
             ).rows,
         };
     });
+    app.get("/v1/organizations/:id/calendar-version",async req=>{
+        const org=idParam(req);await member(pool,req.user.id,org);
+        const row=(await pool.query("SELECT revision FROM calendar_versions WHERE org_id=$1 AND user_id=$2",[org,req.user.id])).rows[0];
+        return {revision:row?.revision??'0'};
+    });
     app.get("/v1/organizations/:id/meetings", async (req) => {
         const org = idParam(req);
         await member(pool, req.user.id, org);
-        return {
-            meetings: (
-                await pool.query(
-                    "SELECT m.*,a.response FROM meetings m LEFT JOIN meeting_attendees a ON a.meeting_id=m.id AND a.user_id=$2 WHERE m.org_id=$1 AND (m.organizer_id=$2 OR a.user_id=$2) ORDER BY starts_at LIMIT 100",
-                    [org, req.user.id],
-                )
-            ).rows,
-        };
+        const q=z.object({limit:z.coerce.number().int().min(1).max(100).default(50),from:z.iso.datetime().optional(),to:z.iso.datetime().optional(),afterStart:z.iso.datetime().optional(),afterId:uuid.optional()}).strict().parse(req.query);
+        if(!!q.from!==!!q.to||!!q.afterStart!==!!q.afterId)throw new HttpError(400,"Provide both range or cursor fields");
+        if(q.from&&q.to&&(Date.parse(q.to)<=Date.parse(q.from)||Date.parse(q.to)-Date.parse(q.from)>366*86400000))throw new HttpError(400,"Calendar range must be positive and at most 366 days");
+        const rows=(await pool.query(`SELECT m.*,a.response,
+            to_char(m.starts_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_start,
+            CASE WHEN m.organizer_id=$2 THEN (SELECT coalesce(json_agg(ma.user_id ORDER BY ma.user_id),'[]') FROM meeting_attendees ma WHERE ma.meeting_id=m.id) ELSE NULL END attendee_ids
+            FROM meetings m LEFT JOIN meeting_attendees a ON a.meeting_id=m.id AND a.user_id=$2
+            WHERE m.org_id=$1 AND (m.organizer_id=$2 OR a.user_id=$2)
+            AND ($3::timestamptz IS NULL OR (m.ends_at>$3 AND m.starts_at<$4::timestamptz))
+            AND ($5::timestamptz IS NULL OR (m.starts_at,m.id)>($5,$6::uuid))
+            ORDER BY m.starts_at,m.id LIMIT $7`,[org,req.user.id,q.from??null,q.to??null,q.afterStart??null,q.afterId??null,q.limit+1])).rows;
+        const page=rows.slice(0,q.limit),last=page.at(-1);
+        return {meetings:page.map(row=>{const {cursor_start,...meeting}=row;void cursor_start;return meeting;}),nextCursor:rows.length>q.limit?{startsAt:last.cursor_start,id:last.id}:null};
     });
     app.post("/v1/organizations/:id/meetings", async (req) => {
         const org = idParam(req);
@@ -282,7 +306,7 @@ export async function registerWork(app: FastifyInstance) {
             throw new HttpError(400, "Invalid timezone");
         }
         return transaction(async (db) => {
-            for (const user of b.attendees) await member(db, user, org);
+            await eligibleAttendees(db,org,b.attendees);
             const id = randomUUID();
             await db.query(
                 "INSERT INTO meetings(id,org_id,title,starts_at,ends_at,timezone,organizer_id,description) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
@@ -303,6 +327,7 @@ export async function registerWork(app: FastifyInstance) {
                     u,
                     u === req.user.id ? "accepted" : "pending",
                 ]);
+            await calendarChanged(db,org,[req.user.id,...b.attendees]);
             await audit(db, req.user.id, org, "meeting.created", id);
             return {id};
         });
@@ -310,7 +335,7 @@ export async function registerWork(app: FastifyInstance) {
     app.put("/v1/organizations/:id/meetings/:meeting/details", async req => {
         const org=idParam(req),id=idParam(req,"meeting");
         await member(pool,req.user.id,org);
-        const b=z.object({revision:z.number().int().positive(),title:text,description:z.string().max(4000),startsAt:z.iso.datetime(),endsAt:z.iso.datetime(),timezone:z.string().max(100)}).strict().parse(req.body);
+        const b=z.object({revision:z.number().int().positive(),title:text,description:z.string().max(4000),startsAt:z.iso.datetime(),endsAt:z.iso.datetime(),timezone:z.string().max(100),attendees:z.array(uuid).max(100).optional()}).strict().parse(req.body);
         if(Date.parse(b.startsAt)>=Date.parse(b.endsAt))throw new HttpError(400,"End must be after start");
         try{new Intl.DateTimeFormat("en",{timeZone:b.timezone});}catch{throw new HttpError(400,"Invalid timezone");}
         return transaction(async db=>{
@@ -318,10 +343,19 @@ export async function registerWork(app: FastifyInstance) {
             if(!row)throw new HttpError(404,"Meeting unavailable");
             if(row.cancelled)throw new HttpError(409,"Cancelled meetings cannot be edited");
             if(row.revision!==b.revision)throw new HttpError(409,"Meeting changed. Close this editor, refresh the calendar, and reopen the latest meeting.");
+            const priorRecipients=await calendarRecipients(db,id,req.user.id);
+            let added=0,removed=0;
+            if(b.attendees!==undefined){
+                await eligibleAttendees(db,org,b.attendees);
+                const roster=[...new Set([req.user.id,...b.attendees])];
+                const deleted=await db.query("DELETE FROM meeting_attendees WHERE meeting_id=$1 AND NOT(user_id=ANY($2::uuid[])) RETURNING user_id",[id,roster]);removed=deleted.rowCount??0;
+                const inserted=await db.query("INSERT INTO meeting_attendees(meeting_id,user_id,response) SELECT $1,u,CASE WHEN u=$3::uuid THEN 'accepted' ELSE 'pending' END FROM unnest($2::uuid[]) u ON CONFLICT DO NOTHING RETURNING user_id",[id,roster,req.user.id]);added=inserted.rowCount??0;
+            }
             const rescheduled=new Date(row.starts_at).getTime()!==Date.parse(b.startsAt)||new Date(row.ends_at).getTime()!==Date.parse(b.endsAt);
             await db.query("UPDATE meetings SET title=$2,description=$3,starts_at=$4,ends_at=$5,timezone=$6,revision=revision+1 WHERE id=$1",[id,b.title,b.description,b.startsAt,b.endsAt,b.timezone]);
             if(rescheduled)await db.query("UPDATE meeting_attendees SET response='pending' WHERE meeting_id=$1 AND user_id<>$2",[id,req.user.id]);
-            await audit(db,req.user.id,org,"meeting.updated",id,{rescheduled,revision:row.revision+1});
+            await calendarChanged(db,org,[...priorRecipients,...await calendarRecipients(db,id,req.user.id)]);
+            await audit(db,req.user.id,org,"meeting.updated",id,{rescheduled,revision:row.revision+1,attendeesAdded:added,attendeesRemoved:removed});
             return {revision:row.revision+1,rescheduled};
         });
     });
@@ -333,12 +367,13 @@ export async function registerWork(app: FastifyInstance) {
             if(!row)throw new HttpError(404,"Meeting unavailable");
             if("cancelled" in b){
                 if(row.organizer_id!==req.user.id)throw new HttpError(404,"Meeting unavailable");
-                if(!row.cancelled){await db.query("UPDATE meetings SET cancelled=true,revision=revision+1 WHERE id=$1",[meeting]);await audit(db,req.user.id,org,"meeting.cancelled",meeting);}
+                if(!row.cancelled){await db.query("UPDATE meetings SET cancelled=true,revision=revision+1 WHERE id=$1",[meeting]);await calendarChanged(db,org,await calendarRecipients(db,meeting,row.organizer_id));await audit(db,req.user.id,org,"meeting.cancelled",meeting);}
             }else{
                 const attendee=await db.query("SELECT 1 FROM meeting_attendees WHERE meeting_id=$1 AND user_id=$2",[meeting,req.user.id]);
                 if(!attendee.rowCount)throw new HttpError(404,"Meeting unavailable");
                 if(row.cancelled)throw new HttpError(409,"Cancelled meetings cannot receive responses");
                 await db.query("UPDATE meeting_attendees SET response=$1 WHERE meeting_id=$2 AND user_id=$3",[b.response,meeting,req.user.id]);
+                await calendarChanged(db,org,[req.user.id,row.organizer_id]);
                 await audit(db,req.user.id,org,"meeting.responded",meeting,{response:b.response});
             }
             return {ok:true};

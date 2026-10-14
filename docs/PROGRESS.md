@@ -1,6 +1,6 @@
 # Durable progress checkpoint — 2026-10-14
 
-**Current phase:** Phase 1 architecture gate complete. Phase 2 foundation and independent phase 3 collaboration increments partially delivered. Local container release `0.1.22-local` runs; full phase 2–9 gates have not passed. Full specification remains incomplete.
+**Current phase:** Phase 1 architecture gate complete. Phase 2 foundation and independent phase 3 collaboration increments partially delivered. Local container release `0.1.26-local` runs; full phase 2–9 gates have not passed. Full specification remains incomplete.
 
 **Verified whole requirement IDs:** FE-FR-02, BE-FR-11, WEB-01, WEB-15 (recorded local acceptance scope; production NFRs separate).
 
@@ -338,3 +338,47 @@ Concurrency review found possible actor-FK lock conflict with prior acceptance F
 Changed: membership decline/acceptance locking, inbox notice/actions, workspace dedicated view, tests, release metadata/Compose and architecture/contracts/runbooks/README/register/evidence. No migration/provider/dependency/secret/external resource/commit. Unrelated work preserved. Phase2/3 remains partial;146entries4Verified/80In progress/15Blocked/47Not started, whole verified IDs unchanged. Local web3101/API4100/identity5180/mailcapture5185.
 
 Next executable work: remaining calendar/editor/provider features or invitation lifecycle scale/retention; notification call categories require real calls. Invitation discovery/decline is locally verified; do not repeat without changes/failures. No email/browser invitation delivery, public enrollment, full production polling capacity, E2EE/media/governance or staging/production completion. Cross-workspace notice does not grant tenant access.
+
+
+## Latest continuation — organizer meeting edits, 0.1.23-local
+
+Completed ADR034 before coding after repository/Next guide inspection. Migration018 adds revision. Organizer PUT details validates absolute interval/timezone and expected revision, locks meeting, audits update and resets nonorganizer responses only on time change. Existing cancel/RSVP now share row lock and audit; cancelled responses/edits and ambiguous PATCH bodies denied. Creation interval comparison uses numeric instants. Attendee roster unchanged. Editor supports title/description/browser-local dates, preserves untouched ISO instants and shows actionable conflict errors. Calendar refresh and descriptions added.
+
+66/66 tests, typecheck/lint, production images, additive migration/deployment and diff checks pass. Core verifies organizer/tenant isolation, invalid interval/timezone, preserved text-only RSVP, concurrent stale revision, time-change reset and cancellation guards.19 calendar/collaboration browser tests passed in53.3seconds, including independent organizer editing and attendee updated details/pending response/no edit control. Screenshot reviewed. Ten services healthy with actual image/version/HTTP release record. No dependency/provider changes; prior audit/provider/media evidence keeps release labels.
+
+Changed: migration018, work.ts calendar routes, Meeting contract, new meeting-editor component, CalendarPanel, core/browser tests, metadata/Compose and docs/register/evidence. No commit/external resource; unrelated work preserved. Phase2/3 partial;146entries4Verified/80In progress/15Blocked/47Not started. Whole verified IDs unchanged. Web3101/API4100/identity5180/mailcapture5185.
+
+Next executable work: attendee roster editing, bounded calendar date-range/pagination, recurrence/timezone UX or configured calendar provider integration. This increment does not provide external sync, availability, recurrence, real media, meeting notifications or production calendar capacity. Full E2EE/media/governance/provider/staging/production and observation objectives remain open. Do not repeat completed organizer-edit verification without changes/failures.
+
+
+## Latest continuation — meeting attendee edits, 0.1.24-local
+
+Completed ADR035 after checkpoint/repository/Next guide inspection. Organizer details PUT optionally changes attendee IDs under existing meeting lock/revision; old clients omitting roster preserve it. Active/enabled recipients required for create/edit, duplicates normalized, organizer always retained. Removed users lose list/RSVP access; new/re-added users pending; retained responses preserved except on time changes. Added organizer-only attendee_ids projection and audit counts. Editor shows authorized directory checkboxes/removable unavailable IDs. No migration/provider/dependency changes.
+
+67/67 tests, typecheck/lint, production build/deployment and diff checks passed. Core checks tenant/disabled rejection, duplicate normalization/organizer retention, RSVP preservation, roster projection privacy, removed denial, old-client omission and re-addition pending.19 calendar/collaboration browser tests passed in55.0seconds, extending real organizer edit with removal, recipient calendar disappearance/RSVP404, re-addition/pending state. Screenshot reviewed. All10services healthy/matching images/API0.1.24 and HTTP release checks recorded. Prior unrelated test/audit evidence retains release labels.
+
+Changed: work.ts calendar eligibility/roster/projection, Meeting contract, editor/CalendarPanel, tests, release metadata/Compose and docs/register/evidence. No commit/external resources; unrelated work preserved. Phase2/3 partial;146entries4Verified/80In progress/15Blocked/47Not started. Whole verified IDs unchanged. Web3101/API4100/identity5180/mailcapture5185.
+
+Next executable work: bounded calendar date-range/pagination, recurrence/timezone UX or external calendar provider integration. No native calendar/email attendee delivery, media-session access propagation or full calendar capacity claimed. Retained downloaded data cannot be recalled; current UI requires refresh for other-user changes. E2EE/media/governance/staging/production/provider and observation-period work remains open. Do not repeat completed attendee-edit verification without new changes/failures.
+
+
+## Latest continuation — bounded calendar browsing, 0.1.25-local
+
+Completed ADR036 after repository/Next guide/checkpoint inspection. Migration019 adds tenant/start/id index. GET meetings now returns50default/100max rows and exact microsecond nextCursor, optional paired <=366day UTC overlap bounds and paired keyset parameters. Each page checks tenant and attendee access; no snapshot guarantee across edits. UI exposes inclusive local date fields, separate applied range, load-more, loading/error/retry and aborts stale requests; append errors retain rows, replace errors clear them. IDs deduplicated after concurrent edits; refresh restarts page1.
+
+68/68 tests, typecheck/lint, production images/migration/local deployment and diff checks passed.105 same-start microsecond fixture traverses without gaps/duplicates; overlap endpoints/invalid inputs/current removal/tenant denial checked.20 calendar/collaboration browser tests passed in54.8seconds, including53 fixture meetings,50first page, simulated second-page network failure retaining cards and successful retry to53. Exact browser fixture IDs deleted afterwards. Screenshot reviewed. Final recorder verified all10healthy services/matching images/API0.1.25 and HTTP readiness. No provider/dependency changes; prior audit/unrelated evidence retains original labels.
+
+Changed: migration019, meeting list query, CalendarPanel range/pagination/recovery, core/browser tests, release metadata/Compose and docs/register/evidence. No commit/external resources; unrelated work preserved. Phase2/3 partial;146entries4Verified/80In progress/15Blocked/47Not started. Whole verified IDs unchanged. Web3101/API4100/identity5180/mailcapture5185.
+
+Next executable work: recurrence/timezone UX or configured calendar/editor provider integration; broader notifications and calendar live update remain open. No snapshot/export consistency or capacity sign-off; accumulated pages are not virtualized, and concurrent rescheduling may require refresh. External calendars/availability/media, E2EE/governance/staging/production/providers and observation objectives remain open. Do not repeat completed pagination verification without changes/failures.
+
+
+## Latest continuation — automatic calendar change detection, 0.1.26-local
+
+Completed ADR037 after checkpoint/repository/Next guide inspection. Migration020 adds durable recipient/workspace counters. Create/edit/cancel/RSVP increment relevant counters in their transaction; edit includes old/new roster and organizer, RSVP only actor/organizer, repeated cancel no increment. Current-member caller gets own bigint-safe revision, default0. UI polls every5seconds with timeout/abort/visibility resume, observes version before reload, refreshes page1, preserves edit inputs and clears stale cards on failed polling. Recovery reloads even unchanged version. No snapshot/push/media guarantee.
+
+69/69 tests, typecheck/lint, build/migration/deployment and diff checks passed. Counter tests verify recipient isolation, removal notification, failed edit rollback/stale edit no increment, RSVP/cancel behavior and persisted SQL state.20 calendar/collaboration browser tests passed in1.4minutes: edit/removal/re-addition/cancel detected without manual recipient refresh; page failure recovery still works; simulated counter failure clears53cards and recovery returns50first-page cards. Screens reviewed. Ten-service release record passed with matching images/API0.1.26 and HTTP readiness. No dependency/provider changes; prior unrelated evidence retains original labels.
+
+Changed: migration020, work.ts transactional counters/endpoint, CalendarPanel polling/recovery, core/browser tests, version/Compose and docs/register/evidence. No commit/external resources; unrelated work preserved. Phase2/3 partial;146entries4Verified/80In progress/15Blocked/47Not started. Whole verified IDs unchanged. Web3101/API4100/identity5180/mailcapture5185.
+
+Next executable work: recurrence/timezone UX, meeting invitation/reminder policies or configured calendar/editor integration. Automatic refresh is locally verified; do not repeat without new changes/failures. Hidden-tab throttling, full production polling/capacity/latency, external calendar/availability/media, E2EE/governance/staging/production/provider and observation objectives remain open. Older writers do not update counters: prefer compatible forward-fix deployments.

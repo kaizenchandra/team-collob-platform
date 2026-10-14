@@ -5,7 +5,7 @@
 import {uploadFile} from "@/lib/upload-file";
 import {NotificationSettings} from "./notifications";
 import {FileVersionsDialog} from "./file-versions";
-import { useState, useEffect, useCallback, type FormEvent } from "react";
+import { useState, useEffect, useCallback, useRef, type FormEvent } from "react";
 import { Plus, CalendarDays, FileText, Upload } from "lucide-react";
 import {
   api,
@@ -412,23 +412,36 @@ export function CalendarPanel({
   report: Report;
 }) {
   const [editing,setEditing]=useState<Meeting|null>(null);
+  const [rangeStart,setRangeStart]=useState(''),[rangeEnd,setRangeEnd]=useState(''),[range,setRange]=useState<{from?:string;to?:string}>({});
+  const [cursor,setCursor]=useState<{startsAt:string;id:string}|null>(null),[loading,setLoading]=useState(false),[loadError,setLoadError]=useState('');
+  const requestRef=useRef<AbortController|null>(null),appendRef=useRef(false);
+  const [syncStatus,setSyncStatus]=useState('');
   const [meetings, setMeetings] = useState<Meeting[]>([]),
     [modal, setModal] = useState(false),
     [title, setTitle] = useState(""),
     [start, setStart] = useState(""),
     [end, setEnd] = useState(""),
     [attendees, setAttendees] = useState<string[]>([]);
-  const load = useCallback(
-    async () =>
-      setMeetings(
-        (await api<{ meetings: Meeting[] }>(`/organizations/${org}/meetings`))
-          .meetings,
-      ),
-    [org],
-  );
-  useEffect(() => {
-    void load().catch(report);
-  }, [load, report]);
+  const load = useCallback(async (append=false,after?:{startsAt:string;id:string})=>{
+    if(append&&requestRef.current)return;
+    requestRef.current?.abort();const controller=new AbortController();requestRef.current=controller;appendRef.current=append;setLoading(true);setLoadError('');
+    if(!append){setMeetings([]);setCursor(null);}
+    const query=new URLSearchParams();if(range.from&&range.to){query.set('from',range.from);query.set('to',range.to);}if(after){query.set('afterStart',after.startsAt);query.set('afterId',after.id);}
+    try{const r=await api<{meetings:Meeting[];nextCursor:typeof cursor}>(`/organizations/${org}/meetings?${query}`,'GET',undefined,AbortSignal.any([controller.signal,AbortSignal.timeout(8000)]));if(controller.signal.aborted)return;setMeetings(old=>append?[...old,...r.meetings.filter(m=>!old.some(x=>x.id===m.id))]:r.meetings);setCursor(r.nextCursor);}
+    catch(e){if(!controller.signal.aborted)setLoadError(e instanceof Error?e.message:'Calendar unavailable');}
+    finally{if(requestRef.current===controller){requestRef.current=null;setLoading(false);}}
+  },[org,range]);
+  useEffect(()=>{void load();return()=>{requestRef.current?.abort();requestRef.current=null;};},[load]);
+  useEffect(()=>{
+    let active=true,pending=false,version:string|null=null;const controller=new AbortController();
+    const poll=async()=>{if(pending)return;pending=true;try{
+      const r=await api<{revision:string}>(`/organizations/${org}/calendar-version`,'GET',undefined,AbortSignal.any([controller.signal,AbortSignal.timeout(8000)]));
+      if(!active)return;
+      if(version!==r.revision){const initial=version===null;version=r.revision;setSyncStatus(initial?'Calendar changes refresh automatically.':'Calendar updated. Showing the first page; open edits are preserved.');await load();}
+    }catch{if(active){version=null;requestRef.current?.abort();setMeetings([]);setCursor(null);setSyncStatus('Calendar updates unavailable. Retrying automatically; stale meetings have been cleared.');}}finally{pending=false;}};
+    void poll();const timer=setInterval(()=>void poll(),5000);const visible=()=>{if(document.visibilityState==='visible')void poll();};document.addEventListener('visibilitychange',visible);
+    return()=>{active=false;controller.abort();clearInterval(timer);document.removeEventListener('visibilitychange',visible);};
+  },[org,load]);
   return (
     <>
       <div className="page-heading">
@@ -440,12 +453,18 @@ export function CalendarPanel({
             {Intl.DateTimeFormat().resolvedOptions().timeZone}.
           </p>
         </div>
-        <button className="primary" onClick={() => setModal(true)}>
+        <div className="meeting-actions"><button className="secondary" onClick={()=>void load().catch(report)}>Refresh calendar</button><button className="primary" onClick={() => setModal(true)}>
           <Plus size={17} />
           Schedule meeting
-        </button>
+        </button></div>
       </div>
       <div className="content-pad">
+        <form className="card settings-form" onSubmit={e=>{e.preventDefault();if(!!rangeStart!==!!rangeEnd){setLoadError('Choose both dates or clear both.');return;}if(!rangeStart){setRange({});return;}const from=new Date(`${rangeStart}T00:00:00`),to=new Date(`${rangeEnd}T00:00:00`);to.setDate(to.getDate()+1);if(!Number.isFinite(from.getTime())||!Number.isFinite(to.getTime())||to<=from){setLoadError('Choose a valid date range.');return;}setRange({from:from.toISOString(),to:to.toISOString()});}}>
+          <label>Calendar from<input type="date" value={rangeStart} onChange={e=>setRangeStart(e.target.value)}/></label><label>Calendar through<input type="date" value={rangeEnd} onChange={e=>setRangeEnd(e.target.value)}/></label><button className="secondary">Apply dates</button><p>Both dates are inclusive in your browser timezone. Leave both blank for all dates. Maximum range: 366 days.</p>
+        </form>
+        {syncStatus&&<p role="status">{syncStatus}</p>}
+        {loadError&&<div role="alert"><p>{loadError}</p><button className="secondary" onClick={()=>void load(appendRef.current,cursor??undefined)}>Retry calendar</button></div>}
+        {loading&&<p role="status">Loading meetings…</p>}
         <Unavailable title="Local scheduling only">
           External calendar synchronization, recurrence, availability, and
           joining real media are not configured in this increment.
@@ -533,12 +552,13 @@ export function CalendarPanel({
             </article>
           ))
         ) : (
-          <Empty title="Room for your next big idea">
+          !loading && !loadError && <Empty title="Room for your next big idea">
             Schedule a meeting and invite people from your workspace.
           </Empty>
         )}
       </div>
-      {editing && <MeetingEditor key={editing.id} org={org} meeting={editing} onClose={()=>setEditing(null)} onSaved={load} />}
+      {cursor&&<button className="secondary" disabled={loading} onClick={()=>void load(true,cursor)}>Load more meetings</button>}
+      {editing && <MeetingEditor key={editing.id} org={org} meeting={editing} people={people} onClose={()=>setEditing(null)} onSaved={load} />}
       {modal && (
         <Modal title="Schedule a meeting" onClose={() => setModal(false)}>
           <form

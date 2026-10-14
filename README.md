@@ -103,3 +103,11 @@ Release0.1.20 adds a separate **Enable browser reply alerts** checkbox in Settin
 Release0.1.21 adds **Settings → Workspace invitations**. Signed-in recipients can review organization, role and expiry, then accept without copying a token. Invitations must match their stored account email; existing or inactive memberships require administrator help. Manual token acceptance remains available. Invitation emails and new-account provisioning remain unavailable.
 
 Release0.1.22 adds a **Review workspace invitations** notice wherever you are in the app. It opens a dedicated invitation view. You can decline an invitation without joining; administrators can issue a new one later. Counts refresh across tabs within a polling interval and are labeled across workspaces.
+
+Release0.1.23 adds **Calendar → Edit meeting** for organizers. Update title, description and times; a time change resets attendee responses to pending. Use Refresh calendar to see changes. Concurrent stale edits are rejected with recovery instructions. Recurrence, external calendar synchronization and real meeting media remain unavailable.
+
+Release0.1.24 adds attendee checkboxes to **Calendar → Edit meeting**. Organizers can add/remove active workspace members. Removing someone withdraws calendar access; adding them back starts a pending RSVP. Retained responses stay unchanged unless the time changes. External calendar invitations remain unavailable.
+
+Release0.1.25 removes the calendar's silent100-meeting cutoff. Use **Load more meetings** and optional inclusive **Calendar from/through** dates. Failed page loads offer Retry without discarding already loaded cards. Refresh restarts browsing; date ranges are limited to366days.
+
+Release0.1.26 automatically refreshes an open Calendar when relevant meetings or responses change. Updates return browsing to the first page and preserve open edit drafts. If change detection becomes unavailable, stale cards clear and reload on recovery. Hidden-tab/browser throttling can delay updates; external calendar sync remains unavailable.

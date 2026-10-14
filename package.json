@@ -1,6 +1,6 @@
 {
   "name": "team-collob-platform",
-  "version": "0.1.23",
+  "version": "0.1.26",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3100",

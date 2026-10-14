@@ -23,7 +23,7 @@ services:
       timeout: 3s
       retries: 5
   digest-worker:
-    image: concord-api:0.1.23-local
+    image: concord-api:0.1.26-local
     command: ['node','services/core/digest-worker.ts']
     environment:
       NODE_ENV: development

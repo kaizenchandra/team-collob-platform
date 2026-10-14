@@ -344,3 +344,35 @@ ADR033 implemented global identity-scoped notice and audited recipient decline.6
 Typecheck/lint, final production image build, local deployment and diff checks passed. `npx playwright test tests/browser/invitations.spec.ts tests/browser/notifications.spec.ts tests/browser/collaboration.spec.ts`: **21 passed (1.4m)**. Recipient opens notice from Chat, declines without membership, receives a newly issued invitation and accepts it. Screenshot reviewed. All10containers healthy, matching images/API0.1.22 and HTTP readiness recorded. Evidence: core-tests-0.1.22.txt, browser-invitations-0.1.22.txt, invitation-inbox.png, build-0.1.22.txt, deploy-0.1.22.txt, release-health-0.1.22.txt and release.json.
 
 No new whole requirement/phase verification. Global notice is in-app, not OS/browser push or external email. Count is bounded50+, cross-tab refresh is eventual, and production polling scale/retention remains open. Previous audits and unrelated provider/media/browser tests retain their original release labels.
+
+## Organizer meeting updates — 0.1.23-local
+
+ADR034/migration018 implemented revision-checked organizer details/time edits.66/66 tests passed; cases include tenant/nonorganizer denial, timezone/interval validation (including fractional instants), text-only RSVP preservation, concurrent edit success/conflict, reschedule reset, strict PATCH bodies and cancelled-meeting guards. Typecheck/lint, production builds, migration/local deployment and diff checks passed. No dependency/provider change.
+
+`npx playwright test tests/browser/calendar.spec.ts tests/browser/collaboration.spec.ts`: **19 passed (53.3s)**. Organizer edits through dialog; independent attendee refresh sees changed title/description/pending RSVP and no organizer edit control. Fixture meeting canceled afterwards. Screenshot visually reviewed. Recorder confirms all10services healthy, matching image/API versions and live web/readiness HTTP. Evidence: core-tests-0.1.23.txt, browser-calendar-0.1.23.txt, meeting-update.png, build-0.1.23.txt, deploy-0.1.23.txt, release-health-0.1.23.txt and release.json.
+
+No new whole requirement/phase or production verification. Roster edits, recurrence, external calendars/availability, timezone selection/DST ambiguity UX and media remain open. Calendar still requires refresh for other-user changes and lists at most100 meetings; no capacity/pagination completion claimed. Prior unrelated tests/audits retain earlier release labels.
+
+## Organizer attendee changes — 0.1.24-local
+
+ADR035 adds optional roster changes to revision-checked meeting edits.67/67 tests pass, covering active/enabled recipient checks, nonorganizer/cross-tenant denial, duplicates, organizer retention, retained/new RSVP behavior, organizer-only roster projection, removed attendee list/RSVP denial, legacy omission and re-addition. Existing revision/concurrency tests remain passing. Typecheck/lint, production image builds and health-gated local deployment passed. No schema/dependency/provider change.
+
+`npx playwright test tests/browser/calendar.spec.ts tests/browser/collaboration.spec.ts`: **19 passed (55.0s)**. Organizer edits roster through checkboxes; independent attendee refresh loses the meeting and direct RSVP returns404; re-addition restores meeting with pending response. Screenshot reviewed. Fixture meeting canceled afterwards. Recorder confirms all10services healthy, matching expected images/API0.1.24 and live HTTP readiness. Evidence: core-tests-0.1.24.txt, browser-calendar-0.1.24.txt, meeting-attendees.png, build-0.1.24.txt, deploy-0.1.24.txt, release-health-0.1.24.txt and release.json.
+
+No new whole requirement or phase verified. External invitation/calendar delivery, recurrence, media access propagation and production capacity remain incomplete. Recipient UI refresh is explicit; previous copies cannot be revoked. Prior provider/security-audit/browser results retain original release labels.
+
+## Calendar date ranges and keyset pages — 0.1.25-local
+
+ADR036/migration019 implemented bounded, authorized keyset traversal and overlap ranges.68/68 tests passed, including105 meetings sharing exact microsecond starts,37row traversal with deterministic ID ordering/no duplicates, invalid cursor/range limits, overlap endpoint semantics, access removed between pages and tenant denial. Typecheck/lint passed after adding the required React useRef import caught by initial typecheck. Production images, additive index migration/local deployment and diff checks passed. No dependency/provider change.
+
+`npx playwright test tests/browser/calendar.spec.ts tests/browser/collaboration.spec.ts`: **20 passed (54.8s)**. Date-filtered53meeting fixture loads50, induced next-page network failure preserves50 and shows retry, retry reaches53 and removes Load more. Exact fixture meeting IDs deleted in finally. Organizer/attendee workflows remain passing. Screenshot reviewed; ten-service recorder confirms matching image/API0.1.25 and HTTP health. Evidence: core-tests-0.1.25.txt, browser-calendar-0.1.25.txt, calendar-pagination.png, build-0.1.25.txt, deploy-0.1.25.txt, release-health-0.1.25.txt and release.json.
+
+No whole requirement/phase newly verified. This is local functional pagination, not capacity/latency or a consistent export snapshot. Edits may move records across cursors; refresh starts a new traversal, and UI deduplicates repeated IDs. Prior provider/media/audit results retain release labels.
+
+## Automatic calendar change detection — 0.1.26-local
+
+ADR037/migration020 implemented transactional recipient/workspace counters and bounded polling refresh.69/69 tests passed, including persistent counter state, affected/unrelated users, removed recipients, rejected-edit rollback, stale revision exclusion, RSVP and idempotent repeated cancel. Typecheck/lint, image build, migration/local deployment and diff checks passed. No provider/dependency change.
+
+`npx playwright test tests/browser/calendar.spec.ts tests/browser/collaboration.spec.ts`: **20 passed (1.4m)**. Independent attendee UI updates for organizer edit/removal/re-addition/cancellation without manual refresh. Injected counter-network failure withdraws displayed cards, then unchanged-counter recovery reloads first page;53fixture cards become50first-page cards with Load more available. Existing pagination retry and collaboration remain passing. Screens visually reviewed. Ten-service recorder verifies matching image/API0.1.26 and HTTP/container health. Evidence: core-tests-0.1.26.txt, browser-calendar-0.1.26.txt, calendar-pagination.png, build-0.1.26.txt, deploy-0.1.26.txt, release-health-0.1.26.txt and release.json.
+
+No whole requirement/phase newly verified. Counter observation/polling is not SSE, snapshot consistency or a production delivery SLO. Browser throttling can delay hidden-tab work; copied data cannot be recalled. Prior unrelated provider/media/audit checks retain their release labels.

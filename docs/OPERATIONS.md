@@ -341,3 +341,27 @@ No migration/provider/secret changes. Concurrent acceptance is serialized per id
 Pending invitations produce an in-app notice across authenticated screens, explicitly labeled across workspaces. Review opens Your invitations; Settings remains available. The notice polls every5seconds with an8second request deadline and clears counts on failure. It holds no persisted local data, resets on identity changes and displays50+ when the bounded inbox is full. Acceptance/decline updates may take one polling interval to reach another tab.
 
 Recipients may decline valid invitations; the existing revoked state and invitation.declined audit record the decision. This action never changes membership, and cannot decline an already accepted invitation. Admins can issue a new invitation. No migration/secret/provider change. This remains an in-app notification only, with no email/browser invitation push. Production polling load/alerting and full retention remain open.
+
+### Meeting edits (0.1.23)
+
+Migration018 adds meeting revision1. Organizers choose Calendar → Edit meeting; input times are browser-local, explicitly labeled. Untouched inputs preserve original instants, including fractional seconds. The meeting's existing timezone metadata is retained; attendee roster is unchanged. Time changes reset other attendees to pending. Calendar Refresh loads current data for attendees and organizers. On stale-edit conflict, close the dialog, refresh and reopen; do not automatically overwrite a newer revision.
+
+Cancelled meetings cannot be edited or receive new RSVPs. Update/cancel/respond actions are audited. If rolling back, retain the additive revision column; older binaries do not enforce edit/RSVP revision semantics, so prefer forward-fix while editing is in use. Calendar synchronization, recurrence, timezone selection/DST ambiguity prompts and real joining remain incomplete. No provider/secret changes. Local browser test cancels its synthetic meeting on completion.
+
+### Meeting attendee edits (0.1.24)
+
+Organizer Edit meeting now includes attendee checkboxes from the authorized workspace directory. Organizer cannot be removed. Missing/inactive existing entries are labeled unavailable and can be removed; unavailable recipients must not be submitted. Saving uses the same revision check as time edits. Removing an attendee withdraws subsequent calendar/RSVP access; re-adding starts pending. Unchanged attendees retain responses unless the time also changes. Other users refresh their calendars to observe changes; previously viewed/downloaded information cannot be recalled.
+
+No schema/provider/dependency change. Older clients omitting attendees preserve roster. Native calendar/email invitations, connected media permissions and full enterprise directory synchronization remain separate incomplete requirements. Browser fixture verifies removal/re-addition and cancels its meeting afterwards.
+
+### Calendar range and pagination (0.1.25)
+
+Migration019 adds `(org_id,starts_at,id)` index. Calendar loads50 rows and offers Load more. Optional Calendar from/through are inclusive browser-local dates, converted to an overlap interval ending at next local midnight; range limit366days. Clear both and Apply dates for all history. Refresh restarts at first page; creation/edit also refresh within the applied range and does not silently expand it. Concurrent rescheduling may move meetings across a cursor; UI deduplicates but cannot guarantee a snapshot, so refresh when needed.
+
+API cursors retain database microsecond precision. Current access is checked per page; no authorization-bearing cursor secret exists. Page requests have8second timeout and cancel superseded/unmounted requests. Append failure retains loaded cards and offers Retry; replacement failure clears stale cards. Local browser fixture inserts53 isolated meeting records, then deletes those exact IDs in cleanup. This validates pagination behavior, not large-scale capacity/index latency or a production SLO. No provider/dependency change.
+
+### Automatic calendar refresh (0.1.26)
+
+Migration020 adds durable recipient/workspace counters; no backfill required. Open Calendar polls every5seconds with8second timeout and immediately on visibility resumption. Meeting changes refresh page1 and announce the page reset. Open edit drafts are preserved, so conflicting saves still receive revision409. Loading many pages does not trigger unbounded automatic refetching. Counter failures clear stale displayed meetings and show automatic-retry status; recovery refetches page1 even with unchanged counter. Hidden browser tabs may throttle timers; no background delivery deadline is promised.
+
+Create/edit/cancel/RSVP and counters commit atomically. Removed attendees receive invalidation but subsequent calendar access remains denied. Member revocation prevents counter access; information already copied cannot be recalled. Rollback to older writers would stop counter updates for their mutations, so prefer forward-fix or disable automatic-refresh claims until all writers are compatible. No new provider/secret/dependency. This is local polling behavior, not measured production delivery latency/capacity.

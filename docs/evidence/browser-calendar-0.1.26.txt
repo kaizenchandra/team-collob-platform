@@ -1,0 +1,28 @@
+
+Running 20 tests using 1 worker
+
+(node:31186) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation (21.5s)
+  ✓   2 [chrome] › tests/browser/calendar.spec.ts:24:1 › calendar date range loads beyond the first page and retries an unavailable page (11.1s)
+  ✓   3 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.2s)
+  ✓   4 [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI (940ms)
+  ✓   5 [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit (567ms)
+  ✓   6 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (1.7s)
+  ✓   7 [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both (1.7s)
+  ✓   8 [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document (570ms)
+  ✓   9 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (1.0s)
+  ✓  10 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.5s)
+Browser under test: 155.0.8059.41
+  ✓  11 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (1.8s)
+  ✓  12 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (592ms)
+  ✓  13 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (811ms)
+  ✓  14 [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery (514ms)
+  ✓  15 [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails (1.8s)
+  ✓  16 [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out (768ms)
+  ✓  17 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (4.6s)
+  ✓  18 [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages (900ms)
+  ✓  19 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (12.9s)
+  ✓  20 [chrome] › tests/browser/collaboration.spec.ts:489:1 › reply activity shows another user response and withdraws it after parent deletion (11.8s)
+
+  20 passed (1.4m)
