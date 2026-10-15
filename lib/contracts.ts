@@ -24,6 +24,7 @@ export type Person = {
   presence: string;
 };
 export type Channel = {
+  posting_restricted: boolean;
   id: string;
   name: string;
   description: string;
@@ -81,6 +82,12 @@ export type FormRecord = {
   created_by: string;
 };
 export type Meeting = {
+  reminder_minutes: number;
+  series_revision: number | null;
+  series_id: string | null;
+  series_ordinal: number | null;
+  series_count: number | null;
+  series_frequency: string | null;
   attendee_ids: string[] | null;
   revision: number;
   description: string;

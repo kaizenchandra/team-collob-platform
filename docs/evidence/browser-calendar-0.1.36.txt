@@ -1,0 +1,84 @@
+
+Running 7 tests using 1 worker
+
+(node:37476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation (1.0m)
+(node:37766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chrome] › tests/browser/calendar.spec.ts:24:1 › calendar date range loads beyond the first page and retries an unavailable page (10.9s)
+  ✓  3 [chrome] › tests/browser/calendar.spec.ts:37:1 › scheduling rejects DST gaps and persists an explicitly chosen repeated-time occurrence (1.1s)
+  ✓  4 [chrome] › tests/browser/calendar.spec.ts:51:1 › weekly series keeps DST time, supports whole-series edits and roster changes, then cancels (31.6s)
+  ✓  5 [chrome] › tests/browser/calendar.spec.ts:68:1 › monthly last-day policy creates anchored dates and rescheduler supports yearly rules (1.5s)
+  ✓  6 [chrome] › tests/browser/calendar.spec.ts:83:1 › upcoming-only scope preserves historical occurrence content, roster and schedule (1.1s)
+  ✓  7 [chrome] › tests/browser/calendar.spec.ts:99:1 › personal meeting reminders persist across reload and dismiss across windows (21.4s)
+
+
+  1) [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: browserContext.close: Test ended.
+    Browser logs:
+
+    <launching> /Applications/Google Chrome.app/Contents/MacOS/Google Chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --host-resolver-rules=MAP localhost 127.0.0.1 --user-data-dir=/var/folders/r9/p6xmpfgx41l04vyxrrm8cxtm0000gp/T/playwright_chromiumdev_profile-goTEc2 --remote-debugging-pipe --no-startup-window
+    <launched> pid=37477
+    [pid=37477][err] [37477:483954:1015/014243.599995:ERROR:chrome/browser/ui/views/user_education/impl/browser_user_education_interface_impl.cc:186] Attempting to show IPH IPH_BatterySaverMode before browser initialization; IPH will not be shown.
+    [pid=37477][err] Trying to load the allocator multiple times. This is *not* supported.
+    [pid=37477][err] [37485:484053:1015/014243.692179:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.692508:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.696372:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.696427:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.696546:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.696582:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.696660:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.696697:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.696766:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.696804:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37477:483954:1015/014243.780760:ERROR:chrome/browser/ui/views/user_education/impl/browser_user_education_interface_impl.cc:186] Attempting to show IPH IPH_BatterySaverMode before browser initialization; IPH will not be shown.
+    [pid=37477][err] [37485:484053:1015/014243.806835:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.806911:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.818588:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.818646:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.819044:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.819088:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.819494:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.819549:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484053:1015/014243.819833:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37485:484119:1015/014243.819874:ERROR:ui/display/mac/cv_display_link_mac.mm:188] CVDisplayLinkCreateWithCGDisplay failed. CVReturn: -6670
+    [pid=37477][err] [37477:484014:1015/014246.189133:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+    [pid=37477][err] [37477:484014:1015/014246.189849:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+    [pid=37477][err] [37477:484014:1015/014246.194452:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+    [pid=37477][err] [37477:484014:1015/014314.225020:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=37477] <gracefully close start>
+
+      19 |     await expect(received).toBeVisible({timeout:12000});await expect(received.getByLabel('RSVP',{exact:true})).toHaveValue('pending');
+      20 |     await a.request.patch(`${base}/${id}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});await expect(received.getByRole('heading')).toContainText('Cancelled',{timeout:12000});
+    > 21 |   }finally{if(id)await a.request.patch(`${api}/v1/organizations/${org}/meetings/${id}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});await a.close();await b.close();}
+         |                                                                                                                                                          ^
+      22 | });
+      23 |
+      24 | test('calendar date range loads beyond the first page and retries an unavailable page',async({page})=>{
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/calendar.spec.ts:21:154
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/calendar-calendar-automati-a8b58-e-addition-and-cancellation-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/calendar-calendar-automati-a8b58-e-addition-and-cancellation-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/calendar-calendar-automati-a8b58-e-addition-and-cancellation-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/calendar-calendar-automati-a8b58-e-addition-and-cancellation-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/calendar-calendar-automati-a8b58-e-addition-and-cancellation-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation 
+  6 passed (2.2m)

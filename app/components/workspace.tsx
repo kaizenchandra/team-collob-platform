@@ -1,4 +1,9 @@
 "use client";
+import {AuditSearch} from "./audit-search";
+import {UsageReport} from "./usage-report";
+import {MessageReportDialog,ModerationPanel} from "./moderation";
+import {PostingPolicy} from "./posting-policy";
+import {MeetingReminders} from "./meeting-reminders";
 import { InvitationInbox, InvitationNotice } from "./invitation-inbox";
 import { BrowserMentionAlerts } from "./notifications";
 import { AttachmentPicker, MessageAttachments } from "./attachments";
@@ -148,9 +153,6 @@ export default function Workspace() {
         mentioned: boolean;
         replied: boolean;
       }[]
-    >([]),
-    [audit, setAudit] = useState<
-      { id: string; action: string; actor: string; created_at: string }[]
     >([]);
   const identityRef = useRef("");
   const streamRef = useRef(stream);
@@ -169,7 +171,10 @@ export default function Workspace() {
   const composerInput = useRef<HTMLTextAreaElement>(null);
   const typingAt = useRef(0);
   const listEnd = useRef<HTMLDivElement>(null);
+  const [reporting,setReporting]=useState<{channel:string;id:string;deleted:boolean}|null>(null);
+  useEffect(()=>setReporting(null),[org,stream]);
   const channel = boot?.channels.find((c) => c.id === stream);
+  const postingBlocked=!!channel?.posting_restricted&&!["owner","admin"].includes(boot?.role??"");
   const resetSession = useCallback(() => {
     identityRef.current = "";
     orgRef.current = "";
@@ -186,7 +191,6 @@ export default function Workspace() {
     setFailed(null);
     setResults(null);
     setActivity([]);
-    setAudit([]);
     setReceipts([]);
     setTyping([]);
     setReply(null);
@@ -446,14 +450,6 @@ export default function Workspace() {
     return () => { active = false; clearInterval(timer); };
   },[view,org,activityFilter,report]);
   useEffect(() => {
-    if (view === "Admin" && org)
-      void api<{ items: typeof audit }>(`/organizations/${org}/audit`)
-        .then((x) => {
-          if (orgRef.current === org) setAudit(x.items);
-        })
-        .catch(report);
-  }, [view, org, report]);
-  useEffect(() => {
     const event = new BroadcastChannel("concord-session");
     event.onmessage = (e) => {
       if (e.data === "logout") {
@@ -484,7 +480,7 @@ export default function Workspace() {
     }
   }
   async function send(retry = false, attachmentIds: string[] = []) {
-    if (!session || !stream || !org || sending || !draftReady) return;
+    if (!session || !stream || !org || sending || !draftReady || (postingBlocked&&!retry)) return;
     const destination = stream;
     const tenant = org;
     let item: PendingMessage;
@@ -745,7 +741,6 @@ export default function Workspace() {
                 setDraft("");
                 setResults(null);
                 setActivity([]);
-                setAudit([]);
               }}
             >
               {session.organizations.map((o) => (
@@ -861,6 +856,7 @@ export default function Workspace() {
         </div>
       </aside>
       <main id="main" className="main">
+        <MeetingReminders key={org} org={org}/>
         <div className="mobile-toolbar">
           <button
             onClick={() => setMobileNav(!mobileNav)}
@@ -1060,7 +1056,7 @@ export default function Workspace() {
                                     ?.name ?? "earlier message"}
                                 </div>
                               )}
-                              {m.deleted ? <p className="deleted">This message was deleted.</p> : <><MessageContent body={m.body} format={m.format} mentions={m.mentions} /><MessageAttachments channelId={stream} attachments={m.attachments} /></>}
+                              {m.deleted ? <><p className="deleted">This message was deleted.</p>{["standard","private","shared"].includes(channel.kind)&&<button aria-label="View report status" onClick={()=>setReporting({channel:stream,id:m.id,deleted:true})}>View report status</button>}</> : <><MessageContent body={m.body} format={m.format} mentions={m.mentions} /><MessageAttachments channelId={stream} attachments={m.attachments} /></>}
                               {!m.deleted && (
                                 <div className="message-bottom">
                                   {[
@@ -1126,6 +1122,7 @@ export default function Workspace() {
                             </div>
                             {!m.deleted && (
                               <div className="message-tools">
+                                {["standard","private","shared"].includes(channel.kind)&&<button aria-label="Report message" onClick={()=>setReporting({channel:stream,id:m.id,deleted:m.deleted})}>Report</button>}
                                 <button
                                   title="Like message"
                                   aria-label={`Like message by ${m.name}`}
@@ -1150,6 +1147,7 @@ export default function Workspace() {
                                 </button>
                                 <button
                                   aria-label="Reply to message"
+                                  disabled={postingBlocked}
                                   onClick={() => setReply(m)}
                                 >
                                   <Reply size={15} />
@@ -1186,6 +1184,7 @@ export default function Workspace() {
                                   <>
                                     <button
                                       aria-label="Edit message"
+                                      disabled={postingBlocked}
                                       onClick={() => setModal(`edit:${m.id}`)}
                                     >
                                       <Pencil size={15} />
@@ -1212,6 +1211,7 @@ export default function Workspace() {
                         <div ref={listEnd} />
                       </div>
                       <div className="composer-wrap">
+                        {postingBlocked&&<p role="status">Only workspace owners and admins can post, reply or edit here. You can keep editing your saved draft.</p>}
                         {messages.length > 0 && (
                           <button
                             className="mark-read"
@@ -1298,7 +1298,7 @@ export default function Workspace() {
                             <button
                               type="button"
                               aria-label="Attach file"
-                              disabled={!draftReady || sending || !!failed}
+                              disabled={!draftReady || sending || !!failed || postingBlocked}
                               onClick={() => setModal("attachment")}
                             >
                               <Paperclip size={18} />
@@ -1323,6 +1323,7 @@ export default function Workspace() {
                               aria-label="Send message"
                               type="submit"
                               disabled={
+                                postingBlocked ||
                                 !draftReady ||
                                 !draft.trim() ||
                                 sending ||
@@ -1409,6 +1410,7 @@ export default function Workspace() {
                     ))}
                     {["admin", "owner"].includes(boot?.role ?? "") && (
                       <>
+                        {["standard","private","shared"].includes(channel.kind)&&<PostingPolicy channel={channel} onSaved={refresh}/>}
                         <button
                           className="secondary"
                           onClick={() => setModal("migration")}
@@ -1531,9 +1533,11 @@ export default function Workspace() {
             </div>
             <div className="content-pad">
               <Unavailable title="Governance controls are incomplete">
-                Retention, legal holds, export, closure, policy administration
-                and tamper-resistant audit archival are not available yet.
+                Retention, legal holds, full user/workspace export, closure, general
+                policy administration and tamper-resistant audit archival are not available yet.
               </Unavailable>
+              <UsageReport key={`usage:${org}`} org={org}/>
+              <ModerationPanel key={`reports:${org}`} org={org}/>
               <MembershipPanel
                 key={org}
                 org={org}
@@ -1541,15 +1545,7 @@ export default function Workspace() {
                 refresh={refresh}
                 report={report}
               />
-              <h2>Audit history</h2>
-              {audit.map((a) => (
-                <div className="result-card" key={a.id}>
-                  <strong>{a.action}</strong>
-                  <p>
-                    {a.actor} · {new Date(a.created_at).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+              <AuditSearch key={`audit:${org}`} org={org} people={boot?.people??[]}/>
             </div>
           </>
         ) : (
@@ -1564,6 +1560,7 @@ export default function Workspace() {
           />
         )}
       </main>
+      {reporting&&<MessageReportDialog key={reporting.id} channel={reporting.channel} id={reporting.id} deleted={reporting.deleted} onClose={()=>setReporting(null)}/>}
       {modal && (
         <Modal
           title={

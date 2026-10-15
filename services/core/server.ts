@@ -1,3 +1,9 @@
+import {registerUsage} from './usage.ts';
+import {registerAuditExport} from './audit-export.ts';
+import {registerAuditSearch} from './audit-search.ts';
+import {registerModeration} from './moderation.ts';
+import {registerPostingPolicy,requirePosting} from './posting-policy.ts';
+import {registerMeetingReminders} from './meeting-reminders.ts';
 import {registerNotifications} from "./notifications.ts";
 import {attachFiles, attachmentProjection} from "./attachments.ts";
 import {mentionProjection, mentionRecipients, replaceMentions} from "./mentions.ts";
@@ -157,7 +163,7 @@ export async function createApp() {
             correlationId: req.id,
         });
     });
-    app.get("/health", async () => ({status: "ok", release: "0.1.27"}));
+    app.get("/health", async () => ({status: "ok", release: "0.1.41"}));
     app.get("/ready", async () => {
         await pool.query("SELECT 1");
         return {status: "ready"};
@@ -421,6 +427,7 @@ export async function createApp() {
                     );
                 return old.rows[0];
             }
+            await requirePosting(db,req.user.id,c);
             if (b.parentId) {
                 const p = await db.query(
                     "SELECT 1 FROM messages WHERE id=$1 AND channel_id=$2 AND NOT deleted",
@@ -466,6 +473,7 @@ export async function createApp() {
             .parse(req.body);
         return transaction(async (db) => {
             const c = await channel(db, req.user.id, id, true);
+            await requirePosting(db,req.user.id,c);
             const r = await db.query(
                 "UPDATE messages SET body=$1,format=coalesce($5,format),edited_at=now() WHERE id=$2 AND channel_id=$3 AND user_id=$4 AND NOT deleted RETURNING id,format",
                 [b.body, mid, id, req.user.id, b.format ?? null],
@@ -757,18 +765,6 @@ export async function createApp() {
             )).rows
         };
     });
-    app.get("/v1/organizations/:id/audit", async (req) => {
-        const org = idParam(req);
-        await member(pool, req.user.id, org, true);
-        return {
-            items: (
-                await pool.query(
-                    "SELECT a.*,u.name actor FROM audit a LEFT JOIN users u ON u.id=a.actor_id WHERE org_id=$1 ORDER BY id DESC LIMIT 100",
-                    [org],
-                )
-            ).rows,
-        };
-    });
     app.post("/v1/organizations/:id/feedback", async (req) => {
         const org = idParam(req);
         await member(pool, req.user.id, org);
@@ -786,6 +782,12 @@ export async function createApp() {
     await registerWork(app);
     await registerFiles(app);
   await registerNotifications(app);
+  await registerPostingPolicy(app);
+  await registerModeration(app);
+  await registerAuditSearch(app);
+  await registerAuditExport(app);
+  await registerUsage(app);
+  await registerMeetingReminders(app);
     const reconcile = await registerOidc(app, origins[0]);
     const readSession = sessionReader(process.env, reconcile);
     return app;

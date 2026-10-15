@@ -113,3 +113,41 @@ Release0.1.25 removes the calendar's silent100-meeting cutoff. Use **Load more m
 Release0.1.26 automatically refreshes an open Calendar when relevant meetings or responses change. Updates return browsing to the first page and preserve open edit drafts. If change detection becomes unavailable, stale cards clear and reload on recovery. Hidden-tab/browser throttling can delay updates; external calendar sync remains unavailable.
 
 Release0.1.27 adds **Scheduling timezone** to meeting creation/editing. Nonexistent daylight-saving times are rejected. Repeated times require an explicit earlier/later choice, preventing silent clock-change adjustments. Calendar cards still display in your browser timezone and identify the saved scheduling zone.
+
+Release0.1.28 adds bounded **Daily / Weekly** meeting series in the scheduling dialog. Choose interval and occurrence count. Meetings keep local clock time across daylight saving; invalid occurrences reject the entire series. Each occurrence has independent RSVP/editing, and organizers can **Cancel series**. Monthly/yearly recurrence and series-wide editing remain unavailable.
+
+Release0.1.29 adds **Edit scope → All noncancelled occurrences** in recurring-meeting editors. Update the entire active series' title, description and attendees with conflict protection. Cancelled occurrences stay unchanged. Times and recurrence rules still require individual occurrence edits; whole-series rescheduling remains unavailable.
+
+Release0.1.30 adds **Reschedule series**. Adjust the first-occurrence anchor, timezone, daily/weekly frequency and interval across active occurrences. Stable IDs, cancelled entries, titles and attendees are preserved. Changed occurrence times reset RSVPs; count remains fixed.
+
+Release0.1.31 adds **Monthly / Yearly** recurrence and an explicit missing-date policy. Reject invalid month dates or use the last valid day; January31 schedules return to March31 after February, and leap-day schedules return to February29 in leap years. Monthly/yearly series are bounded to5calendar years.
+
+Recovery tooling now writes encrypted backup envelope5 with calendar, reminder and moderation/policy table digests. The isolated restore exercise verifies schedules, exceptions, attendee permissions, reminder settings/dismissal and due APIs. Run `ALLOW_LOCAL_BACKUP=true node scripts/test-calendar-recovery.mjs`. Application images remain0.1.38; versions1–4 remain readable with their original verification scope. See `docs/OPERATIONS.md` for key handling and recovery limits.
+
+Release0.1.32 adds **Total series occurrences** to Reschedule series. Increase it to append meetings while preserving existing IDs and cancellations. New meetings copy the last active occurrence's title/attendees and start with pending attendee RSVPs. Counts cannot decrease; cancel unwanted occurrences.
+
+Release0.1.33 adds **Upcoming noncancelled occurrences** in Edit scope and **Only upcoming occurrences** in Reschedule series. Server time determines eligibility. Past and in-progress meetings stay unchanged; selected future occurrences cannot be moved into the past.
+
+
+Local release0.1.34 adds **Cancel upcoming occurrences** alongside whole-series cancellation. Upcoming means the meeting has not started according to the server clock; historical and ongoing meetings retain their content, responses and schedule. This is a partial local collaboration release; external calendar synchronization, media and production gates remain open.
+
+
+Local release0.1.35 adds **Preview occurrences** to recurring meeting creation and series rescheduling. Review dates in the scheduling timezone before saving; missing month dates and DST errors appear in the preview. Changing schedule inputs hides stale results. Rescheduling previews canonical candidates, while the server preserves applicable exceptions and checks current access on save.
+
+
+Local release0.1.36 adds opt-in **In-app reminder** on each calendar meeting (5/15/30/60minutes). Reminders appear in the workspace while the app is open, respect quiet hours and can be dismissed across windows. Settings/dismissals persist in PostgreSQL. A changed start time re-arms a dismissed reminder; new series occurrences defaultoff. Background push/email reminders remain outside this increment.
+
+
+Local release **0.1.37** adds channel posting restrictions. Organization owners/admins with channel access can open **Conversation details → Posting permissions** and restrict posts, replies and edits to those roles. Members keep reading and editing saved drafts. Policy changes are audited and propagate to connected participants; the backend enforces them even for direct API requests. Direct/group chats are excluded.
+
+
+Local release **0.1.38** adds **Report message** for team-channel messages, a persistent receipt, and **Admin → Message reports** for authorized reviewers. Admins must have current channel access. They can dismiss a report or remove the message with an audited decision; reporters see status without private reviewer notes. Deleted messages offer **View report status**. Direct/group reports and immutable evidence retention are not implemented in this increment.
+
+
+Moderation recovery: run `ALLOW_LOCAL_BACKUP=true node scripts/test-moderation-recovery.mjs` to verify restored posting policies, private-channel access, report receipts and decision retries. `ALLOW_LOCAL_BACKUP=true node scripts/test-calendar-recovery.mjs` verifies calendar/reminder APIs with the same envelope5 tools. These exercises use disposable local restore resources and synthetic source organizations; they do not establish production recovery objectives.
+
+
+Local release **0.1.39** adds **Admin → Audit history** search by exact action, actor id, target and a bounded time range. Results paginate, retry failed pages, and clear when the workspace changes. Event metadata renders as text. Current owner/admin authorization applies to every request; immutable archival and retention controls remain unfinished.
+
+
+Local release **0.1.40** adds **Admin → Audit history → Download audit JSON** for current workspace owners/admins. Apply any edited filters first. The download includes all matching events, limited to1,000 events/2MiB; larger selections must be narrowed. Generation is limited to five exports per actor/workspace per rolling minute. The browser verifies tenant scope, format and SHA256 before handing the file to its download manager. This is an audit-only export; full user/workspace exports remain unfinished.

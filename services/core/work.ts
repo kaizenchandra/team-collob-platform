@@ -1,6 +1,7 @@
 import type {FastifyInstance} from "fastify";
 import {z} from "zod";
-import {randomUUID} from "node:crypto";
+import {randomUUID,createHash} from "node:crypto";
+import {meetingOccurrences} from "../../lib/meeting-recurrence.ts";
 import {type DB, pool, transaction} from "./db.ts";
 import {audit, channel, event, HttpError, member} from "./security.ts";
 import {idParam} from "./server.ts";
@@ -20,6 +21,11 @@ async function calendarChanged(db:DB,org:string,users:string[]){
 }
 async function calendarRecipients(db:DB,id:string,organizer:string){
     return [organizer,...(await db.query("SELECT user_id FROM meeting_attendees WHERE meeting_id=$1",[id])).rows.map(r=>r.user_id)];
+}
+
+async function lockParentSeries(db:DB,org:string,id:string){
+    const row=(await db.query("SELECT series_id FROM meetings WHERE id=$1 AND org_id=$2",[id,org])).rows[0];
+    if(row?.series_id)await db.query("SELECT id FROM meeting_series WHERE id=$1 FOR UPDATE",[row.series_id]);
 }
 
 async function readers(
@@ -274,10 +280,10 @@ export async function registerWork(app: FastifyInstance) {
         const q=z.object({limit:z.coerce.number().int().min(1).max(100).default(50),from:z.iso.datetime().optional(),to:z.iso.datetime().optional(),afterStart:z.iso.datetime().optional(),afterId:uuid.optional()}).strict().parse(req.query);
         if(!!q.from!==!!q.to||!!q.afterStart!==!!q.afterId)throw new HttpError(400,"Provide both range or cursor fields");
         if(q.from&&q.to&&(Date.parse(q.to)<=Date.parse(q.from)||Date.parse(q.to)-Date.parse(q.from)>366*86400000))throw new HttpError(400,"Calendar range must be positive and at most 366 days");
-        const rows=(await pool.query(`SELECT m.*,a.response,
+        const rows=(await pool.query(`SELECT m.*,a.response,coalesce((SELECT r.minutes FROM meeting_reminders r WHERE r.meeting_id=m.id AND r.user_id=$2),0) reminder_minutes,s.count series_count,s.frequency series_frequency,s.revision series_revision,
             to_char(m.starts_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_start,
             CASE WHEN m.organizer_id=$2 THEN (SELECT coalesce(json_agg(ma.user_id ORDER BY ma.user_id),'[]') FROM meeting_attendees ma WHERE ma.meeting_id=m.id) ELSE NULL END attendee_ids
-            FROM meetings m LEFT JOIN meeting_attendees a ON a.meeting_id=m.id AND a.user_id=$2
+            FROM meetings m LEFT JOIN meeting_series s ON s.id=m.series_id LEFT JOIN meeting_attendees a ON a.meeting_id=m.id AND a.user_id=$2
             WHERE m.org_id=$1 AND (m.organizer_id=$2 OR a.user_id=$2)
             AND ($3::timestamptz IS NULL OR (m.ends_at>$3 AND m.starts_at<$4::timestamptz))
             AND ($5::timestamptz IS NULL OR (m.starts_at,m.id)>($5,$6::uuid))
@@ -296,6 +302,8 @@ export async function registerWork(app: FastifyInstance) {
                 timezone: z.string(),
                 description: z.string().max(4000).default(""),
                 attendees: z.array(uuid).max(100),
+                clientId:uuid.optional(),
+                recurrence:z.object({frequency:z.enum(['daily','weekly','monthly','yearly']),interval:z.number().int().min(1).max(12),count:z.number().int().min(2).max(52),repeatedTime:z.enum(['reject','earlier','later']).default('reject'),monthDayPolicy:z.enum(['reject','constrain']).default('reject')}).strict().optional(),
             })
             .parse(req.body);
         if (Date.parse(b.startsAt) >= Date.parse(b.endsAt))
@@ -305,31 +313,108 @@ export async function registerWork(app: FastifyInstance) {
         } catch {
             throw new HttpError(400, "Invalid timezone");
         }
-        return transaction(async (db) => {
+        if(b.recurrence&&!b.clientId)throw new HttpError(400,"A stable clientId is required for recurring meetings");
+        let occurrences:{startsAt:string;endsAt:string}[];
+        try{occurrences=b.recurrence?meetingOccurrences(b.startsAt,b.endsAt,b.timezone,b.recurrence):[{startsAt:b.startsAt,endsAt:b.endsAt}];}catch(e){throw new HttpError(400,e instanceof Error?e.message:"Invalid recurring series");}
+        return transaction(async db=>{
+            const recipients=[...new Set([req.user.id,...b.attendees])].sort();
+            let seriesId:string|null=null;
+            if(b.recurrence){
+                await db.query("SELECT id FROM users WHERE id=$1 FOR NO KEY UPDATE",[req.user.id]);
+                const canonicalRecurrence={frequency:b.recurrence.frequency,interval:b.recurrence.interval,count:b.recurrence.count,repeatedTime:b.recurrence.repeatedTime,...(b.recurrence.monthDayPolicy!=='reject'?{monthDayPolicy:b.recurrence.monthDayPolicy}:{})};
+                const requestHash=createHash('sha256').update(JSON.stringify({...b,recurrence:canonicalRecurrence,attendees:[...new Set(b.attendees)].sort(),clientId:undefined})).digest('hex');
+                const prior=(await db.query("SELECT * FROM meeting_series WHERE org_id=$1 AND organizer_id=$2 AND client_id=$3",[org,req.user.id,b.clientId])).rows[0];
+                if(prior){if(prior.request_hash!==requestHash)throw new HttpError(409,"Series operation changed. Use a new operation identifier.");const rows=(await db.query("SELECT id FROM meetings WHERE series_id=$1 AND series_ordinal<=$2 ORDER BY series_ordinal",[prior.id,b.recurrence.count])).rows;return {id:rows[0].id,seriesId:prior.id,occurrenceIds:rows.map(r=>r.id),replayed:true};}
+                seriesId=randomUUID();await db.query("INSERT INTO meeting_series(id,org_id,organizer_id,client_id,request_hash,frequency,interval,count,repeated_time,anchor_starts_at,anchor_ends_at,timezone,month_day_policy) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",[seriesId,org,req.user.id,b.clientId,requestHash,b.recurrence.frequency,b.recurrence.interval,b.recurrence.count,b.recurrence.repeatedTime,b.startsAt,b.endsAt,b.timezone,b.recurrence.monthDayPolicy]);
+            }
             await eligibleAttendees(db,org,b.attendees);
-            const id = randomUUID();
-            await db.query(
-                "INSERT INTO meetings(id,org_id,title,starts_at,ends_at,timezone,organizer_id,description) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
-                [
-                    id,
-                    org,
-                    b.title,
-                    b.startsAt,
-                    b.endsAt,
-                    b.timezone,
-                    req.user.id,
-                    b.description,
-                ],
-            );
-            for (const u of new Set([req.user.id, ...b.attendees]))
-                await db.query("INSERT INTO meeting_attendees VALUES($1,$2,$3)", [
-                    id,
-                    u,
-                    u === req.user.id ? "accepted" : "pending",
-                ]);
-            await calendarChanged(db,org,[req.user.id,...b.attendees]);
-            await audit(db, req.user.id, org, "meeting.created", id);
-            return {id};
+            const occurrenceIds:string[]=[];
+            for(const [index,times] of occurrences.entries()){
+                const id=randomUUID();occurrenceIds.push(id);
+                await db.query("INSERT INTO meetings(id,org_id,title,starts_at,ends_at,timezone,organizer_id,description,series_id,series_ordinal) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",[id,org,b.title,times.startsAt,times.endsAt,b.timezone,req.user.id,b.description,seriesId,seriesId?index+1:null]);
+                for(const u of recipients)await db.query("INSERT INTO meeting_attendees VALUES($1,$2,$3)",[id,u,u===req.user.id?'accepted':'pending']);
+            }
+            await calendarChanged(db,org,recipients);
+            await audit(db,req.user.id,org,seriesId?'meeting.series_created':'meeting.created',seriesId??occurrenceIds[0],{occurrences:occurrenceIds.length});
+            return {id:occurrenceIds[0],...(seriesId?{seriesId,occurrenceIds}: {})};
+        });
+    });
+    app.get("/v1/organizations/:id/meetings/:meeting/series",async req=>{
+        const org=idParam(req),id=idParam(req,'meeting');await member(pool,req.user.id,org);
+        const row=(await pool.query("SELECT s.id,s.revision,s.frequency,s.interval,s.count,s.repeated_time,s.month_day_policy,s.anchor_starts_at,s.anchor_ends_at,s.timezone,s.cancelled FROM meeting_series s JOIN meetings m ON m.series_id=s.id WHERE m.id=$1 AND m.org_id=$2 AND s.organizer_id=$3",[id,org,req.user.id])).rows[0];
+        if(!row)throw new HttpError(404,'Series unavailable');return row;
+    });
+    app.put("/v1/organizations/:id/meetings/:meeting/series/schedule",async req=>{
+        const org=idParam(req),id=idParam(req,'meeting');await member(pool,req.user.id,org);
+        const b=z.object({revision:z.number().int().positive(),startsAt:z.iso.datetime(),endsAt:z.iso.datetime(),timezone:z.string().max(100),frequency:z.enum(['daily','weekly','monthly','yearly']),interval:z.number().int().min(1).max(12),repeatedTime:z.enum(['reject','earlier','later']),monthDayPolicy:z.enum(['reject','constrain']).optional(),count:z.number().int().min(2).max(52).optional(),futureOnly:z.boolean().default(false)}).strict().parse(req.body);
+        try{new Intl.DateTimeFormat('en',{timeZone:b.timezone});}catch{throw new HttpError(400,'Invalid timezone');}
+        return transaction(async db=>{
+            const series=(await db.query("SELECT s.* FROM meeting_series s JOIN meetings m ON m.series_id=s.id WHERE m.id=$1 AND m.org_id=$2 AND s.organizer_id=$3 FOR UPDATE OF s",[id,org,req.user.id])).rows[0];
+            if(!series)throw new HttpError(404,'Series unavailable');if(series.cancelled)throw new HttpError(409,'Cancelled series cannot be rescheduled');if(series.revision!==b.revision)throw new HttpError(409,'Series changed. Close, refresh and reopen the rescheduler.');
+            const count=b.count??series.count;if(count<series.count)throw new HttpError(400,'Occurrence count can only increase; cancel unwanted occurrences instead.');
+            let times:{startsAt:string;endsAt:string}[];try{times=meetingOccurrences(b.startsAt,b.endsAt,b.timezone,{frequency:b.frequency,interval:b.interval,count,repeatedTime:b.repeatedTime,monthDayPolicy:b.monthDayPolicy??series.month_day_policy});}catch(e){throw new HttpError(400,e instanceof Error?e.message:'Invalid series schedule');}
+            const active=(await db.query("SELECT * FROM meetings WHERE series_id=$1 ORDER BY id FOR UPDATE",[series.id])).rows.filter(r=>!r.cancelled);if(!active.length)throw new HttpError(409,'No active occurrences remain');
+            const cutoff=b.futureOnly?(await db.query(`SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cutoff`)).rows[0].cutoff:null;
+            const upcoming=cutoff?new Set((await db.query('SELECT id FROM meetings WHERE id=ANY($1::uuid[]) AND starts_at>=$2::timestamptz',[active.map(r=>r.id),cutoff])).rows.map(r=>r.id)):null;
+            const rows=upcoming?active.filter(r=>upcoming.has(r.id)):active;
+            if(!rows.length&&count===series.count)throw new HttpError(409,'No upcoming occurrences remain');
+            if(cutoff){const proposed=[...rows.map(r=>times[r.series_ordinal-1].startsAt),...times.slice(series.count).map(t=>t.startsAt)];if(!(await db.query('SELECT bool_and(x::timestamptz >=$2::timestamptz) valid FROM unnest($1::text[]) x',[proposed,cutoff])).rows[0].valid)throw new HttpError(400,'Upcoming or added occurrences cannot be moved into the past');}
+            const preserved=active.length-rows.length;
+            const template=[...active].sort((a,b)=>b.series_ordinal-a.series_ordinal)[0];
+            const templateRecipients=count>series.count?(await db.query('SELECT user_id FROM meeting_attendees WHERE meeting_id=$1 ORDER BY user_id',[template.id])).rows.map(r=>r.user_id):[];
+            if(count>series.count)await eligibleAttendees(db,org,templateRecipients);
+            const affected=rows.map(r=>r.id);let added=0;
+            let rescheduled=0;
+            for(const row of rows){
+                const next=times[row.series_ordinal-1],changed=new Date(row.starts_at).getTime()!==Date.parse(next.startsAt)||new Date(row.ends_at).getTime()!==Date.parse(next.endsAt);
+                await db.query("UPDATE meetings SET starts_at=$2,ends_at=$3,timezone=$4,revision=revision+1 WHERE id=$1",[row.id,next.startsAt,next.endsAt,b.timezone]);
+                if(changed){rescheduled++;await db.query("UPDATE meeting_attendees SET response='pending' WHERE meeting_id=$1 AND user_id<>$2",[row.id,req.user.id]);}
+            }
+            for(let ordinal=series.count+1;ordinal<=count;ordinal++){
+                const next=times[ordinal-1],newId=randomUUID();affected.push(newId);added++;
+                await db.query('INSERT INTO meetings(id,org_id,title,description,starts_at,ends_at,timezone,organizer_id,series_id,series_ordinal) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[newId,org,template.title,template.description,next.startsAt,next.endsAt,b.timezone,req.user.id,series.id,ordinal]);
+                for(const user of [...new Set([req.user.id,...templateRecipients])])await db.query('INSERT INTO meeting_attendees VALUES($1,$2,$3)',[newId,user,user===req.user.id?'accepted':'pending']);
+            }
+            await db.query("UPDATE meeting_series SET anchor_starts_at=$2,anchor_ends_at=$3,timezone=$4,frequency=$5,interval=$6,repeated_time=$7,month_day_policy=$8,count=$9,revision=revision+1 WHERE id=$1",[series.id,b.startsAt,b.endsAt,b.timezone,b.frequency,b.interval,b.repeatedTime,b.monthDayPolicy??series.month_day_policy,count]);
+            const recipients=(await db.query("SELECT DISTINCT user_id FROM meeting_attendees WHERE meeting_id=ANY($1::uuid[])",[affected])).rows.map(r=>r.user_id);
+            await calendarChanged(db,org,[req.user.id,...recipients]);await audit(db,req.user.id,org,'meeting.series_rescheduled',series.id,{occurrences:affected.length,rescheduled,added,preserved,futureOnly:b.futureOnly,cutoff});return {revision:series.revision+1,occurrences:affected.length,rescheduled,added,count,preserved};
+        });
+    });
+    app.patch("/v1/organizations/:id/meetings/:meeting/series",async req=>{
+        const org=idParam(req),id=idParam(req,'meeting');await member(pool,req.user.id,org);const b=z.object({cancelled:z.literal(true),futureOnly:z.boolean().default(false)}).strict().parse(req.body);
+        return transaction(async db=>{
+            const series=(await db.query("SELECT s.* FROM meeting_series s JOIN meetings m ON m.series_id=s.id WHERE m.id=$1 AND m.org_id=$2 AND s.organizer_id=$3 FOR UPDATE OF s",[id,org,req.user.id])).rows[0];
+            if(!series)throw new HttpError(404,'Series unavailable');if(series.cancelled)return {ok:true};
+            const active=(await db.query("SELECT id FROM meetings WHERE series_id=$1 AND NOT cancelled ORDER BY id FOR UPDATE",[series.id])).rows.map(r=>r.id);
+            const cutoff=b.futureOnly?(await db.query(`SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cutoff`)).rows[0].cutoff:null;
+            const occurrences=cutoff?(await db.query('SELECT id FROM meetings WHERE id=ANY($1::uuid[]) AND starts_at>=$2::timestamptz ORDER BY id',[active,cutoff])).rows.map(r=>r.id):active,preserved=active.length-occurrences.length;
+            if(!occurrences.length)return {ok:true,cancelled:0,preserved};
+            const recipients=(await db.query("SELECT DISTINCT user_id FROM meeting_attendees WHERE meeting_id=ANY($1::uuid[])",[occurrences])).rows.map(r=>r.user_id);
+            await db.query("UPDATE meetings SET cancelled=true,revision=revision+1 WHERE id=ANY($1::uuid[])",[occurrences]);
+            await db.query("UPDATE meeting_series SET cancelled=$2,revision=revision+1 WHERE id=$1",[series.id,preserved===0]);
+            await calendarChanged(db,org,[req.user.id,...recipients]);await audit(db,req.user.id,org,'meeting.series_cancelled',series.id,{occurrences:occurrences.length,preserved,futureOnly:b.futureOnly,cutoff});return {ok:true,cancelled:occurrences.length,preserved};
+        });
+    });
+    app.put("/v1/organizations/:id/meetings/:meeting/series/details",async req=>{
+        const org=idParam(req),id=idParam(req,'meeting');await member(pool,req.user.id,org);
+        const b=z.object({revision:z.number().int().positive(),title:text,description:z.string().max(4000),attendees:z.array(uuid).max(100),futureOnly:z.boolean().default(false)}).strict().parse(req.body);
+        return transaction(async db=>{
+            const series=(await db.query("SELECT s.* FROM meeting_series s JOIN meetings m ON m.series_id=s.id WHERE m.id=$1 AND m.org_id=$2 AND s.organizer_id=$3 FOR UPDATE OF s",[id,org,req.user.id])).rows[0];
+            if(!series)throw new HttpError(404,'Series unavailable');
+            if(series.cancelled)throw new HttpError(409,'Cancelled series cannot be edited');
+            if(series.revision!==b.revision)throw new HttpError(409,'Series changed. Close this editor, refresh the calendar, and reopen the latest series.');
+            const active=(await db.query("SELECT id,starts_at FROM meetings WHERE series_id=$1 AND NOT cancelled ORDER BY id FOR UPDATE",[series.id])).rows;
+            const cutoff=b.futureOnly?(await db.query(`SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cutoff`)).rows[0].cutoff:null;
+            const occurrences=cutoff?(await db.query('SELECT id FROM meetings WHERE id=ANY($1::uuid[]) AND starts_at>=$2::timestamptz ORDER BY id',[active.map(r=>r.id),cutoff])).rows.map(r=>r.id):active.map(r=>r.id),preserved=active.length-occurrences.length;
+            if(!occurrences.length)throw new HttpError(409,b.futureOnly?'No upcoming occurrences remain':'No active occurrences remain');
+            await eligibleAttendees(db,org,b.attendees);
+            const before=(await db.query("SELECT DISTINCT user_id FROM meeting_attendees WHERE meeting_id=ANY($1::uuid[])",[occurrences])).rows.map(r=>r.user_id),roster=[...new Set([req.user.id,...b.attendees])];
+            const removed=await db.query("DELETE FROM meeting_attendees WHERE meeting_id=ANY($1::uuid[]) AND NOT(user_id=ANY($2::uuid[])) RETURNING user_id",[occurrences,roster]);
+            const added=await db.query("INSERT INTO meeting_attendees(meeting_id,user_id,response) SELECT m,u,CASE WHEN u=$3::uuid THEN 'accepted' ELSE 'pending' END FROM unnest($1::uuid[]) m CROSS JOIN unnest($2::uuid[]) u ON CONFLICT DO NOTHING RETURNING user_id",[occurrences,roster,req.user.id]);
+            await db.query("UPDATE meetings SET title=$2,description=$3,revision=revision+1 WHERE id=ANY($1::uuid[])",[occurrences,b.title,b.description]);
+            await db.query("UPDATE meeting_series SET revision=revision+1 WHERE id=$1",[series.id]);
+            await calendarChanged(db,org,[...before,...roster]);await audit(db,req.user.id,org,'meeting.series_updated',series.id,{occurrences:occurrences.length,attendeesAdded:added.rowCount,attendeesRemoved:removed.rowCount,preserved,futureOnly:b.futureOnly,cutoff});
+            return {revision:series.revision+1,occurrences:occurrences.length,preserved};
         });
     });
     app.put("/v1/organizations/:id/meetings/:meeting/details", async req => {
@@ -339,6 +424,7 @@ export async function registerWork(app: FastifyInstance) {
         if(Date.parse(b.startsAt)>=Date.parse(b.endsAt))throw new HttpError(400,"End must be after start");
         try{new Intl.DateTimeFormat("en",{timeZone:b.timezone});}catch{throw new HttpError(400,"Invalid timezone");}
         return transaction(async db=>{
+            await lockParentSeries(db,org,id);
             const row=(await db.query("SELECT * FROM meetings WHERE id=$1 AND org_id=$2 AND organizer_id=$3 FOR UPDATE",[id,org,req.user.id])).rows[0];
             if(!row)throw new HttpError(404,"Meeting unavailable");
             if(row.cancelled)throw new HttpError(409,"Cancelled meetings cannot be edited");
@@ -355,6 +441,7 @@ export async function registerWork(app: FastifyInstance) {
             await db.query("UPDATE meetings SET title=$2,description=$3,starts_at=$4,ends_at=$5,timezone=$6,revision=revision+1 WHERE id=$1",[id,b.title,b.description,b.startsAt,b.endsAt,b.timezone]);
             if(rescheduled)await db.query("UPDATE meeting_attendees SET response='pending' WHERE meeting_id=$1 AND user_id<>$2",[id,req.user.id]);
             await calendarChanged(db,org,[...priorRecipients,...await calendarRecipients(db,id,req.user.id)]);
+            if(row.series_id)await db.query("UPDATE meeting_series SET revision=revision+1 WHERE id=$1",[row.series_id]);
             await audit(db,req.user.id,org,"meeting.updated",id,{rescheduled,revision:row.revision+1,attendeesAdded:added,attendeesRemoved:removed});
             return {revision:row.revision+1,rescheduled};
         });
@@ -363,11 +450,12 @@ export async function registerWork(app: FastifyInstance) {
         const org=idParam(req),meeting=idParam(req,"meeting");await member(pool,req.user.id,org);
         const b=z.union([z.object({cancelled:z.literal(true)}).strict(),z.object({response:z.enum(["accepted","declined","tentative"])}).strict()]).parse(req.body);
         return transaction(async db=>{
+            if("cancelled" in b)await lockParentSeries(db,org,meeting);
             const row=(await db.query("SELECT * FROM meetings WHERE id=$1 AND org_id=$2 FOR UPDATE",[meeting,org])).rows[0];
             if(!row)throw new HttpError(404,"Meeting unavailable");
             if("cancelled" in b){
                 if(row.organizer_id!==req.user.id)throw new HttpError(404,"Meeting unavailable");
-                if(!row.cancelled){await db.query("UPDATE meetings SET cancelled=true,revision=revision+1 WHERE id=$1",[meeting]);await calendarChanged(db,org,await calendarRecipients(db,meeting,row.organizer_id));await audit(db,req.user.id,org,"meeting.cancelled",meeting);}
+                if(!row.cancelled){await db.query("UPDATE meetings SET cancelled=true,revision=revision+1 WHERE id=$1",[meeting]);if(row.series_id)await db.query("UPDATE meeting_series SET revision=revision+1 WHERE id=$1",[row.series_id]);await calendarChanged(db,org,await calendarRecipients(db,meeting,row.organizer_id));await audit(db,req.user.id,org,"meeting.cancelled",meeting);}
             }else{
                 const attendee=await db.query("SELECT 1 FROM meeting_attendees WHERE meeting_id=$1 AND user_id=$2",[meeting,req.user.id]);
                 if(!attendee.rowCount)throw new HttpError(404,"Meeting unavailable");

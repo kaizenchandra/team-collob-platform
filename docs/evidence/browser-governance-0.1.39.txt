@@ -1,0 +1,77 @@
+
+Running 21 tests using 1 worker
+
+(node:61785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/audit.spec.ts:3:1 › audit filters page, retry and clear across organizations (1.5s)
+  ✓   2 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.0s)
+  ✓   3 [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI (945ms)
+  ✓   4 [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit (483ms)
+  ✓   5 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (1.8s)
+  ✓   6 [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both (1.7s)
+  ✓   7 [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document (649ms)
+  ✓   8 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (951ms)
+  ✓   9 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.5s)
+Browser under test: 155.0.8059.41
+  ✓  10 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (1.9s)
+  ✓  11 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (615ms)
+  ✓  12 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (798ms)
+  ✓  13 [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery (495ms)
+  ✓  14 [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails (1.9s)
+  ✓  15 [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out (794ms)
+  ✓  16 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (5.2s)
+  ✓  17 [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages (990ms)
+  ✓  18 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (12.9s)
+  ✓  19 [chrome] › tests/browser/collaboration.spec.ts:489:1 › reply activity shows another user response and withdraws it after parent deletion (11.9s)
+  ✓  20 [chrome] › tests/browser/moderation.spec.ts:3:1 › channel policy updates live, retains drafts and restores member posting (8.3s)
+  ✘  21 [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt (6.0s)
+
+
+  1) [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: 'Report message' })
+    Expected substring: "Report status: open"
+    Received string:    "Report messageWorkspace owners and admins who can access this channel can review your report. Reviews use the current message text; original content is not archived by reporting.Report reasonSpamHarassmentUnsafe contentOtherReport detailsPlease review 1792042121464 <script>untrusted</script>Submit reportToo many requests. Try again in a minute."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('dialog', { name: 'Report message' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Report message' })
+        - locator resolved to <dialog open="" aria-label="Report message">…</dialog>
+        - unexpected value "Report messageWorkspace owners and admins who can access this channel can review your report. Reviews use the current message text; original content is not archived by reporting.Report reasonSpamHarassmentUnsafe contentOtherReport detailsPlease review 1792042121464 <script>untrusted</script>Submitting…"
+        13 × locator resolved to <dialog open="" aria-label="Report message">…</dialog>
+           - unexpected value "Report messageWorkspace owners and admins who can access this channel can review your report. Reviews use the current message text; original content is not archived by reporting.Report reasonSpamHarassmentUnsafe contentOtherReport detailsPlease review 1792042121464 <script>untrusted</script>Submit reportToo many requests. Try again in a minute."
+
+
+      18 |   try{
+      19 |     await login(alice,'alice@acme.test');const made=await a.request.post(`${api}/v1/organizations/${org}/channels`,{headers:{origin:'http://localhost:3101'},data:{name,kind:'private',teamId:team,members:['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb']}});expect(made.status()).toBe(200);id=(await made.json()).id;const sent=await a.request.post(`${api}/v1/channels/${id}/messages`,{headers:{origin:'http://localhost:3101'},data:{clientId:crypto.randomUUID(),body}});expect(sent.status()).toBe(201);const mid=(await sent.json()).id,url=`/?org=${org}&channel=${id}`;await alice.goto(url);await login(bob,'bob@acme.test',url);
+    > 20 |     await bob.locator('article.message').filter({hasText:body}).getByRole('button',{name:'Report message',exact:true}).click();const dialog=bob.getByRole('dialog',{name:'Report message'});await dialog.getByLabel('Report reason',{exact:true}).selectOption('harassment');await dialog.getByLabel('Report details',{exact:true}).fill(details);await dialog.getByRole('button',{name:'Submit report',exact:true}).click();await expect(dialog).toContainText('Report status: open');const first=(await (await b.request.get(`${api}/v1/channels/${id}/messages/${mid}/report`)).json()).report;await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+      21 |     await bob.reload();await bob.locator('article.message').filter({hasText:body}).getByRole('button',{name:'Report message',exact:true}).click();await expect(dialog).toContainText(first.id);await expect(dialog.getByRole('button',{name:'Submit report',exact:true})).toHaveCount(0);await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();
+      22 |     await alice.getByRole('button',{name:'Admin',exact:true}).click();const review=alice.getByRole('region',{name:'Message report review'}),card=review.locator('article').filter({hasText:details});await expect(card).toContainText(body);await expect(card.locator('img,script')).toHaveCount(0);await card.getByLabel('Review note',{exact:true}).fill('Removed after review');await alice.screenshot({path:'docs/evidence/message-report-review.png'});await card.getByRole('button',{name:'Remove reported message',exact:true}).click();await expect(card).toHaveCount(0);
+      23 |     const message=bob.locator(`#message-${mid}`);await expect(message).toContainText('This message was deleted.');await message.getByRole('button',{name:'View report status',exact:true}).click();await expect(dialog).toContainText('Report status: removed');await expect(dialog).toContainText(first.id);await expect(dialog).not.toContainText('Removed after review');await bob.screenshot({path:'docs/evidence/message-report-receipt.png'});await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/moderation.spec.ts:20:435
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/moderation-reports-survive-e9f8d-t-with-a-persistent-receipt-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/moderation-reports-survive-e9f8d-t-with-a-persistent-receipt-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/moderation-reports-survive-e9f8d-t-with-a-persistent-receipt-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/moderation-reports-survive-e9f8d-t-with-a-persistent-receipt-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/moderation-reports-survive-e9f8d-t-with-a-persistent-receipt-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt 
+  20 passed (1.1m)

@@ -1,0 +1,2 @@
+{"exercise":"concord-restore-847faafc","snapshotAt":"2026-10-14T20:48:03.196Z","moderationMetadataVerified":false,"moderationApiVerified":false,"reminderApiVerified":false,"reminderMetadataVerified":true,"calendarApiVerified":false,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":99,"local":59,"s3":40,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":3593,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}

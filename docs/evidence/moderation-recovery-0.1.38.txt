@@ -1,0 +1,6 @@
+{"backup":{"artifact":".data/backups/core-24e87235-6cf5-4cab-b8d7-603e27ecb949.jwe","sha256":"3b0789857f66681a687fbbc7d72410255213262a9b2cbff716702d95333571de","snapshotAt":"2026-10-15T05:14:15.787Z","counts":{"messages":368,"memberships":31,"files":101,"message_attachments":11,"file_scan_jobs":84,"channels":14,"channel_members":29,"team_members":6,"message_mentions":0,"message_reports":5,"audit":3334,"outbox":945,"meetings":143,"meeting_series":26,"meeting_attendees":236,"calendar_versions":11,"meeting_reminders":4},"bytes":1333742,"durationMs":532,"keyStoredSeparately":true}}
+{"exercise":"concord-restore-c7bac446","snapshotAt":"2026-10-15T05:14:15.787Z","moderationMetadataVerified":true,"moderationApiVerified":true,"reminderApiVerified":false,"reminderMetadataVerified":true,"calendarApiVerified":false,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":101,"local":61,"s3":40,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":5302,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+{"digestMismatchRejected":"message_reports","failureCleanupComplete":true}
+{"digestMismatchRejected":"channels","failureCleanupComplete":true}
+{"sourcePolicyAndDecisionChangesDidNotAlterSnapshot":true}

@@ -16,14 +16,15 @@ export function command(cmd,args,input,limit=maxBytes){
 }
 export const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const file=z.object({id:z.uuid(),org_id:z.uuid(),channel_id:z.uuid(),storage_key:z.uuid(),bytes:z.coerce.number().int().min(0).max(1048576),sha256:z.string().regex(/^[a-f0-9]{64}$/),storage_backend:z.enum(['local','s3']),object_key:z.string().nullable(),object_bucket:z.string().nullable(),state:z.string(),revision_root:z.uuid().nullable().optional(),revision_number:z.number().int().min(1).max(100).optional(),data:z.string().max(1400000)});
-export const envelope=z.object({version:z.union([z.literal(1),z.literal(2)]),snapshotAt:z.iso.datetime(),images:z.object({api:z.string().regex(/^sha256:[a-f0-9]{64}$/),postgres:z.string().regex(/^sha256:[a-f0-9]{64}$/),objects:z.string().regex(/^sha256:[a-f0-9]{64}$/)}),counts:z.record(z.string(),z.number().int().nonnegative()),database:z.string().max(maxBytes),databaseSha:z.string(),files:z.array(file).max(10000)});
+const moderationManifest=z.object(Object.fromEntries(['channels','channel_members','team_members','memberships','messages','message_mentions','message_reports','audit','outbox'].map(table=>[table,z.object({count:z.number().int().min(0).max(50000),sha256:z.string().regex(/^[a-f0-9]{64}$/)}).strict()]))).strict();
+export const envelope=z.object({version:z.union([z.literal(1),z.literal(2),z.literal(3),z.literal(4),z.literal(5)]),snapshotAt:z.iso.datetime(),images:z.object({api:z.string().regex(/^sha256:[a-f0-9]{64}$/),postgres:z.string().regex(/^sha256:[a-f0-9]{64}$/),objects:z.string().regex(/^sha256:[a-f0-9]{64}$/)}),counts:z.record(z.string(),z.number().int().nonnegative()),database:z.string().max(maxBytes),databaseSha:z.string(),files:z.array(file).max(10000),calendar:z.object(Object.fromEntries(['meetings','meeting_series','meeting_attendees','calendar_versions'].map(table=>[table,z.object({count:z.number().int().min(0).max(50000),sha256:z.string().regex(/^[a-f0-9]{64}$/)}).strict()]))).extend({meeting_reminders:z.object({count:z.number().int().min(0).max(50000),sha256:z.string().regex(/^[a-f0-9]{64}$/)}).strict().optional()}).strict().optional(),moderation:moderationManifest.optional()});
 export function validateBackup(value){
   const parsed=envelope.parse(value),dump=Buffer.from(parsed.database,'base64');
   if(sha(dump)!==parsed.databaseSha)throw new Error('Database archive integrity failed');
   if(parsed.counts.files!==parsed.files.length)throw new Error('Backup file manifest incomplete');
   if(new Set(parsed.files.map(f=>f.id)).size!==parsed.files.length)throw new Error('Duplicate backup file');
   for(const f of parsed.files){const bytes=Buffer.from(f.data,'base64');if(bytes.length!==f.bytes || sha(bytes)!==f.sha256)throw new Error('Backup file integrity failed');}
-  if(parsed.version===2){
+  if(parsed.version>=2){
     const byId=new Map(parsed.files.map(f=>[f.id,f])),ordinals=new Set();
     for(const f of parsed.files){
       if(f.revision_root===undefined || f.revision_number===undefined)throw new Error('Missing revision metadata');
@@ -34,5 +35,13 @@ export function validateBackup(value){
       ordinals.add(ordinal);
     }
   }
+  if(parsed.version>=3){
+    if(!parsed.calendar)throw new Error('Missing calendar manifest');
+    if(parsed.version>=4&&!parsed.calendar.meeting_reminders)throw new Error('Missing reminder manifest');
+    if(parsed.version===3&&parsed.calendar.meeting_reminders)throw new Error('Unexpected reminder manifest for version3');
+    for(const [table,entry] of Object.entries(parsed.calendar))if(parsed.counts[table]!==entry.count)throw new Error('Calendar count manifest mismatch');
+  }
+  if(parsed.version===5){if(!parsed.moderation)throw new Error('Missing moderation manifest');for(const [table,entry] of Object.entries(parsed.moderation))if(parsed.counts[table]!==entry.count)throw new Error('Moderation count manifest mismatch');}
+  else if(parsed.moderation)throw new Error('Unexpected moderation manifest for legacy version');
   return parsed;
 }

@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:32512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation (21.6s)
+  ✓  2 [chrome] › tests/browser/calendar.spec.ts:24:1 › calendar date range loads beyond the first page and retries an unavailable page (11.1s)
+  ✓  3 [chrome] › tests/browser/calendar.spec.ts:37:1 › scheduling rejects DST gaps and persists an explicitly chosen repeated-time occurrence (979ms)
+  ✓  4 [chrome] › tests/browser/calendar.spec.ts:51:1 › weekly series keeps DST time, supports whole-series edits and roster changes, then cancels (31.1s)
+  ✓  5 [chrome] › tests/browser/calendar.spec.ts:68:1 › monthly last-day policy creates anchored dates and rescheduler supports yearly rules (1.1s)
+  ✓  6 [chrome] › tests/browser/calendar.spec.ts:83:1 › upcoming-only scope preserves historical occurrence content, roster and schedule (1.1s)
+
+  6 passed (1.1m)

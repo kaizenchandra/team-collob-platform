@@ -22,6 +22,9 @@ import { FilePreviewDialog } from "./file-preview";
 import { previewMimeTypes } from "@/lib/file-preview";
 import {MeetingTimezone} from "./meeting-timezone";
 import {resolveMeetingTime,type RepeatedTime} from "@/lib/meeting-time";
+import {MeetingReminderControl} from "./meeting-reminders";
+import {RecurrencePreview} from "./recurrence-preview";
+import {SeriesRescheduler} from "./series-rescheduler";
 import { MeetingEditor } from "./meeting-editor";
 import { InvitationInbox } from "./invitation-inbox";
 import { AcceptInvitation } from "./membership-panels";
@@ -413,7 +416,11 @@ export function CalendarPanel({
   userId: string;
   report: Report;
 }) {
+  const [frequency,setFrequency]=useState<'none'|'daily'|'weekly'|'monthly'|'yearly'>('none'),[repeatInterval,setRepeatInterval]=useState(1),[repeatCount,setRepeatCount]=useState(4);
+  const [monthDayPolicy,setMonthDayPolicy]=useState<'reject'|'constrain'>('reject');
+  const seriesOperation=useRef<{payload:string;id:string}|null>(null);
   const [scheduleZone,setScheduleZone]=useState(Intl.DateTimeFormat().resolvedOptions().timeZone),[scheduleChoice,setScheduleChoice]=useState<RepeatedTime>('reject'),[scheduleError,setScheduleError]=useState('');
+  const [rescheduling,setRescheduling]=useState<Meeting|null>(null);
   const [editing,setEditing]=useState<Meeting|null>(null);
   const [rangeStart,setRangeStart]=useState(''),[rangeEnd,setRangeEnd]=useState(''),[range,setRange]=useState<{from?:string;to?:string}>({});
   const [cursor,setCursor]=useState<{startsAt:string;id:string}|null>(null),[loading,setLoading]=useState(false),[loadError,setLoadError]=useState('');
@@ -469,7 +476,7 @@ export function CalendarPanel({
         {loadError&&<div role="alert"><p>{loadError}</p><button className="secondary" onClick={()=>void load(appendRef.current,cursor??undefined)}>Retry calendar</button></div>}
         {loading&&<p role="status">Loading meetings…</p>}
         <Unavailable title="Local scheduling only">
-          External calendar synchronization, recurrence, availability, and
+          External calendar synchronization, complex recurrence rules, availability, and
           joining real media are not configured in this increment.
         </Unavailable>
         {meetings.length ? (
@@ -487,6 +494,7 @@ export function CalendarPanel({
                 <h3>
                   {m.title}
                   {m.cancelled && " · Cancelled"}
+                  {m.series_id && ` · ${m.series_frequency} ${m.series_ordinal}/${m.series_count}`}
                 </h3>
                 <p>
                   {new Date(m.starts_at).toLocaleString()} –{" "}
@@ -518,8 +526,8 @@ export function CalendarPanel({
                         }
                       }}
                     >
-                      Cancel meeting
-                    </button></>
+                      {m.series_id?'Cancel occurrence':'Cancel meeting'}
+                    </button>{m.series_id&&<button className="secondary" onClick={async()=>{try{await api(`/organizations/${org}/meetings/${m.id}/series`,'PATCH',{cancelled:true});await load();}catch(e){report(e);}}}>Cancel series</button>}{m.series_id&&<button className="secondary" title="Cancel occurrences that have not started; preserve past and ongoing meetings" onClick={async()=>{try{await api(`/organizations/${org}/meetings/${m.id}/series`,'PATCH',{cancelled:true,futureOnly:true});await load();}catch(e){report(e);}}}>Cancel upcoming occurrences</button>}{m.series_id&&<button className="secondary" onClick={()=>setRescheduling(m)}>Reschedule series</button>}</>
                   ) : (
                     <>
                       <label className="sr-only" htmlFor={m.id}>
@@ -552,6 +560,7 @@ export function CalendarPanel({
                   )}
                 </div>
               )}
+              {!m.cancelled&&<><MeetingReminderControl org={org} id={m.id} minutes={m.reminder_minutes} onSaved={load} report={report}/><p>Personal reminder while the app is open. Quiet hours apply; new series occurrences start with reminders off.</p></>}
             </article>
           ))
         ) : (
@@ -561,6 +570,7 @@ export function CalendarPanel({
         )}
       </div>
       {cursor&&<button className="secondary" disabled={loading} onClick={()=>void load(true,cursor)}>Load more meetings</button>}
+      {rescheduling&&<SeriesRescheduler org={org} meeting={rescheduling} onClose={()=>setRescheduling(null)} onSaved={load}/>}
       {editing && <MeetingEditor key={editing.id} org={org} meeting={editing} people={people} onClose={()=>setEditing(null)} onSaved={load} />}
       {modal && (
         <Modal title="Schedule a meeting" onClose={() => setModal(false)}>
@@ -569,13 +579,10 @@ export function CalendarPanel({
             onSubmit={async (e) => {
               e.preventDefault();setScheduleError('');
               try {
-                await api(`/organizations/${org}/meetings`, "POST", {
-                  title,
-                  startsAt: resolveMeetingTime(start,scheduleZone,scheduleChoice),
-                  endsAt: resolveMeetingTime(end,scheduleZone,scheduleChoice),
-                  timezone: scheduleZone,
-                  attendees,
-                });
+                const payload={title,startsAt:resolveMeetingTime(start,scheduleZone,scheduleChoice),endsAt:resolveMeetingTime(end,scheduleZone,scheduleChoice),timezone:scheduleZone,attendees,...(frequency!=='none'?{recurrence:{frequency,interval:repeatInterval,count:repeatCount,repeatedTime:scheduleChoice,monthDayPolicy}}:{})};
+                const serialized=JSON.stringify(payload);if(seriesOperation.current?.payload!==serialized)seriesOperation.current={payload:serialized,id:crypto.randomUUID()};
+                await api(`/organizations/${org}/meetings`,"POST",{...payload,...(frequency!=='none'?{clientId:seriesOperation.current.id}:{})});
+                seriesOperation.current=null;
                 setModal(false);
                 await load();
               } catch (e) {
@@ -610,6 +617,8 @@ export function CalendarPanel({
                 onChange={(e) => setEnd(e.target.value)}
               />
             </label>
+            <label htmlFor="meeting-repeat">Repeat</label><select id="meeting-repeat" value={frequency} onChange={e=>setFrequency(e.target.value as typeof frequency)}><option value="none">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select>
+            {frequency!=='none'&&<><label>Repeat interval<input type="number" min="1" max="12" required value={repeatInterval} onChange={e=>setRepeatInterval(Number(e.target.value))}/></label><label>Occurrence count<input type="number" min="2" max="52" required value={repeatCount} onChange={e=>setRepeatCount(Number(e.target.value))}/></label><label htmlFor="month-day-policy">Missing month date</label><select id="month-day-policy" value={monthDayPolicy} onChange={e=>setMonthDayPolicy(e.target.value as typeof monthDayPolicy)}><option value="reject">Reject the series</option><option value="constrain">Use last valid day in shorter months</option></select><p>Daily/weekly series span at most366days; monthly/yearly at most5calendar years. Each occurrence uses the original anchor. Every occurrence is checked for clock-change gaps; any invalid time prevents the entire series. Choose edit scope to update one occurrence or the active series.</p><RecurrencePreview signature={JSON.stringify([start,end,scheduleZone,scheduleChoice,frequency,repeatInterval,repeatCount,monthDayPolicy])} getSchedule={()=>({startsAt:resolveMeetingTime(start,scheduleZone,scheduleChoice),endsAt:resolveMeetingTime(end,scheduleZone,scheduleChoice),timezone:scheduleZone,rule:{frequency,interval:repeatInterval,count:repeatCount,repeatedTime:scheduleChoice,monthDayPolicy}})}/></>}
             <fieldset>
               <legend>Invite attendees</legend>
               {people

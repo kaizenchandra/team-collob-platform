@@ -1,0 +1,21 @@
+ Container concord-collaboration-file-worker-1 Recreate 
+ Container concord-collaboration-api-1 Recreate 
+ Container concord-collaboration-digest-worker-1 Recreate 
+ Container concord-collaboration-api-1 Recreated 
+ Container concord-collaboration-file-reconciler-1 Recreate 
+ Container concord-collaboration-web-1 Recreate 
+ Container concord-collaboration-web-1 Recreated 
+ Container concord-collaboration-digest-worker-1 Recreated 
+ Container concord-collaboration-file-worker-1 Recreated 
+ Container concord-collaboration-file-reconciler-1 Recreated 
+ Container concord-collaboration-file-worker-1 Starting 
+ Container concord-collaboration-digest-worker-1 Starting 
+ Container concord-collaboration-api-1 Starting 
+ Container concord-collaboration-file-worker-1 Started 
+ Container concord-collaboration-digest-worker-1 Started 
+ Container concord-collaboration-api-1 Started 
+ Container concord-collaboration-api-1 Waiting 
+ Container concord-collaboration-api-1 Waiting 
+ Container concord-collaboration-api-1 Error dependency api failed to start
+ Container concord-collaboration-api-1 Error dependency api failed to start
+dependency failed to start: container concord-collaboration-api-1 is unhealthy

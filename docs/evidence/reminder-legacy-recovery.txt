@@ -1,0 +1,2 @@
+{"exercise":"concord-restore-79e5bcdd","snapshotAt":"2026-10-14T19:25:55.883Z","reminderApiVerified":false,"reminderMetadataVerified":false,"calendarApiVerified":false,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":99,"local":59,"s3":40,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":11379,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}

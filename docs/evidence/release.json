@@ -1,5 +1,5 @@
 {
-  "version": "0.1.27-local",
+  "version": "0.1.40-local",
   "checks": [
     {
       "url": "http://localhost:4100/health",
@@ -15,25 +15,31 @@
     }
   ],
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-14T07:53:37.387Z",
+  "recordedAt": "2026-10-15T05:46:50.971Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "2f5ec21ee41a1cb59a41547e1ff818b64e1660868957435a044076df2dccdf97",
+  "sourceSha256": "63bf40c58425c887289e38b09896e96d8ff8a0d862a31b801cef82f6570fff8d",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
     "app/components/attachments.tsx",
+    "app/components/audit-search.tsx",
     "app/components/file-preview.tsx",
     "app/components/file-versions.tsx",
     "app/components/invitation-inbox.tsx",
     "app/components/meeting-editor.tsx",
+    "app/components/meeting-reminders.tsx",
     "app/components/meeting-timezone.tsx",
     "app/components/membership-panels.tsx",
     "app/components/mention-picker.tsx",
     "app/components/message-content.tsx",
+    "app/components/moderation.tsx",
     "app/components/notifications.tsx",
     "app/components/panels.tsx",
+    "app/components/posting-policy.tsx",
     "app/components/primitives.tsx",
+    "app/components/recurrence-preview.tsx",
+    "app/components/series-rescheduler.tsx",
     "app/components/workspace.tsx",
     "app/favicon.ico",
     "app/globals.css",
@@ -53,6 +59,7 @@
     "infra/seaweedfs/local-s3.json",
     "lib/contracts.ts",
     "lib/file-preview.ts",
+    "lib/meeting-recurrence.ts",
     "lib/meeting-time.ts",
     "lib/pending-messages.ts",
     "lib/pending-uploads.ts",
@@ -77,17 +84,27 @@
     "migrations/018_meeting_revisions.sql",
     "migrations/019_calendar_pagination.sql",
     "migrations/020_calendar_versions.sql",
+    "migrations/021_meeting_series.sql",
+    "migrations/022_series_revisions.sql",
+    "migrations/023_series_anchor.sql",
+    "migrations/024_calendar_month_rules.sql",
+    "migrations/025_meeting_reminders.sql",
+    "migrations/026_channel_posting_policy.sql",
+    "migrations/027_message_reports.sql",
+    "migrations/028_audit_search.sql",
     "next.config.ts",
     "package-lock.json",
     "package.json",
     "playwright.config.ts",
     "scripts/backup-common.mjs",
+    "scripts/calendar-backup.mjs",
     "scripts/configure-local-logout.mjs",
     "scripts/configure-local-mfa.mjs",
     "scripts/coordinated-backup.mjs",
     "scripts/init-requirements.py",
     "scripts/load-smoke.mjs",
     "scripts/local-identity-admin.mjs",
+    "scripts/moderation-backup.mjs",
     "scripts/prepare-standalone.mjs",
     "scripts/provision-local-identity.ts",
     "scripts/record-release.mjs",
@@ -98,15 +115,19 @@
     "scripts/restore-coordinated-backup.mjs",
     "scripts/restore-smoke.sh",
     "scripts/start-web.mjs",
+    "scripts/test-calendar-recovery.mjs",
     "scripts/test-coordinated-recovery.mjs",
     "scripts/test-core.mjs",
     "scripts/test-local-digests.mjs",
     "scripts/test-local-object-storage.mjs",
     "scripts/test-local-reconciliation.mjs",
+    "scripts/test-moderation-recovery.mjs",
     "scripts/test-restore-failure.mjs",
     "scripts/test-scanner-readiness.mjs",
     "scripts/wait-ready.mjs",
     "services/core/attachments.ts",
+    "services/core/audit-export.ts",
+    "services/core/audit-search.ts",
     "services/core/clamav.ts",
     "services/core/config.ts",
     "services/core/db.ts",
@@ -122,15 +143,18 @@
     "services/core/files.ts",
     "services/core/identity-actions.ts",
     "services/core/identity-audit.ts",
+    "services/core/meeting-reminders.ts",
     "services/core/membership.ts",
     "services/core/mentions.ts",
     "services/core/migrate-object-storage.ts",
     "services/core/migrate.ts",
+    "services/core/moderation.ts",
     "services/core/notification-time.ts",
     "services/core/notifications.ts",
     "services/core/object-storage.ts",
     "services/core/oidc-state.ts",
     "services/core/oidc.ts",
+    "services/core/posting-policy.ts",
     "services/core/promote-files.ts",
     "services/core/provider-reconciliation.ts",
     "services/core/provider-sessions.ts",
@@ -141,11 +165,13 @@
     "services/core/token-vault.ts",
     "services/core/work.ts",
     "tests/backup.test.mjs",
+    "tests/browser/audit.spec.ts",
     "tests/browser/calendar.spec.ts",
     "tests/browser/collaboration.spec.ts",
     "tests/browser/file-scanning.spec.ts",
     "tests/browser/identity.spec.ts",
     "tests/browser/invitations.spec.ts",
+    "tests/browser/moderation.spec.ts",
     "tests/browser/notifications.spec.ts",
     "tests/browser/provider-reconciliation.spec.ts",
     "tests/browser/recovery.spec.ts",
@@ -157,17 +183,17 @@
     "tests/release-health.test.mjs",
     "tsconfig.json"
   ],
-  "baseCommit": "bdd79211e3b493a806cbc760c80b81f0aa9a6898",
+  "baseCommit": "5687f1b9ad05bce70635412151e6e6e02eb0c05f",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.27-local": {
-      "imageId": "sha256:6a4a573931562d1c899f6312b3592df7a69354dd8d40abc6c9e7d0429846f0f2",
-      "created": "2026-10-14T13:20:50.426291656+05:30",
+    "concord-web:0.1.40-local": {
+      "imageId": "sha256:a72a7592785b3e416a22a8a13fe4b21c0bcd45eafe7410d4e75048eb92f13ad1",
+      "created": "2026-10-15T11:12:51.804091649+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.27-local": {
-      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
-      "created": "2026-10-14T13:17:09.119198721+05:30",
+    "concord-api:0.1.40-local": {
+      "imageId": "sha256:88e7bcd6ea607d7f6cdaf5d8e2e95105fde896391aa0d4537345dbedc6491d45",
+      "created": "2026-10-15T11:12:08.619911176+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
@@ -188,12 +214,12 @@
   },
   "containers": {
     "web": {
-      "imageId": "sha256:6a4a573931562d1c899f6312b3592df7a69354dd8d40abc6c9e7d0429846f0f2",
+      "imageId": "sha256:a72a7592785b3e416a22a8a13fe4b21c0bcd45eafe7410d4e75048eb92f13ad1",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
+      "imageId": "sha256:88e7bcd6ea607d7f6cdaf5d8e2e95105fde896391aa0d4537345dbedc6491d45",
       "status": "running",
       "health": "healthy"
     },
@@ -213,12 +239,12 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
+      "imageId": "sha256:88e7bcd6ea607d7f6cdaf5d8e2e95105fde896391aa0d4537345dbedc6491d45",
       "status": "running",
       "health": "healthy"
     },
     "file-reconciler": {
-      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
+      "imageId": "sha256:88e7bcd6ea607d7f6cdaf5d8e2e95105fde896391aa0d4537345dbedc6491d45",
       "status": "running",
       "health": "healthy"
     },
@@ -233,7 +259,7 @@
       "health": "healthy"
     },
     "digest-worker": {
-      "imageId": "sha256:50bc678ea82e9ab40e14c0c82e906c1fb8c9b1a110490c8a54b92215066369be",
+      "imageId": "sha256:88e7bcd6ea607d7f6cdaf5d8e2e95105fde896391aa0d4537345dbedc6491d45",
       "status": "running",
       "health": "healthy"
     }

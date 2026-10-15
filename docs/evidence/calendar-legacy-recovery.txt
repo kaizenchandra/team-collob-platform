@@ -1,0 +1,3 @@
+{"legacyVersion":2,"artifact":".data/backups/core-4fbb3778-a241-4202-856a-13c0053c236b.jwe"}
+{"exercise":"concord-restore-df2f1c7a","snapshotAt":"2026-10-14T00:53:15.441Z","calendarApiVerified":false,"calendarVerified":false,"revisionRootsVerified":["10ba0526-18d7-44a2-972d-c683566a32f4"],"revisionMetadataVerified":true,"filesVerified":65,"local":45,"s3":20,"countsMatch":true,"authorizedDownload":true,"crossTenantDenied":true,"durationMs":4532,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}

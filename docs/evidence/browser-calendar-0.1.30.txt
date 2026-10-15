@@ -1,0 +1,57 @@
+
+Running 4 tests using 1 worker
+
+(node:17062) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/calendar.spec.ts:3:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation (21.8s)
+  ✓  2 [chrome] › tests/browser/calendar.spec.ts:24:1 › calendar date range loads beyond the first page and retries an unavailable page (10.7s)
+  ✓  3 [chrome] › tests/browser/calendar.spec.ts:37:1 › scheduling rejects DST gaps and persists an explicitly chosen repeated-time occurrence (914ms)
+  ✘  4 [chrome] › tests/browser/calendar.spec.ts:51:1 › weekly series keeps DST time, supports whole-series edits and roster changes, then cancels (26.3s)
+
+
+  1) [chrome] › tests/browser/calendar.spec.ts:51:1 › weekly series keeps DST time, supports whole-series edits and roster changes, then cancels 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  getByRole('dialog', { name: 'Reschedule series' }).getByLabel('Series starts', { exact: true })
+    Expected: "2026-03-01T09:00:00"
+    Received: "2026-03-01T09:00"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" getByRole('dialog', { name: 'Reschedule series' }).getByLabel('Series starts', { exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Reschedule series' }).getByLabel('Series starts', { exact: true })
+        14 × locator resolved to <input step="1" required="" type="datetime-local" value="2026-03-01T09:00:00"/>
+           - unexpected value "2026-03-01T09:00"
+
+
+      60 |     await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Edit meeting',exact:true}).click();await editor.getByLabel('Edit scope',{exact:true}).selectOption('series');await editor.getByLabel('Bob Chen',{exact:true}).uncheck();await editor.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(editor).toHaveCount(0);await expect(cards).toHaveCount(0,{timeout:12000});
+      61 |     await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Edit meeting',exact:true}).click();await editor.getByLabel('Edit scope',{exact:true}).selectOption('series');await editor.getByLabel('Bob Chen',{exact:true}).check();await editor.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(editor).toHaveCount(0);await expect(cards).toHaveCount(3,{timeout:12000});
+    > 62 |     await alice.locator('.meeting-card').filter({hasText:title}).nth(1).getByRole('button',{name:'Reschedule series',exact:true}).click();const rescheduler=alice.getByRole('dialog',{name:'Reschedule series'});await expect(rescheduler.getByLabel('Series starts',{exact:true})).toHaveValue('2026-03-01T09:00:00');await rescheduler.getByLabel('Series starts',{exact:true}).fill('2026-03-02T10:00');await rescheduler.getByLabel('Series ends',{exact:true}).fill('2026-03-02T11:00');await rescheduler.getByLabel('Series frequency',{exact:true}).selectOption('daily');await rescheduler.getByLabel('Series interval',{exact:true}).fill('2');await alice.screenshot({path:'docs/evidence/meeting-series-reschedule.png'});await rescheduler.getByRole('button',{name:'Save series schedule',exact:true}).click();await expect(rescheduler).toHaveCount(0);await expect(cards.filter({hasText:'daily'})).toHaveCount(3,{timeout:12000});
+         |                                                                                                                                                                                                                                                                                     ^
+      63 |     const shifted=await (await b.request.get(`${api}/v1/organizations/${org}/meetings?from=2026-03-01T00:00:00Z&to=2026-03-16T00:00:00Z`)).json();expect(shifted.meetings.filter((m:{series_id:string})=>m.series_id===result.seriesId).map((m:{starts_at:string})=>m.starts_at)).toEqual(['2026-03-02T15:00:00.000Z','2026-03-04T15:00:00.000Z','2026-03-06T15:00:00.000Z']);
+      64 |     await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Cancel series',exact:true}).click();await expect(cards.filter({hasText:'Cancelled'})).toHaveCount(3,{timeout:12000});await bob.screenshot({path:'docs/evidence/meeting-series.png'});
+      65 |   }finally{if(first)await a.request.patch(`${api}/v1/organizations/${org}/meetings/${first}/series`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});await a.close();await b.close();}
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/calendar.spec.ts:62:277
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/calendar-weekly-series-kee-9bd89-roster-changes-then-cancels-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/calendar-weekly-series-kee-9bd89-roster-changes-then-cancels-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/calendar-weekly-series-kee-9bd89-roster-changes-then-cancels-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/calendar-weekly-series-kee-9bd89-roster-changes-then-cancels-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/calendar-weekly-series-kee-9bd89-roster-changes-then-cancels-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/calendar.spec.ts:51:1 › weekly series keeps DST time, supports whole-series edits and roster changes, then cancels 
+  3 passed (1.0m)

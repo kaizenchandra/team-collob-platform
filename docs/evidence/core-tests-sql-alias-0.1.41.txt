@@ -1,0 +1,127 @@
+
+> team-collob-platform@0.1.40 test
+> node scripts/test-core.mjs
+
+✔ backup validation rejects missing, corrupt, duplicate and unsafe-path file data (5.737666ms)
+✔ version2 backups require valid scoped lineages and unique revision ordinals (0.816791ms)
+✔ version3 calendar manifests require complete bounded counts and digests (1.060042ms)
+✔ version4 requires reminder count and digest while version3 keeps its original scope (0.469916ms)
+✔ version5 requires a complete bounded moderation manifest and preserves legacy scope (2.638ms)
+✔ scanner probe accepts a fragmented current capability response (11.74675ms)
+✔ scanner probe rejects stale, future, missing and invalid signature metadata (6.509875ms)
+✔ scanner probe rejects unsupported protocol, oversized and incomplete responses (1.651125ms)
+✔ scanner probe enforces a deadline and validates timeout configuration (30.572042ms)
+✔ scanner sends framed bytes only after readiness and accepts only definitive verdicts (5.236459ms)
+✔ anonymous and cross-origin requests are rejected (342.979709ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (18.666667ms)
+✔ private-channel visibility excludes a team guest (22.943625ms)
+✔ concurrent retried writes commit one message and one ordered event (49.189042ms)
+✔ message edit ownership, threads, reactions and monotonic read position (26.28475ms)
+✔ search and draft persistence survive a fresh application instance (16.545959ms)
+✔ private tasks and forms enforce assignment and response permissions (21.943708ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (27.221333ms)
+✔ meeting attendees must be tenant members; only organizer cancels (16.248334ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (18.805667ms)
+✔ 32-person receipts include every opted-in authorized recipient (180.489667ms)
+✔ live event replay and membership revocation close an active subscription (1105.289334ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (108.03725ms)
+✔ receipt privacy opt-out and session logout enforced (21.834041ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (625.849125ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (39.637709ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.452083ms)
+✔ authentication throttling does not consume the session-status and logout budget (156.757083ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (76.858042ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (125.360292ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (10.052167ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (46.789625ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (5.616459ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (3.489875ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (26.281375ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (18.33325ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (34.476583ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (59.939167ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (56.217958ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (25.686708ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (37.52475ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (40.078ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (3.226875ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (98.711959ms)
+✔ durable scan jobs retry, reject, recover leases and never resurrect deleted files (73.446875ms)
+✔ attachments enforce scanned same-channel access, immutable retries and current history visibility (60.773417ms)
+✔ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (40.73475ms)
+✔ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (19ms)
+✔ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (30.2625ms)
+✔ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (2.646ms)
+✔ source previews enforce scan/ACL/integrity and bound literal Unicode text (54.378625ms)
+✔ file revisions serialize numbering, preserve retry identity and withdraw the whole lineage (122.583833ms)
+✔ quiet hours evaluate overnight, equal endpoints and timezone DST boundaries (1.0965ms)
+✔ notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup (99.433917ms)
+✔ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (118.377083ms)
+✔ reply activity enforces recipient, current channel access and parent/reply deletion (44.479375ms)
+✔ reply alert opt-in is independent, cutoff-bound and deduplicates overlapping categories (53.853042ms)
+✔ invitation inbox isolates recipients and serializes concurrent identity acceptance (31.479416ms)
+✔ recipient decline is scoped, audited and cannot grant or revoke membership (15.949ms)
+✔ accept and decline races serialize without audit foreign-key deadlocks (35.990083ms)
+✔ organizer edits enforce revisions, reset rescheduled responses and serialize cancellation (28.610959ms)
+✔ meeting roster edits preserve retained RSVP and revoke removed attendee access (36.18375ms)
+✔ calendar keyset pages preserve microsecond ordering, range bounds and current access (18.541ms)
+✔ calendar change counters are durable, recipient-scoped and transactional (26.424875ms)
+✔ recurring series is atomic, retry-safe, scoped and cancelled without resurrection (38.130084ms)
+✔ series edits are revision-scoped, preserve cancelled occurrences and serialize individual edits (34.349458ms)
+✔ series rescheduling preserves IDs/cancelled exceptions and updates canonical anchor atomically (29.245625ms)
+✔ monthly/yearly rules persist policy and preserve legacy retry identity (20.445125ms)
+✔ series expansion preserves existing identities and original creation replay (34.748917ms)
+✔ upcoming-only series changes preserve historical rows and reject backward shifts (32.291875ms)
+✔ upcoming cancellation preserves started meetings and is idempotent (30.636542ms)
+✔ personal reminders persist, suppress safely and rearm only after time changes (58.738333ms)
+✔ channel posting policy serializes new writes, preserves accepted retries and enforces current roles (39.816625ms)
+✔ message reports preserve privacy, bound abuse and serialize audited moderation (99.851375ms)
+✔ audit search is tenant authorized, exact, time bounded and bigint safe (43.441959ms)
+✔ audit export is scoped, lossless, bounded and audited with serialized generation quotas (77.433416ms)
+✖ administrative usage reports preserve exact aggregates, UTC boundaries and current resource authorization (34.058666ms)
+✔ meeting timezone resolves normal and non-hour offsets (6.341ms)
+✔ DST gaps are rejected for every repeated-time choice (2.065125ms)
+✔ DST folds require choice and resolve to distinct instants (0.682041ms)
+✔ invalid local date and zone cannot silently normalize (0.184667ms)
+✔ editor initialization uses stored timezone for normal and folded instants (0.410042ms)
+✔ weekly recurrence preserves local time across DST (5.368291ms)
+✔ recurrence rejects any invalid later occurrence and bounds expansion (2.001333ms)
+✔ monthly rules anchor to original date without short-month drift (2.346417ms)
+✔ monthly overnight duration follows clamped start rather than a drifting end anchor (0.655542ms)
+✔ yearly leap-day anchoring and five-year horizon are explicit (2.100083ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.306958ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.247917ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.108208ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (2.490125ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.188709ms)
+✔ attachment references survive recovery and cannot change on an unconfirmed operation (1.10075ms)
+✔ upload recovery retains scoped identity without storing bytes and clears on logout (0.987583ms)
+✔ release evidence requires every service and actual expected images (1.029375ms)
+ℹ tests 95
+ℹ suites 0
+ℹ pass 94
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5345.983792
+
+✖ failing tests:
+
+test at tests/core.test.ts:12:102242
+✖ administrative usage reports preserve exact aggregates, UTC boundaries and current resource authorization (34.058666ms)
+  AssertionError [ERR_ASSERTION]: {"error":"Service temporarily unavailable. Retry shortly.","correlationId":"c461756f-3924-4098-8a49-045e7cd86827"}
+  
+  500 !== 200
+  
+      at TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:1866:54)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

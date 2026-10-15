@@ -1,0 +1,23 @@
+{"backup":{"artifact":".data/backups/core-f37bf6af-e01c-49ff-bbd4-ef59963cdfc4.jwe","sha256":"05aaa63a5e8b2b8e596e5241f8775dca3c8c0124c10ab1a38f4ee9109d61d84d","snapshotAt":"2026-10-15T05:15:33.122Z","counts":{"messages":368,"memberships":34,"files":101,"message_attachments":11,"file_scan_jobs":84,"channels":14,"channel_members":29,"team_members":6,"message_mentions":0,"message_reports":5,"audit":3358,"outbox":946,"meetings":150,"meeting_series":27,"meeting_attendees":255,"calendar_versions":14,"meeting_reminders":7},"bytes":1335828,"durationMs":448,"keyStoredSeparately":true}}
+{"exercise":"concord-restore-608e088a","snapshotAt":"2026-10-15T05:15:33.122Z","moderationMetadataVerified":true,"moderationApiVerified":false,"reminderApiVerified":true,"reminderMetadataVerified":true,"calendarApiVerified":true,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":101,"local":61,"s3":40,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":4148,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Restored calendar digest mismatch/. Input:
+
+'Backup command /Users/mwgbh/Library/Caches/JetBrains/WebStorm2026.2/acp-agents/.runtimes/node/24.19.0/bin/node failed (1): Backup command docker failed (1): pg_restore: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  the database system is shutting down\n' +
+  '\n'
+
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-calendar-recovery.mjs:33:147 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'Backup command /Users/mwgbh/Library/Caches/JetBrains/WebStorm2026.2/acp-agents/.runtimes/node/24.19.0/bin/node failed (1): Backup command docker failed (1): pg_restore: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  the database system is shutting down\n' +
+    '\n',
+  expected: /Restored calendar digest mismatch/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
