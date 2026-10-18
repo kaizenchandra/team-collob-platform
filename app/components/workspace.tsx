@@ -1,7 +1,18 @@
 "use client";
+import {readFileLink,type FileLinkTarget} from "@/lib/file-link";
+import {LinkedFile} from "./linked-file";
+import {LinkedMessage} from "./linked-message";
+import {readMessageLink,type MessageLinkTarget} from "@/lib/message-link";
+import {WorkspaceSearch} from "./workspace-search";
+import {FileRetention} from "./file-retention";
+import {MessageRetention} from "./message-retention";
+import {ChannelPreservation} from "./channel-preservation";
 import {AuditSearch} from "./audit-search";
+import {ChatManagement} from "./chat-management";
 import {UsageReport} from "./usage-report";
 import {MessageReportDialog,ModerationPanel} from "./moderation";
+import {ChannelAccess} from "./channel-access";
+import {ChannelSettings} from "./channel-settings";
 import {PostingPolicy} from "./posting-policy";
 import {MeetingReminders} from "./meeting-reminders";
 import { InvitationInbox, InvitationNotice } from "./invitation-inbox";
@@ -14,6 +25,7 @@ import { MessageContent, FormattingTools } from "./message-content";
 /* eslint-disable react-hooks/set-state-in-effect */
 import {
   useState,
+  useId,
   useEffect,
   useCallback,
   useRef,
@@ -127,16 +139,7 @@ export default function Workspace() {
     >([]),
     [filter, setFilter] = useState(""),
     [search, setSearch] = useState(""),
-    [results, setResults] = useState<
-      | {
-          id: string;
-          body: string;
-          channel_id: string;
-          channel_name: string;
-          author: string;
-        }[]
-      | null
-    >(null),
+    [results, setResults] = useState<{query:string;run:number}|null>(null),
     [modal, setModal] = useState(""),
     [details, setDetails] = useState(false),
     [mobileNav, setMobileNav] = useState(false),
@@ -154,6 +157,9 @@ export default function Workspace() {
         replied: boolean;
       }[]
     >([]);
+  const [linkedMessage,setLinkedMessage]=useState<MessageLinkTarget|null>(null);
+  const [linkedFile,setLinkedFile]=useState<FileLinkTarget|null>(null);
+  const selectionRequest=useRef(0);
   const identityRef = useRef("");
   const streamRef = useRef(stream);
   useEffect(() => {
@@ -181,6 +187,8 @@ export default function Workspace() {
     streamRef.current = "";
     draftLoaded.current = false;
     latestDraft.current = "";
+    setLinkedMessage(null);setLinkedFile(null);
+    selectionRequest.current++;
     setSession(null);
     setBoot(null);
     setOrg("");
@@ -480,7 +488,7 @@ export default function Workspace() {
     }
   }
   async function send(retry = false, attachmentIds: string[] = []) {
-    if (!session || !stream || !org || sending || !draftReady || (postingBlocked&&!retry)) return;
+    if (!session || !stream || !org || sending || !draftReady || (postingBlocked&&!retry) || channel?.archived) return;
     const destination = stream;
     const tenant = org;
     let item: PendingMessage;
@@ -582,22 +590,25 @@ export default function Workspace() {
       report(e);
     }
   }
-  async function select(c: string) {
+  async function select(c: string, nextTab: "Posts" | "Files" = "Posts") {
+    const request=++selectionRequest.current,user=session?.user.id;
     if (stream && c !== stream && draftLoaded.current) {
       try {
         await api(`/channels/${stream}/draft`, "PUT", { body: draft });
       } catch (e) {
         report(e);
-        return;
+        return false;
       }
     }
+    if(selectionRequest.current!==request||orgRef.current!==org||identityRef.current!==user)return false;
     streamRef.current = c;
     setStream(c);
     setView("Chat");
-    setTab("Posts");
+    setTab(nextTab);
     setResults(null);
     setMobileNav(false);
     window.history.replaceState(null, "", `/?org=${org}&channel=${c}`);
+    return true;
   }
   useEffect(() => {
     if (boot) {
@@ -607,17 +618,35 @@ export default function Workspace() {
       }
     }
   }, [boot]);
-  async function searchAll(e: FormEvent) {
+  useEffect(()=>{
+    const sync=(event?:HashChangeEvent)=>{
+      const href=event?.newURL??window.location.href;
+      if(event){
+        const next=new URL(href),current=new URL(window.location.href);
+        if(next.origin!==current.origin||next.pathname!==current.pathname||next.search!==current.search)return;
+        // Keep Next's canonical URL in step with native hash navigation, including a pending close.
+        window.history.replaceState(null,'',href);
+      }
+      const message=readMessageLink(href),file=readFileLink(href);
+      setLinkedMessage(message&&message.org===org?message:null);setLinkedFile(file&&file.org===org?file:null);
+    };
+    sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);
+  },[org,session?.user.id]);
+  function closeLinkedFile(target:FileLinkTarget){
+    setLinkedFile(current=>current?.org===target.org&&current.channel===target.channel&&current.id===target.id?null:current);
+    const link=readFileLink(window.location.href);
+    if(link?.org===target.org&&link.channel===target.channel&&link.id===target.id)window.history.replaceState(null,'',window.location.pathname+window.location.search);
+  }
+  function closeLinkedMessage(target:MessageLinkTarget){
+    selectionRequest.current++;
+    setLinkedMessage(current=>current?.org===target.org&&current.channel===target.channel&&current.id===target.id?null:current);
+    const link=readMessageLink(window.location.href);
+    if(link?.org===target.org&&link.channel===target.channel&&link.id===target.id)window.history.replaceState(null,'',window.location.pathname+window.location.search);
+  }
+  function searchAll(e: FormEvent) {
     e.preventDefault();
-    if (!search.trim()) return;
-    try {
-      const data = await api<{ results: NonNullable<typeof results> }>(
-        `/organizations/${org}/search?q=${encodeURIComponent(search)}`,
-      );
-      if (orgRef.current === org) setResults(data.results);
-    } catch (e) {
-      report(e);
-    }
+    const query=search.trim();if(!query)return;
+    setResults(previous=>({query,run:(previous?.run??0)+1}));
   }
   if (checking)
     return (
@@ -649,7 +678,8 @@ export default function Workspace() {
           <Search size={18} />
           <input
             aria-label="Search this workspace"
-            placeholder="Search messages in your workspace"
+            placeholder="Search messages or filenames"
+            maxLength={200}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -734,6 +764,8 @@ export default function Workspace() {
                 }
                 orgRef.current = destination;
                 streamRef.current = "";
+                selectionRequest.current++;
+                setLinkedMessage(null);setLinkedFile(null);
                 setOrg(destination);
                 setBoot(null);
                 setStream("");
@@ -816,6 +848,7 @@ export default function Workspace() {
               ))}
           </div>
         ))}
+        {visible.some(c=>c.team_id&&!(boot?.teams??[]).some(t=>t.id===c.team_id))&&<><div className="section-label">OTHER CHANNELS</div>{visible.filter(c=>c.team_id&&!(boot?.teams??[]).some(t=>t.id===c.team_id)).map(c=><ChannelButton key={c.id} channel={c} active={stream===c.id&&view==="Chat"} onClick={()=>select(c.id)}/>)}</>}
         <button className="add-channel" onClick={() => setModal("channel")}>
           <Plus size={15} />
           Add a channel
@@ -876,42 +909,13 @@ export default function Workspace() {
         )}
         <InvitationNotice key={session.user.id} onReview={()=>{setResults(null);setView("Invitations");}} />
         {results !== null ? (
-          <>
-            <div className="page-heading">
-              <div>
-                <span className="eyebrow">{orgName}</span>
-                <h1>Search results</h1>
-                <p>Messages you have permission to view.</p>
-              </div>
-              <button className="secondary" onClick={() => setResults(null)}>
-                Back to conversation
-              </button>
-            </div>
-            <div className="content-pad">
-              {results.length ? (
-                results.map((r) => (
-                  <button
-                    className="result-card"
-                    key={r.id}
-                    onClick={() => select(r.channel_id)}
-                  >
-                    <strong>
-                      #{r.channel_name} <small>{r.author}</small>
-                    </strong>
-                    <p>{r.body}</p>
-                  </button>
-                ))
-              ) : (
-                <Empty title="No matching messages">
-                  Try a different word or phrase.
-                </Empty>
-              )}
-            </div>
-          </>
+          <WorkspaceSearch key={`${org}:${results.run}`} org={org} orgName={orgName} query={results.query} channels={boot?.channels??[]} onClose={()=>setResults(null)} onOpen={(id,kind,message)=>{if(kind==='messages'&&message)setLinkedMessage({org,channel:id,id:message});else if(kind==='files'&&message)setLinkedFile({org,channel:id,id:message});else void select(id,kind==='files'?'Files':'Posts');}}/>
         ) : view === "Teams" ? (
           <TeamsPanel
             key={org}
             org={org}
+            people={boot?.people??[]}
+            userId={session.user.id}
             role={boot?.role ?? "member"}
             refresh={refresh}
             report={report}
@@ -1147,7 +1151,7 @@ export default function Workspace() {
                                 </button>
                                 <button
                                   aria-label="Reply to message"
-                                  disabled={postingBlocked}
+                                  disabled={postingBlocked || channel.archived}
                                   onClick={() => setReply(m)}
                                 >
                                   <Reply size={15} />
@@ -1211,6 +1215,7 @@ export default function Workspace() {
                         <div ref={listEnd} />
                       </div>
                       <div className="composer-wrap">
+                        {channel.archived&&<p role="status">This conversation is archived. Your draft is preserved; restore the channel to send messages.</p>}
                         {postingBlocked&&<p role="status">Only workspace owners and admins can post, reply or edit here. You can keep editing your saved draft.</p>}
                         {messages.length > 0 && (
                           <button
@@ -1247,7 +1252,7 @@ export default function Workspace() {
                             Message not confirmed: {failed.body.slice(0, 80)}.
                             Retrying uses the original message.{" "}
                             <button
-                              disabled={sending || !draftReady}
+                              disabled={sending || !draftReady || channel.archived}
                               onClick={() => send(true)}
                             >
                               Retry safely
@@ -1298,7 +1303,7 @@ export default function Workspace() {
                             <button
                               type="button"
                               aria-label="Attach file"
-                              disabled={!draftReady || sending || !!failed || postingBlocked}
+                              disabled={!draftReady || sending || !!failed || postingBlocked || channel.archived}
                               onClick={() => setModal("attachment")}
                             >
                               <Paperclip size={18} />
@@ -1323,7 +1328,7 @@ export default function Workspace() {
                               aria-label="Send message"
                               type="submit"
                               disabled={
-                                postingBlocked ||
+                                postingBlocked || channel.archived ||
                                 !draftReady ||
                                 !draft.trim() ||
                                 sending ||
@@ -1396,6 +1401,14 @@ export default function Workspace() {
                       <VolumeX size={15} />
                       {channel.muted ? "Unmute" : "Mute"}
                     </button>
+                    {["direct","group"].includes(channel.kind)&&<ChatManagement key={stream} id={stream} people={boot?.people??[]} userId={session.user.id} onSaved={refresh} onLeft={async()=>{
+                      try{const pending=pendingFor(window.sessionStorage,session.user.id,org,stream);
+                        if(pending)removePending(window.sessionStorage,pending.id);
+                      }catch(e){report(e);}
+                      latestDraft.current="";setDraft("");setFailed(null);setMessages([]);setDetails(false);
+                      setBoot(previous=>previous?{...previous,channels:previous.channels.filter(c=>c.id!==stream)}:previous);setStream("");
+                      await refresh().catch(report);
+                    }}/>}
                     <h3>Workspace directory</h3>
                     {boot?.people.map((p) => (
                       <div className="person" key={p.id}>
@@ -1410,7 +1423,9 @@ export default function Workspace() {
                     ))}
                     {["admin", "owner"].includes(boot?.role ?? "") && (
                       <>
-                        {["standard","private","shared"].includes(channel.kind)&&<PostingPolicy channel={channel} onSaved={refresh}/>}
+                        {boot?.role==="owner"&&["standard","private","shared"].includes(channel.kind)&&<><ChannelPreservation key={stream} id={stream}/><MessageRetention key={`retention-${stream}`} id={stream}/><FileRetention key={`file-retention-${stream}`} id={stream}/></>}
+                        {["standard","private","shared"].includes(channel.kind)&&<><ChannelSettings key={stream} id={stream} onSaved={refresh}/><PostingPolicy channel={channel} onSaved={refresh}/></>}
+                        {["private","shared"].includes(channel.kind)&&<ChannelAccess key={stream} id={stream} userId={session.user.id} people={boot?.people??[]} onSaved={refresh}/>}
                         <button
                           className="secondary"
                           onClick={() => setModal("migration")}
@@ -1560,6 +1575,8 @@ export default function Workspace() {
           />
         )}
       </main>
+      {linkedFile?.org===org&&<LinkedFile key={`${session.user.id}:${org}:${linkedFile.channel}:${linkedFile.id}`} target={linkedFile} userId={session.user.id} onClose={()=>closeLinkedFile(linkedFile)}/>}
+      {linkedMessage?.org===org&&<LinkedMessage key={`${session.user.id}:${org}:${linkedMessage.channel}:${linkedMessage.id}`} target={linkedMessage} onClose={()=>closeLinkedMessage(linkedMessage)} onConversation={()=>select(linkedMessage.channel)}/>}
       {reporting&&<MessageReportDialog key={reporting.id} channel={reporting.channel} id={reporting.id} deleted={reporting.deleted} onClose={()=>setReporting(null)}/>}
       {modal && (
         <Modal
@@ -1821,6 +1838,7 @@ function CreateConversation({
   onDone: (id?: string) => void;
   report: (e: unknown) => void;
 }) {
+  const typeId=useId();
   const [name, setName] = useState(""),
     [kind, setKind] = useState(mode === "conversation" ? "direct" : "standard"),
     [team, setTeam] = useState(boot?.teams[0]?.id ?? ""),
@@ -1863,9 +1881,8 @@ function CreateConversation({
       </label>
       {mode !== "team" && (
         <>
-          <label>
-            Type
-            <select value={kind} onChange={(e) => setKind(e.target.value)}>
+          <label htmlFor={typeId}>Type</label>
+            <select id={typeId} value={kind} onChange={(e) => setKind(e.target.value)}>
               {(mode === "conversation"
                 ? ["direct", "group"]
                 : ["standard", "private", "shared"]
@@ -1873,7 +1890,6 @@ function CreateConversation({
                 <option key={k}>{k}</option>
               ))}
             </select>
-          </label>
           {mode === "channel" && (
             <label>
               Team

@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:17955) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/team-ownership.spec.ts:6:1 › team owners confirm transfer, preserve workspace roles and allow former owner departure (2.6s)
+  ✓  2 [chrome] › tests/browser/team-recovery.spec.ts:8:1 › joined workspace owners recover inactive team ownership without granting workspace roles or channel access (2.3s)
+
+  2 passed (5.6s)

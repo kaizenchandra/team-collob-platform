@@ -1,0 +1,11 @@
+{
+  "release": "0.1.66-local",
+  "sourceSyntheticOrganizations": 0,
+  "coreSyntheticOrganizations": 0,
+  "healthyServices": 10,
+  "fixtureDatabaseAndSpool": "Browser finally cleanup completed successfully",
+  "sourceS3FixtureBytes": "Retained under existing no-purge lifetime",
+  "systemClipboard": "Not read or modified; copy-handler stub used",
+  "primaryData": "Existing volumes retained; no reset/restore",
+  "backupFormat": "Ordinary10/refreshed11 unchanged"
+}

@@ -1,0 +1,11 @@
+{
+  "release": "0.1.63-local",
+  "browserSyntheticOrganizations": 0,
+  "coreSyntheticOrganizations": 0,
+  "healthyServices": 10,
+  "primaryVolumes": "Retained; no reset or data restore",
+  "newFixtureSpool": "Browser finally cleanup completed successfully",
+  "sourceS3FixtureBytes": "Retained under existing no-purge lifetime",
+  "olderRegressionFixtureLifetime": "Existing archived recovery fixture contract retained",
+  "engineImageCache": "Was empty; rebuilt configured images and restored provider aliases from exact pinned digests. Original encrypted companions retained."
+}

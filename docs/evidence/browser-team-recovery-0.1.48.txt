@@ -1,0 +1,46 @@
+
+Running 2 tests using 1 worker
+
+(node:17634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/team-ownership.spec.ts:6:1 › team owners confirm transfer, preserve workspace roles and allow former owner departure (2.5s)
+  ✘  2 [chrome] › tests/browser/team-recovery.spec.ts:8:1 › joined workspace owners recover inactive team ownership without granting workspace roles or channel access (12.4s)
+
+
+  1) [chrome] › tests/browser/team-recovery.spec.ts:8:1 › joined workspace owners recover inactive team ownership without granting workspace roles or channel access 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('.card').filter({ has: getByRole('heading', { name: 'Recovery team 1792180505671', exact: true }) }).getByRole('button', { name: 'Manage team ownership', exact: true })
+
+
+      21 |     expect((await a.request.post(`${base}/recover-ownership`,{headers,data:{userId:aliceId,expectedRecovery:initial.recoveryToken,confirm:true}})).status()).toBe(409);await bp.getByRole('button',{name:'Refresh ownership',exact:true}).click();await expect(bp.getByLabel('New team owner',{exact:true})).toBeVisible();expect((await (await b.request.get(`${api}/v1/organizations/${org}/bootstrap`)).json()).role).toBe('member');expect((await b.request.get(`${api}/v1/channels/${channels[1]}/messages`)).status()).toBe(404);expect((await b.request.post(`${base}/leave`,{headers,data:{}})).status()).toBe(409);
+      22 |     await db.query('UPDATE memberships SET active=true WHERE org_id=$1 AND user_id=ANY($2::uuid[])',[org,old]);await ap.getByRole('button',{name:'Refresh ownership',exact:true}).click();await expect(ap.getByRole('listitem')).toHaveText(['Bob Chen']);expect((await db.query("SELECT 1 FROM team_members WHERE team_id=$1 AND user_id=ANY($2::uuid[]) AND role='member'",[team,old])).rowCount).toBe(2);expect((await db.query("SELECT 1 FROM audit WHERE org_id=$1 AND action='team.ownership_recovered'",[org])).rowCount).toBe(1);
+    > 23 |     await alice.reload();await alice.getByRole('button',{name:'Teams',exact:true}).click();await ac.getByRole('button',{name:'Manage team ownership',exact:true}).click();await expect(ap.getByRole('listitem')).toHaveText(['Bob Chen']);await alice.setViewportSize({width:390,height:844});expect(await alice.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+         |                                                                                                                                                                   ^
+      24 |   }finally{
+      25 |     await a.close();await b.close();for(const id of channels){for(const table of ['messages','drafts','channel_preferences','read_positions','channel_members','outbox'])await db.query(`DELETE FROM ${table} WHERE channel_id=$1`,[id]);await db.query('DELETE FROM channels WHERE id=$1',[id]);}await db.query('DELETE FROM audit WHERE org_id=$1',[org]);await db.query('DELETE FROM team_members WHERE team_id=$1',[team]);await db.query('DELETE FROM teams WHERE id=$1',[team]);await db.query('DELETE FROM presence WHERE org_id=$1',[org]);await db.query('DELETE FROM calendar_versions WHERE org_id=$1',[org]);await db.query('DELETE FROM memberships WHERE org_id=$1',[org]);await db.query('DELETE FROM organizations WHERE id=$1',[org]);await db.query('DELETE FROM users WHERE id=ANY($1::uuid[])',[old]);await db.end();
+      26 |   }
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/team-recovery.spec.ts:23:163
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-recovery-joined-works-adf3f-ace-roles-or-channel-access-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-recovery-joined-works-adf3f-ace-roles-or-channel-access-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/team-recovery-joined-works-adf3f-ace-roles-or-channel-access-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/team-recovery-joined-works-adf3f-ace-roles-or-channel-access-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/team-recovery-joined-works-adf3f-ace-roles-or-channel-access-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/team-recovery.spec.ts:8:1 › joined workspace owners recover inactive team ownership without granting workspace roles or channel access 
+  1 passed (16.0s)

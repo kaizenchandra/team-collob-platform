@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:24768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-recovery.spec.ts:6:1 › uploader confirms deleted-file recovery, sees stale/error recovery and restores an existing attachment through a real fresh scan (3.7s)
+  ✓  2 [chrome] › tests/browser/preservation.spec.ts:6:1 › channel owner reviews, applies and releases preservation while another author cannot delete held content (5.5s)
+
+  2 passed (10.4s)

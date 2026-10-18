@@ -1,0 +1,7 @@
+{
+  "syntheticRetentionOrganizations": 0,
+  "containers": [],
+  "volumes": [],
+  "networks": [],
+  "temporary": []
+}

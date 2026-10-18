@@ -1,0 +1,7 @@
+{"backup":{"artifact":".data/backups/core-c01d7348-8cc2-4aaa-8487-a0700e8236ef.jwe","sha256":"5ae877f8d824a21c4a541eb01fe610a3c69607a8912ce8c3af3796d4bd203138","snapshotAt":"2026-10-16T20:20:51.948Z","counts":{"messages":441,"memberships":44,"files":108,"message_attachments":14,"file_scan_jobs":91,"channels":61,"channel_members":108,"team_members":20,"message_mentions":0,"message_reports":17,"audit":4088,"outbox":1259,"meetings":157,"meeting_series":28,"meeting_attendees":274,"calendar_versions":17,"meeting_reminders":8,"channel_preservation":4},"bytes":1422608,"durationMs":546,"keyStoredSeparately":true}}
+{"exercise":"concord-restore-6d87242d","snapshotAt":"2026-10-16T20:20:51.948Z","preservationMetadataVerified":true,"preservationApiVerified":true,"moderationMetadataVerified":true,"moderationApiVerified":false,"reminderApiVerified":false,"reminderMetadataVerified":true,"calendarApiVerified":false,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":108,"local":62,"s3":46,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":4868,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+{"digestMismatchRejected":"channel_preservation","failureCleanupComplete":true}
+{"digestMismatchRejected":"files","failureCleanupComplete":true}
+{"digestMismatchRejected":"file_scan_jobs","failureCleanupComplete":true}
+{"sourceHoldBodyAndFileChangesDidNotAlterSnapshot":true}

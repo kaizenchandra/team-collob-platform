@@ -1,0 +1,6 @@
+{
+  "syntheticBrowserRetentionOrganizations": 0,
+  "containers": [],
+  "volumes": [],
+  "sourceS3FixtureBytes": "Retained under existing no-purge policy"
+}

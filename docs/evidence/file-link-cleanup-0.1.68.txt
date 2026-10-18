@@ -1,0 +1,3 @@
+{"database":"concord","remaining_fixture_organizations":0}
+{"database":"concord_test","remaining_fixture_organizations":0}
+Browser finally cleanup removed SQL fixtures and upload spool files. Real S3 bytes retain existing no-purge lifetime. Source volumes preserved; no reset/restore. Clipboard handlers used synthetic URL stubs only; OS clipboard was neither read nor changed.

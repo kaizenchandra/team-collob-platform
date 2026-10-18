@@ -15,7 +15,7 @@ services:
       retries: 20
       start_period: 120s
   file-worker:
-    image: concord-api:0.1.41-local
+    image: concord-api:0.1.70-local
     command: ['node','services/core/file-worker.ts']
     environment:
       DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord
@@ -37,7 +37,7 @@ services:
       timeout: 5s
       start_period: 30s
   file-reconciler:
-    image: concord-api:0.1.41-local
+    image: concord-api:0.1.70-local
     command: ['node','services/core/file-reconciler.ts']
     environment:
       DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord

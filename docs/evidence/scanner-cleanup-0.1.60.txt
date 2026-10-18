@@ -1,0 +1,15 @@
+{
+  "syntheticSourceOrganizations": 0,
+  "restoreContainers": [],
+  "restoreVolumes": [],
+  "restoreNetworks": [],
+  "captureContainers": [],
+  "fixtureContainers": [],
+  "temporaryCaptureImageTags": [],
+  "fixtureImages": [],
+  "temporary": [],
+  "negativeArtifacts": [],
+  "capturedDefinitionFiles": 5,
+  "capturedDefinitionBytes": 175643923,
+  "sourceS3FixtureBytes": "Retained under existing no-purge policy"
+}

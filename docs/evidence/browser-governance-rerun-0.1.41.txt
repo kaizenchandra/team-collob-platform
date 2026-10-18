@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:4735) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/audit.spec.ts:3:1 › audit filters page, retry and clear across organizations (4.4s)
+  ✓  2 [chrome] › tests/browser/moderation.spec.ts:3:1 › channel policy updates live, retains drafts and restores member posting (8.2s)
+  ✓  3 [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt (3.4s)
+  ✓  4 [chrome] › tests/browser/usage.spec.ts:4:1 › usage reports refresh real activity, reject mismatched scope and recover from failure without stale data (2.2s)
+
+  4 passed (20.7s)

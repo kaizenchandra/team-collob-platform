@@ -25,7 +25,7 @@ docker compose -f compose.yaml -f compose.local.yaml -f compose.identity.yaml -f
 
 For source development, run only Postgres in Docker, then `DEV_AUTH=true npm run api` and `npm run dev` in two terminals. For an optimized host build use `npm run build` then `npm run start`. Read [operations](docs/OPERATIONS.md) before changing deployment or data.
 
-For real local provider sign-in, add the [SSO overlay](docs/OPERATIONS.md#local-sso-overlay-011) and run the explicit subject-provisioning command. The running local release is `0.1.13-local`. New messages support Markdown formatting, safe links and a preview; existing messages remain plain text. Structured mentions use channel-authorized recipients and appear in the recipient’s Mentions activity filter. Use the composer paperclip to send a scanned conversation file with your current message; recipients download through current permissions.
+For real local provider sign-in, add the [SSO overlay](docs/OPERATIONS.md#local-sso-overlay-011) and run the explicit subject-provisioning command. The running local release is `0.1.70-local`. New messages support Markdown formatting, safe links and a preview; existing messages remain plain text. Structured mentions use channel-authorized recipients and appear in the recipient’s Mentions activity filter. Use the composer paperclip to send a scanned conversation file with your current message; recipients download through current permissions.
 
 ## Working scope
 
@@ -151,3 +151,71 @@ Local release **0.1.39** adds **Admin → Audit history** search by exact action
 
 
 Local release **0.1.40** adds **Admin → Audit history → Download audit JSON** for current workspace owners/admins. Apply any edited filters first. The download includes all matching events, limited to1,000 events/2MiB; larger selections must be narrowed. Generation is limited to five exports per actor/workspace per rolling minute. The browser verifies tenant scope, format and SHA256 before handing the file to its download manager. This is an audit-only export; full user/workspace exports remain unfinished.
+
+
+Local release **0.1.41** adds **Admin → Usage report** for current workspace owners/admins. Select 1–31 UTC days to inspect retained message activity and planned meeting duration, plus current logical file-version bytes and conversations. Only resources the caller can access are counted. Refresh manually; actual attendance, service quality and costs remain unavailable.
+
+
+Local release **0.1.42** adds current direct/group participants in **Conversation details**, plus group renaming and **Leave group** with confirmation. Refresh participants after a rename conflict. Leaving removes access and the personal draft while preserving existing messages for other participants. Rejoining and administrative participant management remain unfinished.
+
+
+Local release **0.1.43** adds **Conversation details → Manage group access** for workspace owners/admins who already belong to the group. Choose a workspace member and explicitly confirm access to all retained messages/files before adding. Removal requires confirmation, revokes live access and clears that member’s personal draft/preferences while preserving shared messages. Re-admission requires another explicit history grant. Selective history access and broader lifecycle controls remain unfinished.
+
+
+Local release **0.1.44** adds **Conversation details → Channel settings** for current workspace owners/admins with access to standard/private/shared channels. Edit name/description or archive/restore, then save. Conflicting edits require refresh. Archiving retains history/drafts and blocks new messages; restoring lets members send their preserved draft. Restore an archived parent team first. All details API edits now require current revision.
+
+
+Local release **0.1.45** adds **Teams → Manage team ownership** for joined teams. A current team owner can select an eligible existing member and confirm transfer. The former owner remains a member and can then leave; the last active owner must transfer first. Inactive/disabled co-owners do not bypass that guard. Team ownership changes no workspace role or channel access. Refresh ownership after conflicts or uncertain responses.
+
+
+Local release **0.1.46** adds **Conversation details → Channel access** for owners/admins who already have private/shared channel access. Explicitly grant retained history to a workspace member, or confirm removal to revoke access and clear that member’s personal draft/preferences. Standard channels keep team-inherited access. Granted channels outside joined teams appear under **Other channels** after refresh/reload; opening them does not join the team. Re-admission requires fresh history consent.
+
+
+Local release **0.1.47** adds **Teams → Manage team members** for workspace owners/admins already in the team. Explicitly grant retained standard-channel history when admitting a member or guest. Confirmed removal revokes standard access and private-channel grants and clears drafts/preferences there, while preserving shared grants/content. Owners must transfer first; use Leave team for yourself. Re-admission does not restore private grants. Ordinary members can still self-join open teams; guests need explicit admission.
+
+
+Local release **0.1.48** adds guarded **Teams → Manage team ownership → Recover team ownership** when no active owner remains. Only a workspace owner already in the team can confirm an eligible existing successor. Inactive former owners become ordinary members, so later account reactivation does not restore ownership. Workspace roles/channel grants stay unchanged. Teams with an active owner must use normal transfer; this does not recover or re-enable user accounts.
+
+Local release **0.1.49** adds **Files → Your deleted files** for uploader recovery. Refresh the list, select a file/version and confirm renewed visibility to current conversation members. Each recovery requires a fresh malware scan; originals and versions are restored separately. Current access, archive state, storage quota and stale deletion cycles are checked. Retention schedules, permanent purge, legal holds and message recovery remain unfinished.
+
+Local release **0.1.50** adds **Conversation details → Message and file preservation** for workspace owners with current team-channel access. Review and confirm a reason to apply a hold, or confirm release. Active holds block message edits/removal (including moderation removal) and file deletion; new posts, uploads and scanned file recovery remain available. Current owner notes stay outside participant history. This limited preservation control does not implement full legal-hold cases, retention schedules, permanent purge or recovery of deleted message text.
+
+Local release **0.1.51** extends encrypted backups to version 6 with explicit preservation, file lifecycle and scan-job digests. The isolated restore exercise verifies that holds still block destructive actions, private owner notes stay protected, deleted versions return to quarantine on recovery, and authorized release restores existing mutation rules. Versions 1–5 retain their previous validation scope. This is bounded local recovery evidence; production backup scheduling, offsite retention and regional recovery targets remain open.
+
+Local release **0.1.52** adds **Conversation details → Message retention** for workspace owners with current team-channel access. Save a manual age policy, preview up to 100 expired messages and explicitly confirm text clearing. Changed previews, lost authority and preservation holds block application. Saving never deletes messages, and each remaining batch requires another preview. Text clearing cannot be undone in the application; files, reference records and backup copies remain. Automatic scheduling and storage purge are still unfinished.
+
+Local release **0.1.53** extends encrypted backups to version 7 with explicit retention-policy and reference-record digests. An independent restore verifies applied message tombstones, retained attachments and permissions, active/disabled/default policies, hold protection and duplicate-approval rejection. New artifacts also receive local tags for their exact API/Postgres/object image IDs. Domain behavior and UI are unchanged. Older formats keep their recorded verification scope; an older archive still requires its exact recorded application image.
+
+Local release **0.1.54** adds version 8 portable image companions: each encrypted data backup is paired with an encrypted bundle of its exact API, PostgreSQL and object-store images. Restore authenticates the bundle before importing missing images. A disposable missing-image drill verifies exact image recovery, snapshot data and permissions without removing primary service images. Keep both artifact files and the separate key; this does not provide offsite distribution or a complete ten-service deployment backup.
+
+Local release **0.1.55** adds an authenticated recovery tooling kit with restore helpers, development S3 configuration and bundled Node dependencies. It restores from outside the checkout without npm installation; retain the encrypted data/image pair and key separately. See [kit commands and trust boundary](docs/OPERATIONS.md#portable-recovery-tooling--release-0155).
+
+Local release **0.1.56** transfers restore configuration and verifier helpers through Docker into stopped containers, removing host bind-path dependencies. The authenticated kit passes a drill that rejects all bind mounts, with cleanup verified after both injected transfer failures. Real remote-engine and clean-engine recovery remain unverified.
+
+Local release **0.1.57** adds owner-reviewed file retention in conversation details. Set a manual age policy, preview complete version families and explicitly confirm each batch of up to100active files. Preservation holds block execution. Soft deletion stops downloads while retaining bytes and attachment references; uploaders can recover under existing rules and a fresh scan. No scheduler or permanent purge is added.
+
+Local release **0.1.58** adds older/newer pages to deleted-file recovery. Uploaders can reach originals beyond the newest100entries, recover them, then return to recover their versions. Each page remains bounded and checks current access; recovery still requires a fresh scan.
+
+Local release **0.1.59** adds version9 backup verification for file-retention policies and post-execution lifecycle state. Independent restore checks retained file bytes/references, policy and hold behavior, and uploader recovery returning files to quarantine until a fresh scan. Earlier backup formats retain their original verification scope.
+
+Local release **0.1.60** captures a fourth recovery image containing the scanner and its current virus definitions. Version10 restore verifies the definitions, runs real clean/EICAR checks, and verifies recovered original/version files through fresh scans and authorized downloads. Captured definitions still expire under the existing7-day freshness rule.
+
+Local release **0.1.61** adds explicit scanner refresh for version10/11 backups. It creates a new encrypted pair, preserves the original data and three data image IDs, embeds authenticated origin evidence, and verifies a complete isolated restore before publication. Use `ALLOW_LOCAL_BACKUP=true npm run backup:refresh-scanner -- BACKUP [KEY]`; see [operations](docs/OPERATIONS.md#scanner-only-backup-refresh--release-0161). The existing7-day signature gate remains in force.
+
+Local release **0.1.62** adds `ALLOW_LOCAL_BACKUP=true npm run backup:verify -- BACKUP [KEY]`. It authenticates the stored backup pair without Docker or plaintext staging. This preflight does not replace a full restore or test scanner freshness; see [operations](docs/OPERATIONS.md#backup-pair-preflight--release-0162). Cached-image restores now also avoid writing a plaintext image tar.
+
+Local release **0.1.63** lets you browse conversation files beyond the newest100. Use Older/Newer files or Refresh files; scan status continues updating on the current page. Uploading returns to the newest page. Versions, previews, downloads and deleted-file recovery keep their existing access and scanning rules.
+
+Local release **0.1.64** adds filename search. Submit workspace search, choose **Files**, and optionally filter by conversation. Ready results offer authorized downloads; **Open files** opens the source conversation’s Files tab. Search results refresh under current access rules. Message search remains available; file contents and other entity types are not searched.
+
+Local release **0.1.65** lets you browse message and filename search beyond50matches. Use **Older matches**, **Newer matches** or **Refresh matches**; the selected filters stay in effect and permissions are rechecked on each page.
+
+Local release **0.1.66** opens the exact message selected in search, including older matches. Copied message links open the same read-only view after sign-in. Current permissions, edits, deletion and attachment availability are rechecked; opening the conversation preserves your draft.
+
+Local release **0.1.67** adds **View file** to filename search. It opens the exact original, including files older than the newest Files page, without leaving your search or draft. Current metadata/access and scan status refresh automatically; ready files download through the existing protected route.
+
+Local release **0.1.68** adds **Copy file link** to the selected-file view. Authorized recipients open that exact original after sign-in, including on reload; the view continues to check current access and file availability.
+
+Local release **0.1.69** adds **Preview selected file** to search and copied-file source views for ready TXT, Markdown, and CSV originals. Previews show literal source text through the existing protected, bounded preview route.
+
+Local release **0.1.70** adds **View versions** to file views opened from search or copied links. Download separately scanned revisions and, as the original uploader, add a new version while the original source stays unchanged.

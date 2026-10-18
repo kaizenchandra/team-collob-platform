@@ -480,3 +480,325 @@ Deploy API/web together using the existing six compose overlays; no new migratio
 The UI exports applied filters across all matches, independently of loaded pages. Changed filters must be searched first. It verifies tenant, format/count/row scope and exact-byte SHA256 before a temporary Blob download, aborts on workspace/unmount changes, and supports retry without discarding search results. The server digest detects response corruption; it is not an independent signature or tamper-resistant archive. Use TLS outside loopback. Download managers control saving; generation audit does not establish recipient delivery. Downloaded content cannot be recalled. Raw JSON retains large numbers; downstream tooling must avoid lossy numeric parsing.
 
 94 automated tests and three deployed Chromium audit/moderation flows pass. Browser evidence includes actual25-event download, changed-byte digest rejection with no download, successful retry, tenant reset and390px layout. No recovery drill repeated for this endpoint-only change; previous image-specific recovery evidence retains its scope. Full user/tenant export, immutable archival, retention/holds, production capacity and external deployment remain open.
+
+
+## Usage reports — release 0.1.41
+
+Admin → Usage report requires current owner/admin membership and applies current resource ACL. Refresh manually after activity or access changes; failure clears prior results. Dates are UTC with exclusive end,1–31days. Explain partial accessible scope before comparing reports between administrators. Current logical file metadata totals can include quarantined/blocked/historical versions and differ from physical object storage. Scheduled seconds do not measure actual calls. No analytics warehouse/job/provider or new schema introduced. Production query cost remains unmeasured. API image must include lib/usage-contract.ts alongside its existing runtime helpers; the corrected deployment checks actual API readiness as well as image build success.
+
+
+## Group chat lifecycle — release 0.1.42
+
+Open a direct/group conversation's Conversation details to see current active participants. Refresh participants manually after membership changes or errors. Group members can rename a nonarchived group; conflicts retain the typed name and require Refresh participants before retrying. Rename is not restricted to workspace administrators. Existing group details API callers must send current revision.
+
+Leave group requires an explicit second confirmation. Warn that personal draft/preferences are removed and access is revoked while existing shared messages remain. This is voluntary departure, not content erasure. Last participant may leave; there is no rejoin control. API retries after departure return404; a lost response can be checked through refreshed bootstrap. Successful leave removes the conversation from client navigation before refreshing bootstrap, and refresh failures are surfaced. Previously copied/rendered/downloaded content cannot be recalled. Backup format/schema remain unchanged; this release does not add independent post-departure restore evidence or retention enforcement.
+
+
+## Explicit group history grants — release 0.1.43
+
+Conversation details → Manage group access appears for current workspace owners/admins who already belong to a group. Choose an eligible workspace member, then explicitly check the full-history grant to enable Add participant with history. This grants prior retained messages and files; quarantine/deleted states retain existing download restrictions. Re-admitting someone who left or was removed requires the same grant. No future-only history option is offered.
+
+Removal requires a second confirmation, preserves shared content and clears the removed member's personal draft/preferences. Refresh participants after conflicts or uncertain responses. Current-revision no-ops do not duplicate audit, while stale retries conflict. The admission cap counts all explicit membership rows, including inactive members;100 prevents further additions until a participant is removed. Existing oversized groups remain readable/removable. Other admins cannot discover or self-join an inaccessible group through these routes. Archived groups cannot be changed; voluntary leaving retains previous behavior. Audit records reference IDs/history scope only, without message/file contents. No schema or backup-format change; post-grant/removal recovery and production capacity have not been independently tested in this increment.
+
+
+## Channel details and archive — release 0.1.44
+
+Current owners/admins with access to a standard/private/shared channel can open Conversation details → Channel settings. Edit name/description and choose Archive channel, then Save channel settings. Refresh channel settings discards local unsaved edits in favor of current values. A stale save preserves typed input and asks for refresh; it cannot overwrite another admin or policy/team change.
+
+Archiving keeps history and personal drafts. Existing subscribers see the archive notice and cannot send new messages/replies; direct API sends return409. Restoring re-enables sending under current posting rules. If the parent team is archived, restore it first, then refresh channel settings. Archive does not erase content, change recipients or withdraw downloaded bytes.
+
+All details PATCH callers must now include current revision, including non-group channels/direct chats. Older clients without revision receive409 and must refresh/upgrade; missing revision is not treated as unconditional overwrite. Existing browser fixture cleanup now reads settings revision. No schema or backup-format change, and no new independent archive-state backup restore or rolling-client compatibility verification is claimed.
+
+
+## Team ownership — release 0.1.45
+
+Teams → joined team → Manage team ownership shows current owners and eligible successors. Only a current team owner can transfer their own ownership, including when their workspace role is an ordinary member. Choose an existing active/enabled non-guest team member, review the demotion notice, then Confirm ownership transfer. Cancel with Keep ownership. The former owner remains a member and can use Leave team afterward. The new owner keeps their existing workspace role; this operation grants no organization administration or additional channel history.
+
+Refresh ownership after conflicts or an uncertain response; a completed transfer removes the caller's owner controls, and a retry403 does not imply it was rolled back. Owner-set comparisons prevent overwriting changed owners, and archived teams must be restored first. Inactive/disabled co-owners do not permit the last active owner to leave. No eligible successor means transfer is unavailable until an eligible member joins; guest admission/team membership management is still a separate unfinished scope. Ownership snapshots are bounded to1000members. No independent transfer-state backup recovery or production-capacity claim is added; schema/backup format unchanged.
+
+
+## Private/shared channel membership — release 0.1.46
+
+Current workspace owners/admins who already have channel access can use Conversation details → Channel access. Refresh the roster before acting on conflicts or uncertain responses. Choose a workspace member and explicitly confirm all retained messages/files before Add member with history. Other channel content retains its existing permissions. This grants no team membership or access to another tenant; same-tenant guests may be admitted explicitly.
+
+Remove a member with a second confirmation. Access is revoked, draft/preferences cleared and shared content retained. Self removal is refused to avoid accidental administrative lockout. Inactive/disabled explicit members remain visible for cleanup and count toward the100-row admission cap. Archived channels must be restored before changing membership. Standard channels inherit team membership; these controls do not appear there. Re-admission requires fresh history consent. Roster display is bounded to1000entries; oversized views fail explicitly rather than truncate. Channel membership changes increment the same revision as settings/policies/migration, so stale decisions conflict.
+
+Existing team-leave behavior can remove private explicit grants; shared explicit membership follows its existing separate ACL. No automatic team enrollment or guest-policy expansion, cross-tenant shared-channel service, retention purge or self-join is introduced. Existing backup manifests already hash channel_members, but no new post-admission/removal restore proof is claimed in this release.
+
+Channels granted outside your joined teams appear under Other channels after workspace refresh/reload. Opening them does not join their parent team or reveal its standard channels. This keeps explicit private/shared grants discoverable without a deep link.
+
+
+## Administrative team members — release 0.1.47
+
+Teams → joined team → Manage team members is available to current workspace owners/admins. Team ownership alone does not grant organization administration. Choose an active workspace identity, including a guest, and explicitly confirm retained standard-channel history/files before admitting. Private/shared channels still require separate grants. Refresh team members after stale/uncertain responses; refresh discards the selected target/confirmation state.
+
+Removal has a second confirmation explaining loss of standard access and all private grants in that team, clearing personal drafts/preferences there while keeping shared-channel grants and shared content. Owners must transfer first; use Leave team for yourself. Inactive/disabled ordinary members can be cleaned up, while inactive owner recovery remains separate unfinished work. An absent-team-member no-op does not withdraw separately granted private access. Re-admission restores standard access only. Guests cannot self-join; ordinary members retain open-team self-join, so this is removal rather than a durable ban.
+
+Roster/admission is bounded to1000entries for this administrator workflow; oversized views fail explicitly. Team snapshots use a current ID/role-set hash rather than a stored team revision. Current account eligibility/roles are rechecked separately. New changes invalidate standard/affected-private channel revisions, so old channel settings/policy/migration reviews may need refresh. Shared grants keep their existing scope. No new independent team-removal backup restore, production capacity, owner recovery or full lifecycle claim is added.
+
+
+## Teams without an active owner — release 0.1.48
+
+Teams → Manage team ownership exposes Recover team ownership only to a workspace owner already in a team with no active/enabled owner. Choose an eligible existing member, review the inactive-owner reset notice, then Confirm ownership recovery. Cancel recovery preserves state. Ordinary workspace admins cannot recover, and teams with an active owner must use normal transfer. Restore archived teams first.
+
+Recovery demotes inactive former owners to ordinary team members and appoints the selected member. Reactivating an old account does not restore its former owner role. Workspace roles, memberships and channel access do not change; no user account is re-enabled. Refresh ownership after stale/uncertain responses; duplicate requests after success409 because an active owner now exists. Last-active-owner departure protection still applies to the successor.
+
+This repairs the narrow team-ownerless case. It is not enterprise account recovery, forced team join, arbitrary owner demotion, deletion or full operational recovery. Roster/owner views retain their1000-row bound. No independent post-recovery backup restore or production-capacity claim is added, and schema/backup format are unchanged.
+
+## Uploader file recovery — release 0.1.49
+
+Files → Your deleted files → Refresh deleted files lists own retained tombstones for the selected conversation. Recover originals before individual versions, review renewed visibility to current members and confirm. Recovery consumes the same100MB active workspace quota as upload. Restore an archived conversation first. Every recovered file returns to quarantine; monitor existing worker health/job status and use uploader Retry scan for exhausted jobs. Missing/corrupt bytes or scanner outages remain fail-closed. Never mark a recovered file ready manually. Old attachment links resume only after a new clean verdict; copied content is outside revocation scope.
+
+Migration029 adds files.lifecycle_revision and deleted-uploader lookup; migration030 adds audit.actor_id index after repeated1000-identity test cleanup exceeded10s on326k retained audit rows. No audit rows were purged and database timeout stays unchanged. Apply with normal migration runner/API boot. Full database backups include new column/index, but no new cross-version restore drill was performed. Retention expiration, legal holds, permanent file purge, message recovery and account closure remain unimplemented.
+
+## Message/file preservation — release 0.1.50
+
+A current workspace owner who can already access a standard/private/shared channel uses Conversation details → Message and file preservation. Enter a current case note, review and explicitly confirm application. Refresh discards unsaved note changes. Applying/releasing is protected by its own revision; refresh after409. Owner/admin role alone never grants private-channel access; ordinary admins cannot manage or read hold notes. Holds can be managed while a channel is archived.
+
+Active holds block message edits/deletions, moderator removal and uploader file deletion. Moderators may dismiss reports; a blocked removal leaves the report open and content unchanged. This control keeps held content visible under current ACL. If visibility must be restricted, manage channel access under its existing rules; no hold exemption for moderators exists. New messages/files and independently scanned recovery remain available. Release requires review/confirmation by a currently authorized owner. Audit records state/revision/reference only; current note is stored separately from participant history, without versioned case-note history.
+
+Migration031 creates channel_preservation. Full database dump captures it, but existing selective backup comparison summaries do not independently hash this table and no new post-hold restore drill was performed. No purge/retention worker exists; future expiration, purge and account/tenant closure must honor active holds under channel serialization before shipping. Tasks/forms/calendar/personal state are outside this hold. No full legal/compliance acceptance, retention scheduling or historical deleted-message recovery claim.
+
+## Preservation-aware backup and independent restore — release 0.1.51
+
+`ALLOW_LOCAL_BACKUP=true npm run backup:local` writes version6 encrypted archives with explicit preservation/file/scan-job digests plus lifecycle revisions. Existing file/dump integrity, lineage, calendar/reminder/moderation comparisons and local limits remain:10000files,32MiB file bytes,64MiB plaintext envelope,50000rows per digested table. Any limit/integrity failure stops backup rather than omitting data. Owner notes remain inside encrypted payload; keep mode0600 key separate from artifacts. Restore before-target validation and exercise resource cleanup remain mandatory.
+
+Run `ALLOW_LOCAL_BACKUP=true node scripts/test-preservation-recovery.mjs` only against the loopback development deployment. It creates an isolated synthetic organization with active/released/inaccessible-owner holds and real-scanned S3 original/version, captures a snapshot, changes only fixture source hold/body/file state, and restores in a private temporary network/database/object volume. Restored API checks owner-only notes/current ACL, held edit/author-admin deletion/moderation removal/file deletion409 without mutations, exact bytes/version history/lifecycle tokens, recovered deleted version quarantine/job reset and authorized release followed by permitted mutation. Three authenticated digest-mismatch envelopes(hold/files/scan jobs) must fail with complete exercise cleanup. Synthetic source relations/spool files and negative envelopes are removed; encrypted valid artifacts remain. Synthetic source S3 object bytes remain pending a future safe purge policy; this is not a permanent-deletion exercise.
+
+Legacy1–5 parsing retains original scope; recorded old images are used for those archives, without migrating them or inferring new preservation guarantees. New drill verifies the archive's recorded0.1.51image; final deployment health is recorded separately. General seeded-channel download/revision fixture flags can be false when no such ready fixture exists; preservationApiVerified independently requires exact download/version checks on its private fixture. No region/WAL/RPO, production RTO, scheduled/offsite retention, key-rotation/restore or full compliance acceptance claim. Browser evidence from0.1.50 retains its scope; no UI change or new browser run here.
+
+## Owner-reviewed message retention — release 0.1.52
+
+In a standard/private/shared channel, a current workspace owner with channel access opens Conversation details → Message retention. Enable manual retention, choose1–3650days and save; policy starts disabled, and saving never expires anything. Age is creation time plus elapsed24-hour days; editing does not reset age. Preview uses the saved policy; save/refresh unsaved changes first. Each preview shows at most100oldest eligible messages, time span and whether more batches remain. Review the irreversible text-clear/retained-file-backup explanation and explicitly confirm. No scheduler/worker applies policy automatically.
+
+Do not confirm if you need the original text available here: body is cleared and current app has no message-restore API. Existing tombstone references, parent links, attachment rows/files, reactions, saved/read positions, report notes, audit and backup copies are retained under their existing rules. This feature does not fulfill permanent-deletion obligations or delete binary bytes. Fresh preview is required for every batch. Preview expires after10min; changed message/policy/hold state or lost current owner/channel authority rejects application without partial effects. Holds block every batch, including on archived channels. Hold release does not implicitly execute retention.
+
+Migration032 creates channel_message_retention and partial message-age index. Current version6 full dump captures new policy table, but selective manifests do not yet hash/independently verify that table and the0.1.51restore exercise predates this schema. No post-policy or post-retention restore/old-image compatibility claim is added. Preserve policy/age index on application rollback; prefer a forward fix. No automatic expiration, file policy, backup expiration, safe permanent purge, case administration or production lifecycle acceptance in this increment. Browser/integration fixtures use isolated synthetic organizations only; no real channel policy or message text is changed by acceptance tests.
+
+## Retention-state and tombstone recovery — release 0.1.53
+
+Coordinated backup now emits version7 with explicit retention policy, message attachment, reaction, saved-message and read-position counts/digests. Existing encryption/key separation, immutable image IDs, file integrity/lineage/lifecycle checks, version6 preservation and older metadata requirements/local bounds remain. Restore compares digests/graph before API fixture mutations. Missing/incomplete/invalid/count-mismatched version7 metadata fails before resource allocation; authenticated wrong digests fail after restore with exercise cleanup.
+
+Run `ALLOW_LOCAL_BACKUP=true node scripts/test-retention-recovery.mjs` on the loopback development deployment. It creates only synthetic owner/member/private channels with applied/held/disabled/default policies and real-scanned S3 attachment. Snapshot already contains a reviewed text-cleared tombstone with removed mentions and retained references. Source fixture policy/hold/body/file state changes after snapshot; independent restore must retain original snapshot semantics. Verifier compares exact fixture records before login, then permits expected sign-in audit append and checks denied retention requests against a new baseline. It tests consumed-approval409/no duplicate effects, current owner/private ACL, held preview/apply, old hold-state approval rejection after release, fresh manual batch and save-without-execution. Wrong policy/attachment digests must fail with complete isolated cleanup. Source fixture DB/spool/negative envelopes cleaned, valid encrypted artifacts retained; synthetic source S3 bytes remain pending purge policy.
+
+The existing preservation recovery drill emits/accepts version7 and keeps its file quarantine/scan-lease checks. Older1–6 format parsing retains prior required fields, with no new retention flags or automatic migrations. A real version6 archive restore was attempted in0.1.53 but failed because its recorded API image sha256:79bc16f158d80b0a03790d4918f14943bdec69470ca0e2901cc634203fec83e2 is absent locally; cleanup completed. Do not replace the recorded image with a newer tag or interpret parser tests as successful old-image recovery. Retain/export exact images with backup artifacts before claiming image recovery readiness. No registry/image-archive provision is implemented here.
+
+No domain/UI change/new browser run in this increment;0.1.52browser evidence retains scope. These are bounded local snapshot/behavior drills, without production RTO/RPO, regional/WAL, scheduled/offsite backup/image retention, physical purge, old-schema migration or legal-compliance acceptance claims. General seeded-channel download/revision flags may remain false/empty when no eligible ready seeded fixture exists; retentionApiVerified separately requires exact private attachment download and policy/tombstone checks.
+
+0.1.53 new-artifact availability protection: backup now creates concord-backup-api/postgres/objects:<artifactUUID> tags for the exact recorded IDs before publishing the encrypted artifact and returns them as imagePins. Keep these tags alongside their corresponding archive; ordinary release retagging no longer leaves these new image references dangling. The final drill verifies all3IDs, and post-release evidence checks pins still match after final rebuild. On publication failure cleanup is attempted for newly created tags only. No expiration is implemented. Tags alone do not survive explicit image removal/prune-all or machine loss; offline/registry image export and offsite retention remain open. They do not recover the already-missing version6 image.
+
+## Portable runtime images — release 0.1.54
+
+`ALLOW_LOCAL_BACKUP=true npm run backup:local` now publishes version8 main `core-<UUID>.jwe` plus encrypted `core-images-<UUID>.bin`. Keep both in the same directory; move the mode0600 key separately. API/Postgres/object images are captured by exact IDs and retain existing local image pins. Companion encryption/HKDF/AAD and authenticated descriptor prevent image import before verification. No image tar is buffered into the64MiB JSON envelope; encrypted companion has4GiB local ceiling. Allow disk for encrypted bundle plus a temporary decrypted tar during restore. Actual local bundle in this increment is575163428bytes(~549MiB); size/timing vary with images. No automatic artifact/pin/bundle expiration.
+
+Restore with the existing command and main artifact path. Version8 checks companion even with cached images; missing IDs trigger authenticated Docker load, followed by exact-ID inspection. Decrypted tar exists only in a private temp directory and is unlinked on normal success/failure. Only after image preparation succeeds are temporary network/database/object volumes created. Legacy1–7 have no companion, so unavailable recorded images fail early before restore resources; do not substitute another image. The old missing version6 API image remains unrecoverable from its data artifact alone. Version7 original-image restore passed in0.1.54.
+
+Run `ALLOW_LOCAL_BACKUP=true node scripts/test-image-recovery.mjs` locally. It creates synthetic private content and real scanned S3 file, makes genuine version8 backup, then creates a metadata-only disposable API derivative for a separate test envelope/bundle. Only the unused derivative is removed. Digest, symlink and valid-envelope/wrong-GCM-tag negatives must reject without importing it. Positive restore must load its exact missing ID, verify API version/snapshot message/file bytes/current tenant-policy permissions and preserve primary container IDs/images. Temporary decrypted dirs, disposable image/container and synthetic DB/spool/test envelopes/bundle are cleaned; genuine encrypted pair/pins retained. Source S3 fixture bytes retain existing no-purge lifetime. No real channel retention policy or primary image is removed.
+
+This captures3images for existing API/core DB/file restore scope, not web/identity/scanner/email images, their external state, secrets provisioning or full ten-service topology. It is same-engine Linux-architecture image-import proof; no separate clean daemon/other host/architecture, offsite distribution, region/WAL/RPO, production RTO, key rotation or all-service recovery claim. Domain/UI behavior unchanged;0.1.52browser scope not rerun. New data backups cannot reconstruct runtime images already absent from older archives.
+
+Release0.1.54 required a compatible repository checkout and host bind mounts for verifier helpers/config. Release0.1.55 adds a portable kit; release0.1.56 below removes those bind mounts. Image companions carry runtime images, not the host recovery tooling/configuration or separate identity/provider state. Preserve that tooling with deployment materials when planning another host.
+
+## Portable recovery tooling — release 0.1.55
+
+From the trusted checkout with installed pinned dependencies, export a kit for an existing authenticated backup:
+
+```sh
+mkdir -p .data/recovery-kits
+ALLOW_LOCAL_BACKUP=true npm run recovery:kit -- .data/backups/core-UUID.jwe .data/recovery-kits/NEW_NAME
+# Optional third argument: explicit backup key path.
+```
+
+Destination must not exist. Kit contains restore scripts/helpers, local-development S3 configuration and complete jose/zod package trees including licenses; no backup bytes, image bytes or key. Keep the encrypted main backup and its encrypted image companion together; transfer the kit separately with a trusted launcher checksum and protect the key through a separate channel. Kits are bound to the exact main artifact, not interchangeable across backups. Treat the kit as sensitive operational code/configuration even though the key is excluded. No expiry or automatic offsite copy is added.
+
+Recovery requires Node24, Docker CLI and an accessible compatible Docker engine; no checkout, npm installation or package download:
+
+```sh
+ALLOW_LOCAL_BACKUP=true node /safe/kit/run-recovery-kit.mjs /safe/backups/core-UUID.jwe /separate/key/local-core.key
+```
+
+Trust and verify the launcher before invoking it. Export prints launcherSha256; deliver that value through a trusted channel independent of the kit. The launcher is the trust entry point and cannot authenticate itself. Release0.1.55 launcher SHA256: `29e8f2b2ae0a0331d935b0c9ed7031e44ef829f3c3a41e6c6b23d9847fca5305`. The authenticated manifest binds every packaged file's path/size/hash plus backup SHA256 using a domain-separated HMAC. No packaged code is loaded until authentication/integrity checks finish. Files are staged with private modes under OS temporary storage; staging is removed on normal completion/failure. Unsafe paths, duplicate entries and symlink files/parents reject; limits5000files/64MiB total/8MiB per file. The image companion is independently authenticated by existing restore tooling before image import or disposable resource creation. On interruption/power failure, inspect private temporary directories and exercise resources using existing restore cleanup guidance.
+
+The command runs a disposable verification drill and cleans the restored environment; it does not promote a persistent replacement deployment. Existing explicit development opt-in, recorded immutable images, isolated internal network, metadata/byte checks and resource cleanup remain. `CONCORD_BACKUP_KEY_FILE` optionally supplies a key path to the direct restore CLI; the launcher supplies this from its required key argument.
+
+Recorded kit is retained locally in ignored `.data/recovery-kits/0.1.55` (931 authenticated files, about6.4MB) bound to core-3884dd3c-88aa-4027-939b-a14c9eea8a9d. Two outside-checkout drills passed; second uses independently copied backup/image/key paths and cached runtime images. Copies of artifacts/key were removed after verification. This proves absence of checkout helper/package-install dependencies on the current host. It does not prove clean-engine, different-host/architecture, key loss, full ten-service restoration, offsite retention or production RPO/RTO. Generic drill's optional fixture/download authorization flags remain false; prior specific API fixture evidence retains its original scope.
+
+
+## Docker-transferred recovery inputs — release 0.1.56
+
+New restore tooling creates object-store/verifier containers stopped, copies small configuration/helper tar streams via Docker cp stdin and starts only after successful transfer. No daemon-host bind paths or host tar executable are required. Config is copied to /tmp/concord-s3.json; five verifier modules to /app. Each flat archive has at most8files/1MiB each/2MiB total, known names and root-owned0444 regular files. Target container names are restricted to this exercise's object/verifier namespace. Existing daemon-managed spool/object volumes, internal network, versioned data/image checks and cleanup remain. The verifier's final exit status is checked explicitly. Copy failure triggers cleanup of already-created containers/volumes/network.
+
+Re-export a kit with current tooling using the0.1.55commands above. The launcher and its trusted SHA256 are unchanged; manifest/payload change and include restore-transfer.mjs. Kit .data/recovery-kits/0.1.56 contains932 authenticated files/6,411,739bytes and uses the same original core-3884dd3c encrypted pair/key. Earlier kits retain their original bind-based behavior; do not overwrite their authenticated manifests by hand.
+
+Run the guarded local regression with an existing kit and matching backup:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run test:transfer-recovery -- .data/recovery-kits/0.1.56 .data/backups/core-3884dd3c-88aa-4027-939b-a14c9eea8a9d.jwe
+```
+
+The guard forwards Docker commands to the existing engine but rejects any host bind mounts, injects failure at object-store and verifier transfers, then runs successful restore. All attempts compare primary container IDs/images and exercise/temp resource inventory before/after. Generic drill does not set optional API fixtures; separate transfer-retention-regression-0.1.56.txt proves retention/hold/permission/S3 behavior. Genuine new encrypted pair and3pins retained; synthetic source S3 bytes remain under existing no-purge lifetime. No host registry/daemon change or primary image removal.
+
+A Docker context/DOCKER_HOST may choose the operator's trusted compatible engine; this change eliminates host path sharing, not TLS/connectivity/authorization requirements. Image load uses Docker CLI and transfers local archive bytes. Actual remote/clean daemon and cross-architecture recovery have not been exercised; current evidence uses cached images on the same local engine. Full ten-service topology/provider state/key delivery/offsite/RPO/RTO remain unfinished.
+
+## Manual file retention — release 0.1.57
+
+Migration033 adds separate channel_file_retention policy table/index. Deploy API/web/file-worker/reconciler/digest-worker together; startup migrates before readiness. Existing policies default disabled, and message-age policy stays independent. Owner with current channel ACL uses Conversation details → File retention to enable days1–3650, save, preview, review then explicitly confirm each batch. Save does not delete; no worker/scheduler expires files automatically. Refresh discards unsaved changes and approval; stale/error approval must be previewed again. Hold prevents apply, and hold on/off cycle invalidates earlier approval. Archived team channels can be reviewed/applied; recovery requires unarchived channel.
+
+Age is newest creation time across original+all versions, including deleted versions, using elapsed24-hour days. A recent version protects the family. Soft-delete complete families only; oldest family first, at most100active file rows, stop before next family would exceed remaining capacity. Count/bytes preview is active logical data, not reclaimed physical disk. Original/version100cap prevents an ordinary family exceeding one batch. Fresh confirmation required for any remaining batch. Token10min expiry and full family snapshot invalidate newer versions/verdict/storage/deletion/recovery changes; current owner/access also rechecked.
+
+Applying sets deleted, increments each active lifecycle revision, cancels jobs/leases and stops downloads. It preserves bytes in local/S3 and all file/history/attachment/message/audit/backup records. Existing uploader can recover original then individual versions through Files → Your deleted files, with current access/quota/fresh scan; owner cannot restore another uploader's file. Newest100 list cap unchanged; older entries may require known-ID API recovery; list pagination remains unfinished, especially if visible versions depend on an older original outside the list. Recovery does not reset age, and recovered old files may appear in another manual preview. Active hold still permits existing additive recovery rules, but blocks retention removal. No permanent purge/backup expiry is added.
+
+Roll back application only if required while preserving new table; do not remove migration checksum/state or drop policy/history to reset revisions. Current v8 backup full pg_dump includes new table, but selective digests/API recovery have no independent file-policy/post-execution verification yet. Do not infer it from earlier message retention or file byte restore evidence. Keep this NFR/whole-lifecycle gate open.
+
+Core113/113 and real Chrome owner/uploader flow verify held/stale/cancel/error, no automatic deletion, complete-family removal, actual ClamAV/S3 recovery, scoped axe and390px no overflow. Browser fixtures are synthetic and cleaned from DB/spool; S3 fixture bytes remain under existing no-purge policy. Production scheduling/store/replica/backup purge, case administration and regional recovery remain unfinished.
+
+## Deleted-file recovery pagination — release 0.1.58
+
+Files → Your deleted files → Refresh now loads the newest page of up to100 uploader-owned deleted files. Older deleted files and Newer deleted files navigate; Refresh returns to the newest page. Only one page of metadata is retained. If an original is older than100newer versions/files, browse Older until the original is available, recover/scan it, then return Newer to recover selected versions. Other uploaders' deleted files remain unavailable even to workspace owners.
+
+Navigation cancels pending recovery confirmation. A page-load error preserves the current page for retry; refresh errors clear stale data. Recovery removes just that visible row and preserves cursor even if the recovered row was the page boundary. No need to recover unrelated visible files just to expose older originals. An empty page after recovery remains navigable. Browsing is live, so Refresh to see newly deleted files and recomputed newest boundaries after recovery. Current access/quota, original-before-version and fresh malware scanning still apply, including preservation and archived-channel behavior established previously.
+
+API callers may use paired beforeCreated/beforeId from nextCursor; preserve6fractional timestamp digits and do not convert through JavaScript Date. Existing no-query response remains first100 with additive nextCursor; hasMore retained. Cursor is not authorization; each data query rechecks active membership/channel access/uploader. No schema/index migration or backup manifest change. Earlier0.1.49–0.1.57 newest100 limitation is resolved by current UI/API paging, while older deployed clients retain their original UI behavior until upgraded.
+
+## File-retention state recovery — release 0.1.59
+
+New local backup command emits version9 with file-policy count/SHA256 manifest in addition to existing image companion and metadata. Keep encrypted main/image pair and key separate; existing command/limits/modes remain. New fileRetention manifest hashes channel_file_retention in the shared exported snapshot. Restore authenticates/validates before resources, then compares policy digest/graph before API login mutations. Version1–8 restore skips this table and reports fileRetentionMetadataVerified=false/fileRetentionApiVerified=false; original image IDs still required.
+
+Run local synthetic verification:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run test:file-retention-recovery
+```
+
+It creates private channels for applied/held/disabled/default/private policy states, actual scanned S3 original/version families and retained attachment message. It applies one reviewed family, makes genuine encrypted snapshot/pins, then changes source policy/hold/body/recovery state. Isolated restore must retain snapshot and enforce consumed/held/current-owner/private rules, release-invalidated approval/fresh family execution and uploader recovery quarantine reset. Policy/file/job wrong-digest negatives must reject with complete cleanup. It does not alter a real source hold/policy or upgrade an archived app image. Fixture source organization/rows/spool/negative envelopes cleaned; valid encrypted pair/pins retained; source S3 objects retain existing no-purge lifetime.
+
+The restored environment has API/Postgres/object-store images and no ClamAV service. Recovery verification deliberately leaves restored files quarantined with reset queued jobs and downloads409. No fabricated clean verdict or claimed actual fresh scan inside this drill. Retained bytes are verified directly and still-ready fixture files download through current recipient ACL. Actual new scan after recovery is covered separately by0.1.57–0.1.58browser evidence.
+
+Re-export kits with current tooling so they carry file-retention-backup.mjs. Current .data/recovery-kits/0.1.59 has933 authenticated files/6,421,565bytes bound to core-ccaa71c6-cb62-41e6-96fd-8cf6a3208591. Launcher checksum unchanged. No-bind kit drill verifies version9 policy metadata and both transfer-failure cleanups. Run inventory-sensitive restore drills sequentially: the guard compares all concord-restore-* resources, so concurrent exercises intentionally fail its unchanged-inventory assertion. Initial overlap failure retained in evidence; isolated rerun passes. Generic kit does not enable optional API fixture flag; specific direct file-retention drill provides that API evidence.
+
+Genuine earlier version8 core-3884dd3c archive restore with original images passes without new file-policy claims. Updated image recovery regression uses runtime health release rather than an obsolete hardcoded version and current envelope9, retaining the same disposable-only missing-image test. No new UI/schema, auto schedule/permanent purge/offsite/key distribution/all-service/remote-clean-engine/production RPO/RTO proof.
+
+## Captured scanner and fresh restored recovery — release 0.1.60
+
+New backup command now emits version10 with4runtime images: API/Postgres/object-store plus an artifact-owned scanner image containing current definition files. Local capture reads running concord-collaboration-clamav-1 immutable image and allowlisted /var/lib/clamav files; original definition volume is never mounted into the capture container or modified. Baked-in definitions are removed only in a disposable network-disabled container, followed by copied definitions and a commit with clamd entrypoint/config. Private staging/capture container/temporary image tag cleaned, concord-backup-scanner:<artifactUUID> pin retained after success. Publication failures remove new pins/companion; capture failure publishes no backup. It adds local disk/definition-file copy work, not a new recurring backup schedule.
+
+Bounds:3required main/daily/bytecode .cvd/.cld files plus permitted versioned .sign companions; at most16files,128MiB per file,256MiB combined. Each file name/size/hash/source image/capture time is authenticated in main envelope. Scanner image joins existing4GiB encrypted companion under four-image AAD; old three-image AAD is preserved. Definition capture is separate operational state before database snapshot, not an atomic scanner/provider/database snapshot.
+
+Restore starts captured ClamD on private internal network with no host ports,4GiB memory/2CPU limit and no FreshClam/network download. Allow startup resources/time in the Docker VM (local engine uses amd64 emulation for scanner). File set/size/SHA must match capture. Actual application probe and clean/EICAR checks require streaming protocol and existing signature freshness (7days maximum, future metadata rejected). Successful backup publication is not a promise that old definitions will remain fresh indefinitely. Expired definitions fail closed; release0.1.61 adds the explicit trusted local scanner refresh workflow below. Never bypass the gate or inject a clean verdict to meet recovery tests.
+
+Run the complete file-retention drill to exercise actual post-restore scanning:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run test:file-retention-recovery
+```
+
+It restores original/version to quarantine first, validates reset jobs and denied downloads, then processes fixture jobs with existing real scanner path and verifies fresh verdicts/authorized retained bytes/attachment links. scannerVerified and fileRetentionFreshScanVerified must be true. Generic restore does not run arbitrary queued jobs; its fresh-file fixture flag staysfalse even when scanner probe passes. Definition manifests and scanner health checks do not substitute for a file recovery fixture.
+
+For the authenticated existing pair, run scanner tamper/capture/missing-image checks sequentially:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run test:scanner-recovery -- .data/backups/core-5a83ec72-82c1-4965-9b29-e19096b154c9.jwe
+```
+
+This rejects changed definition hash/set and scanner-image AAD binding, injects capture commit failure and checks no publication/staging/capture/source changes, then exports a separate bundle for a metadata-only disposable scanner derivative, removes only that unused derivative and imports its exact ID through restore. Primary scanner/API/Postgres/object IDs/images unchanged; genuine captured scanner pin/image retained. Test derivative/image/envelopes/bundle removed. It is one missing image configuration on same engine with layers cached, not an empty engine or another host.
+
+Re-export current recovery kit so scanner-contract/capture-scanner helpers are included. .data/recovery-kits/0.1.60 has935authenticated files/6,429,665bytes, unchanged trusted launcher SHA, key excluded, bound to genuine5a83ec72 pair. No-bind kit/transfer-failure drill passes real scanner probes with117files; it does not enable optional file fixture. Legacy9ccaa71c6 archive passes without creating scanner/new scan claims. Actual fixture backup uses running0.1.59API; deployment0.1.60 changes host tooling/version metadata, no domain/UI/schema.
+
+Four images do not capture all10services/provider/secrets/identity/email state, supply offsite/key custody, solve cross-architecture or clean-engine recovery, or meet production RPO/RTO. Source real S3 fixture objects and valid encrypted pairs/pins retain existing no-purge lifetime. Current definition image data is retained with backup; automatic expiry/rotation/scheduling remains unfinished.
+
+
+## Scanner-only backup refresh — release 0.1.61
+
+Ordinary backups remain version10. To refresh scanner definitions for an existing version10/11 pair, keep its companion adjacent and use the same private32-byte key:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run backup:refresh-scanner -- .data/backups/core-5a83ec72-82c1-4965-9b29-e19096b154c9.jwe
+# Optional explicit key path is the second argument; otherwise CONCORD_BACKUP_KEY_FILE or local-core.key.
+```
+
+The tool authenticates the parent/origin/companion and imports exact recorded image IDs if needed. It never starts the parent scanner, so parent definition freshness is not a prerequisite. It captures only the existing trusted local concord-collaboration-clamav-1 scanner; keep that scanner healthy with fresh definitions through the existing local update process. No arbitrary image/URL or definition download option is added. API/Postgres/object image IDs, snapshot time, dump, file bytes/metadata/counts and every inherited manifest stay equal to the embedded original. No original pair or live service is overwritten/restarted.
+
+Output is a new version11 core-UUID.jwe plus core-images-UUID.bin and4pins beside the input. Before exclusive main publication, a private candidate must pass full isolated restore, origin comparison, all117 current fixture bytes/metadata, real clean/EICAR probes and teardown. Candidate validation failure removes new candidate/companion/pins/capture resources. The scanner must pass the unchanged7-day/future-date gate; freshness failure never produces an approved refreshed pair. Definition capture can race normal updates, in which case integrity/probe checks fail safely. Allow normal scanner4GiB/2CPU restore resources and approximately another808MiB companion for this fixture. Keep all genuine pairs/pins under existing no-purge lifetime; no automatic deletion or scheduling is introduced.
+
+Version11 embeds the original encrypted version10 envelope, requiring the same key. Repeated refresh preserves that origin without nested growth; immediate-parent hash/previous scanner ID are audit references, not a verified complete intermediate chain. Restore no longer needs original companion when the new pair is complete. Embedded origin counts toward64MiB plaintext/128MiB encrypted bounds, so a near-limit backup can be too large to refresh; key rotation is not supported by this workflow.
+
+Sequential regression commands (do not overlap restore inventory tests):
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run test:scanner-refresh -- .data/backups/core-5a83ec72-82c1-4965-9b29-e19096b154c9.jwe .data/backups/core-4a02f12b-99d2-4445-93c3-9713b8db7ef8.jwe
+ALLOW_LOCAL_BACKUP=true npm run recovery:kit -- .data/backups/core-5908c1e9-ef48-48e1-a3ed-2cc30f5b126d.jwe NEW_PRIVATE_KIT_DIRECTORY
+```
+
+The second command requires a nonexistent destination. Retained .data/recovery-kits/0.1.61 is already bound to5908c1e9;937files/6,433,097bytes, key excluded, trusted launcher SHA unchanged. It passes outside-checkout/no-bind recovery and both transfer-failure cleanups. Original5a83ec72 still restores as version10 with scannerRefreshVerified=false; version11 reports true only after origin/data comparison before Docker. Generic fileRetentionFreshScanVerified staysfalse; no optional file recovery fixture was requested in these refresh drills.
+
+Available parent/current definitions were both dated2026-10-17 and fresh during testing. Parent scanner startup was forbidden by a Docker guard, but no naturally expired parent was exercised. Existing stale/future/protocol tests remain enforced. Same-engine local verification does not establish offsite, all-service, clean-engine, cross-architecture, key-distribution or production RPO/RTO acceptance.
+
+
+## Backup pair preflight — release 0.1.62
+
+On a trusted checkout with Node24 and installed dependencies, check stored backup bytes before provisioning or contacting Docker:
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run backup:verify -- .data/backups/core-5908c1e9-ef48-48e1-a3ed-2cc30f5b126d.jwe
+# Optional second argument: private32-byte key path.
+```
+
+Keep companion adjacent to main. The command performs bounded private main/key reads, authenticated decryption/schema/file/dump integrity, embedded origin comparison for11, then streams the complete encrypted companion through SHA/header/key derivation/AAD/GCM verification into a discard sink. Main/key must be regular non-symlink files with no group/other permissions. No file write, Docker call, image import or plaintext staging. Output contains minimized integrity counts and explicit restoreVerified=false/scannerRuntimeVerified=false. Versions1–7 have no portable companion and report imageArchiveVerified=false; successful envelope verification does not manufacture a portable-image claim.
+
+Use the result to detect wrong keys, missing/corrupt/mismatched companions and changed refresh origins early. A valid authenticated byte stream need not be an importable Docker tar or restorable database, and this tool cannot establish scanner freshness, current permissions/API behavior or recovery objectives. Continue with the existing full restore drill. Tooling requires trusted source/Node dependencies; the portable kit still exposes its existing authenticated restore launcher, not a new preflight entry point.
+
+Shared restore authentication now discards companion plaintext when all exact recorded images are cached. Missing IDs still require private temporary tar space for Docker import and full authentication before load, with cleanup afterward. A cached-image restore passed with TMPDIR=/dev/null (preflight-cached-no-staging-0.1.62.txt); this does not remove kit staging requirements or Docker VM storage requirements. Missing-image restore still stages/authenticates/imports exact ID as independently tested.
+
+Run actual-pair checks without Docker or usable temporary staging (test harness supplies guards):
+
+```sh
+ALLOW_LOCAL_BACKUP=true npm run test:backup-preflight -- .data/backups/core-5a83ec72-82c1-4965-9b29-e19096b154c9.jwe .data/backups/core-5908c1e9-ef48-48e1-a3ed-2cc30f5b126d.jwe .data/backups/core-ccaa71c6-cb62-41e6-96fd-8cf6a3208591.jwe
+```
+
+Version10/11/9 pairs each verify117file entries/297,779payload bytes. Docker calls zero, invalid staging path tolerated, original main/companion hashes unchanged; valid-envelope wrong scanner-role binding rejects. Unit cases include both three/four-image protocols, recomputed-digest corruption/tag/header/truncation/key/binding failures, symlink/type/privacy/oversize rejection and legacy1 false scope. Existing real scanner tamper/capture failure/missing exact-image import and no-bind kit regressions also pass. No fixture source data was added. .data/recovery-kits/0.1.62 binds existing5908c1e9 pair:937files/6,433,508bytes, key excluded, trusted launcher SHA unchanged. Ordinary backups stay10, refreshed backups11; no new schedule, retention deletion or key rotation.
+
+
+## Conversation file paging — release 0.1.63
+
+No migration or provider setting. Files tab now reaches originals older than100 through Older files/Newer files. Refresh files and a successful new upload return to newest; deletion/retry/recovery reload current page, while scan-status polling follows that page. Lists are live and may shift under concurrent uploads/deletions. Versions remain separately listed through Versions, max100 per family. The existing files_retention_roots partial index supports backward tuple traversal.
+
+Run `npm test` plus `TEST_SCANNING=true npx playwright test tests/browser/file-pages.spec.ts tests/browser/file-recovery.spec.ts tests/browser/file-recovery-pages.spec.ts tests/browser/file-scanning.spec.ts --project=chrome` against the complete local stack. New fixture uses real scanned S3 original/version/new upload and101 synthetic metadata-only quarantined originals without jobs/bytes. Synthetic rows test list traversal/status display only; no synthetic verdict is claimed as malware evidence. Fixture SQL/spool is cleaned; real source S3 bytes retain existing no-purge lifetime.
+
+At this turn's start, the engine had no containers or images while all project named data volumes remained. Initial database-dependent tests failed ECONNREFUSED (core-tests-stack-unavailable-0.1.63.txt); no product failure was inferred. Restarted PostgreSQL on its existing volume, rebuilt application/scanner images, pulled configured providers and recreated the loopback stack without resetting data. Restart evidence restart-database/build/deploy-0.1.63.txt. Historical backup image pins were absent with the emptied engine cache; encrypted original companions remain on disk as their portable image recovery source. No primary data restore or image substitution was performed, and no new offsite/clean-engine DR acceptance is claimed.
+
+After digest-only provider pulls on an emptied engine, the current release recorder also requires the local chrislusf/seaweedfs:4.48 and axllent/mailpit:v1.31.5 aliases. Recreate each alias with docker image tag using the exact corresponding Compose-pinned digest reference, then rerun the recorder. Do not retag an unrelated running image to satisfy a health check. Release0.1.63 restored these aliases without changing running image IDs; initial refusal evidence release-health-missing-alias-0.1.63.txt retained.
+
+
+## Filename search — release 0.1.64
+
+Submit the top-bar workspace search, then choose Files in Search type. Search conversation optionally narrows to a currently accessible conversation. Filename matching ignores case and treats percent/underscore literally. Only original filenames are searched, with no file-content/people/team/meeting search. Ready files have Download links; quarantined/rejected files do not. Open files selects the source conversation's Files tab and preserves the current draft through existing navigation save logic. Browse Older files there for originals beyond the newest100.
+
+At most50 results per page; release0.1.65 adds Older/Newer matches navigation. Search refreshes current access/results every5seconds, withdraws data on failure and provides Retry search. A new submission resets filters and cancels the preceding request; changing workspace/closing search cancels it too. This is local live-query behavior, not a production disclosure-latency guarantee or search snapshot.
+
+No migration/provider setup. Verify with npm test and the file-search/file-pages Chrome specs against the complete local stack. Search fixture uses real scanned S3 original/version/Beta file, plus metadata-only quarantined entries without jobs or stored bytes for bounds/non-ready/hidden-scope checks. No fabricated scan verdict qualifies as malware evidence. Cleanup removes fixture SQL/spool; real source S3 bytes retain existing no-purge lifetime. No change to backup formats, deletion schedules, key custody or enterprise search service deployment.
+
+
+## Search result paging — release 0.1.65
+
+No migration or provider setting. Submit message/filename search, then use Older matches/Newer matches. Each page is at most50 results, newest first; current entity/conversation filters stay applied. Refresh matches returns to newest. New submission/entity/conversation/workspace starts a new page history. Polling refreshes the current cursor rather than jumping to newest, and an emptied older page still permits Newer/Refresh navigation. Listings are live, not a snapshot or a total-count estimate.
+
+Transient older/newer navigation failure keeps the last successful page; Retry search repeats the attempted target. Current-page refresh/poll failure or access denial removes cached results until a successful check. All pages and file download links continue to require current server permissions. Since0.1.66, message results open the exact read-only dialog below. File source buttons still open conversation context without focusing a particular old file. Filename search remains original-name matching only, not file-content search.
+
+Run npm test and the search-pages/file-search Chrome specs against the complete local stack. The new paging fixture uses one real scanned S3 original for older-page download plus metadata-only quarantined files without jobs/bytes and directly inserted message rows to exercise result boundaries. Those synthetic rows verify query/list behavior only. Fixture SQL/spool is removed, while real source S3 bytes retain existing no-purge lifetime. No new independent backup, scheduling, retention purge or production indexing/latency acceptance.
+
+
+## Exact message links — release 0.1.66
+
+Click a message search result to inspect that exact current message, even when it is older than the latest50 conversation messages. Linked message shows author/time/text/format/mentions and current attachment availability. It is read-only, not a thread-context window or main-timeline anchor. Closing returns to the current search page; Open conversation uses normal draft-save-before-navigation. If saving fails, keep the draft and retry; closing cancels a pending navigation.
+
+Existing copied links with /?org=...&channel=...#message-... now open this view after sign-in. Hash changes are handled; closing removes its matching hash. Link IDs never grant access. Current permissions/content are polled; failure/deletion/revocation withdraws displayed data. Non-ready/deleted attachments lose names/links, with current server checks on every download. Invalid or ambiguous links are ignored, and inaccessible workspace selection retains the existing sign-in/workspace behavior.
+
+No migration/provider configuration. Verify npm test and linked-message/file-search/search-pages Chrome specs. New fixture uses one actual ClamAV/S3 upload/attachment, real target message and120 directly inserted newer message rows (with channel sequence maintained) to prove exact old-source lookup beyond newest50. Clipboard write is stubbed in-browser to validate generated link without reading/changing the user's system clipboard; native OS clipboard permission/delivery is not newly accepted. Fixture SQL/spool cleaned; real source S3 bytes retain no-purge lifetime. Existing scopes/download/draft/retention/backup contracts remain in effect.
+
+0.1.67-local adds exact original-file source viewing from filename search. View file retains the current conversation/search/draft; existing Open files navigation is unchanged. Details poll current metadata/access every5s with8s timeout and disappear on error/deletion/revocation; Retry file fetches again. Ready-only download remains independently checked server-side. File revisions/deleted originals are unavailable through this endpoint. No migration/new index/backup format, scanner bypass, destructive purge or service topology change.
+
+0.1.68-local: Copy file link creates an original-file source URL usable after sign-in and reload. Recipients require current workspace/conversation access; possession of URL grants no rights. Deleted originals/revisions stay unavailable, ready-only downloads keep current independent scan/integrity checks. File and message hash targets select one source view at a time, invalid targets show no cached content, closing clears only matching hash. Browser clipboard handlers are stubbed for synthetic URLs; tests never inspect or alter the user's OS clipboard. No migration, provider, recovery or purge change.
+
+0.1.69-local lets users inspect source text directly in exact original-file views from search or copied links. Preview selected file is available for ready TXT/MD/CSV, with an explicit Hide file preview control. Text remains literal and bounded; preview errors/hidden document/access loss withdraw cached text, and metadata failure closes inline preview. Existing normal Files preview uses the same lifecycle. Downloads/copy links retain existing checks; no new provider, scanner bypass, migration, backup format or purge operation.
+
+0.1.70-local exposes existing version history inline in selected-file views from search or file links. Each ready revision downloads separately; the source URL/original preview/download continues to select original bytes. Only original uploader sees Upload new version based on current server canUpload; API independently enforces that restriction. Hide versions closes the history request scope; errors/revocation/deletion withdraw history. Normal Files Versions dialog shares the same validated/abortable lifecycle and upload retry behavior. No migration, backup/recovery format, purge, provider or editor change.

@@ -1,0 +1,36 @@
+{"injectedTransferFailure":"objects","rejected":true,"cleanupComplete":true}
+{"injectedTransferFailure":"verify","rejected":true,"cleanupComplete":true}
+{"exercise":"concord-restore-848d7637","snapshotAt":"2026-10-17T10:52:33.161Z","imageArchiveVerified":true,"imagesImported":false,"fileRetentionMetadataVerified":true,"fileRetentionApiVerified":false,"imageApiVerified":false,"retentionMetadataVerified":true,"retentionApiVerified":false,"preservationMetadataVerified":true,"preservationApiVerified":false,"moderationMetadataVerified":true,"moderationApiVerified":false,"reminderApiVerified":false,"reminderMetadataVerified":true,"calendarApiVerified":false,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":117,"local":62,"s3":55,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":6482,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+{"hostBindMountsForbidden":true,"transfers":2,"kitExecutedOutsideCheckout":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    containers: '',
++   networks: 'concord-restore-21947316',
+-   networks: '',
+    temporary: [],
++   volumes: 'concord-restore-21947316-data\nconcord-restore-21947316-spool'
+-   volumes: ''
+  }
+
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-transfer-recovery.mjs:39:53 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: {
+    containers: '',
+    volumes: 'concord-restore-21947316-data\nconcord-restore-21947316-spool',
+    networks: 'concord-restore-21947316',
+    temporary: []
+  },
+  expected: { containers: '', volumes: '', networks: '', temporary: [] },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:13022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/channel-access.spec.ts:6:1 › private channel access requires history consent and revokes live recipients before fresh re-admission (4.4s)
+  ✓  2 [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows (6.6s)
+  ✓  3 [chrome] › tests/browser/chat-management.spec.ts:29:1 › group admins explicitly grant old history, remove live access and re-admit a participant (4.3s)
+
+  3 passed (16.1s)

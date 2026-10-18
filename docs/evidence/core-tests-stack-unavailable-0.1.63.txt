@@ -1,0 +1,1791 @@
+
+> team-collob-platform@0.1.62 test
+> node scripts/test-core.mjs
+
+✔ companion preflight authenticates three/four-image protocols and rejects changed bytes/binding/type/bounds without staging (59.627084ms)
+✔ private envelope preflight keeps legacy scope and rejects unsafe keys/files and oversized input (21.054834ms)
+✔ preflight CLI needs opt-in, uses no Docker, and reports success without any restore claim (278.666083ms)
+✔ backup validation rejects missing, corrupt, duplicate and unsafe-path file data (7.252958ms)
+✔ version2 backups require valid scoped lineages and unique revision ordinals (1.913333ms)
+✔ version3 calendar manifests require complete bounded counts and digests (1.142666ms)
+✔ version4 requires reminder count and digest while version3 keeps its original scope (0.680541ms)
+✔ version5 requires a complete bounded moderation manifest and preserves legacy scope (1.296959ms)
+✔ version6 requires preservation/job/file digests and lifecycle revisions without broadening legacy claims (3.110625ms)
+✔ version7 requires bounded retention/reference manifests while version6 keeps its recorded scope (3.366209ms)
+✔ version8 requires a safe bounded authenticated image companion and legacy7 cannot claim one (1.678917ms)
+✔ version9 requires file-policy manifest/counts and keeps legacy8 scope explicit (1.7725ms)
+✔ version10 requires captured scanner image and complete bounded definition manifest, preserving legacy9 scope (6.457917ms)
+✔ scanner file verification rejects extra files and altered size or digest (2.398041ms)
+✔ version11 requires bounded strict refresh evidence while original10 cannot claim it (1.777666ms)
+✔ authenticated scanner refresh preserves origin payload across repeats and rejects data/image/origin changes (46.526292ms)
+✔ scanner probe accepts a fragmented current capability response (27.5025ms)
+✔ scanner probe rejects stale, future, missing and invalid signature metadata (6.700833ms)
+✔ scanner probe rejects unsupported protocol, oversized and incomplete responses (3.838042ms)
+✔ scanner probe enforces a deadline and validates timeout configuration (32.10525ms)
+✔ scanner sends framed bytes only after readiness and accepts only definitive verdicts (8.261291ms)
+✖ anonymous and cross-origin requests are rejected (10.578583ms)
+✖ tenant isolation across bootstrap, history, search, work, activity and audit (11.182333ms)
+✖ private-channel visibility excludes a team guest (0.104625ms)
+✖ concurrent retried writes commit one message and one ordered event (0.031833ms)
+✖ message edit ownership, threads, reactions and monotonic read position (0.038125ms)
+✖ search and draft persistence survive a fresh application instance (0.021792ms)
+✖ private tasks and forms enforce assignment and response permissions (0.0585ms)
+✖ atomic channel conversion previews and applies explicit historical access changes (0.021334ms)
+✖ meeting attendees must be tenant members; only organizer cancels (0.0335ms)
+✖ files remain quarantined and cannot be discovered cross-tenant (0.038875ms)
+✖ 32-person receipts include every opted-in authorized recipient (0.01775ms)
+✖ live event replay and membership revocation close an active subscription (0.015292ms)
+✖ invitations are identity-bound, expirable, single-use and revocable; last owner protected (0.013875ms)
+✖ receipt privacy opt-out and session logout enforced (0.012125ms)
+✖ production rejects development authentication, development seed, and missing identity configuration (0.01175ms)
+✖ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (0.014666ms)
+✖ production configuration requires explicit storage, HTTPS identity and assurance policy (0.014416ms)
+✖ authentication throttling does not consume the session-status and logout budget (0.025541ms)
+✖ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (0.01125ms)
+✖ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (0.011417ms)
+✖ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (0.010792ms)
+✖ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (0.012583ms)
+✖ identity actions allow only configured provider recovery without arbitrary actions or redirects (0.011375ms)
+✖ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (0.012333ms)
+✖ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (0.085875ms)
+✖ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (0.029125ms)
+✖ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (0.017042ms)
+✖ authentication failures retain bounded global evidence without trusting identity or tenant input (0.014916ms)
+✖ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (0.014542ms)
+✖ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (0.014625ms)
+✖ audit storage failure rolls back sign-in and returns a generic unavailable response (0.013916ms)
+✖ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (0.014333ms)
+✖ mention parsing recognizes only explicit Markdown links and bounds unique recipients (0.013833ms)
+✖ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (0.0135ms)
+✖ durable scan jobs retry, reject, recover leases and never resurrect deleted files (0.013959ms)
+✖ attachments enforce scanned same-channel access, immutable retries and current history visibility (0.013875ms)
+✖ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (0.013667ms)
+✖ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (0.01375ms)
+✖ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (0.013375ms)
+✖ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (0.014125ms)
+✖ source previews enforce scan/ACL/integrity and bound literal Unicode text (0.015417ms)
+✖ file revisions serialize numbering, preserve retry identity and withdraw the whole lineage (0.017041ms)
+✖ quiet hours evaluate overnight, equal endpoints and timezone DST boundaries (0.0135ms)
+✖ notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup (0.018083ms)
+✖ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (0.013417ms)
+✖ reply activity enforces recipient, current channel access and parent/reply deletion (0.014792ms)
+✖ reply alert opt-in is independent, cutoff-bound and deduplicates overlapping categories (0.013416ms)
+✖ invitation inbox isolates recipients and serializes concurrent identity acceptance (0.013125ms)
+✖ recipient decline is scoped, audited and cannot grant or revoke membership (0.016583ms)
+✖ accept and decline races serialize without audit foreign-key deadlocks (0.0155ms)
+✖ organizer edits enforce revisions, reset rescheduled responses and serialize cancellation (0.013041ms)
+✖ meeting roster edits preserve retained RSVP and revoke removed attendee access (0.013458ms)
+✖ calendar keyset pages preserve microsecond ordering, range bounds and current access (0.01625ms)
+✖ calendar change counters are durable, recipient-scoped and transactional (0.013708ms)
+✖ recurring series is atomic, retry-safe, scoped and cancelled without resurrection (0.012875ms)
+✖ series edits are revision-scoped, preserve cancelled occurrences and serialize individual edits (0.013166ms)
+✖ series rescheduling preserves IDs/cancelled exceptions and updates canonical anchor atomically (0.013041ms)
+✖ monthly/yearly rules persist policy and preserve legacy retry identity (0.013334ms)
+✖ series expansion preserves existing identities and original creation replay (0.012958ms)
+✖ upcoming-only series changes preserve historical rows and reject backward shifts (0.012916ms)
+✖ upcoming cancellation preserves started meetings and is idempotent (0.0135ms)
+✖ personal reminders persist, suppress safely and rearm only after time changes (0.01775ms)
+✖ channel posting policy serializes new writes, preserves accepted retries and enforces current roles (0.013417ms)
+✖ message reports preserve privacy, bound abuse and serialize audited moderation (0.013209ms)
+✖ audit search is tenant authorized, exact, time bounded and bigint safe (0.013209ms)
+✖ audit export is scoped, lossless, bounded and audited with serialized generation quotas (0.018583ms)
+✖ administrative usage reports preserve exact aggregates, UTC boundaries and current resource authorization (0.014583ms)
+✖ group participants, concurrent renames and departure enforce current access without deleting shared history (0.015041ms)
+✖ direct participant snapshots do not permit group lifecycle mutations (0.013875ms)
+✖ administrator group grants explicitly authorize retained history and serialize revocation and limits (0.112542ms)
+✖ channel settings enforce current admin access, revisions, archive state and parent-team restoration (0.027208ms)
+✖ team ownership transfers atomically to eligible members and inactive owners cannot permit abandonment (0.017625ms)
+✖ private/shared explicit grants serialize access, include retained content and revoke without changing team membership (0.015792ms)
+✖ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (0.014625ms)
+✖ ownerless team recovery requires joined workspace ownership and fences reactivation without restoring former ownership (0.017042ms)
+✖ deleted file recovery rechecks owner, ACL, archive, quota and lifecycle token, rescans one version and fences old scan leases (0.014334ms)
+✖ deleted-file metadata listing is uploader-scoped, bounded and does not expose storage or scan internals (0.014875ms)
+✖ owner-only channel preservation freezes destructive message/file paths, serializes hold changes and keeps reads/additions/scanned recovery available (0.017125ms)
+✖ manual message retention bounds exact approved batches, honors current owner/hold state and retains files/reference metadata (0.015041ms)
+✖ manual file retention keeps families whole, fences scans and preserves recoverable bytes under current owner and hold rules (0.016792ms)
+✖ deleted-file keyset pages preserve microseconds and ties, survive boundary removal and recheck uploader/channel access (0.015708ms)
+✖ original-file pages traverse ties and microseconds, exclude versions/deleted rows and recheck conversation access (0.014083ms)
+✖ /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts (0.105541ms)
+✔ meeting timezone resolves normal and non-hour offsets (9.73375ms)
+✔ DST gaps are rejected for every repeated-time choice (4.881667ms)
+✔ DST folds require choice and resolve to distinct instants (2.646ms)
+✔ invalid local date and zone cannot silently normalize (0.683958ms)
+✔ editor initialization uses stored timezone for normal and folded instants (0.900042ms)
+✔ weekly recurrence preserves local time across DST (6.636042ms)
+✔ recurrence rejects any invalid later occurrence and bounds expansion (3.048833ms)
+✔ monthly rules anchor to original date without short-month drift (5.533583ms)
+✔ monthly overnight duration follows clamped start rather than a drifting end anchor (1.478125ms)
+✔ yearly leap-day anchoring and five-year horizon are explicit (5.505917ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.419583ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.2685ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.107792ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (5.571709ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.459792ms)
+✔ attachment references survive recovery and cannot change on an unconfirmed operation (0.993083ms)
+✔ upload recovery retains scoped identity without storing bytes and clears on logout (1.813959ms)
+✔ kit authenticates and stages exact bytes; rejects modified code/config, key, backup, manifest and links (75.190292ms)
+✔ release evidence requires every service and actual expected images (1.087291ms)
+✔ restore transfer creates bounded read-only flat tar entries and rejects unsafe input before Docker (14.330917ms)
+ℹ tests 124
+ℹ suites 0
+ℹ pass 41
+ℹ fail 83
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 718.561625
+
+✖ failing tests:
+
+test at tests/core.test.ts:1:1204
+✖ anonymous and cross-origin requests are rejected (10.578583ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:1472
+✖ tenant isolation across bootstrap, history, search, work, activity and audit (11.182333ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:2048
+✖ private-channel visibility excludes a team guest (0.104625ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:2379
+✖ concurrent retried writes commit one message and one ordered event (0.031833ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:3299
+✖ message edit ownership, threads, reactions and monotonic read position (0.038125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:4506
+✖ search and draft persistence survive a fresh application instance (0.021792ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:5194
+✖ private tasks and forms enforce assignment and response permissions (0.0585ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:6274
+✖ atomic channel conversion previews and applies explicit historical access changes (0.021334ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:7540
+✖ meeting attendees must be tenant members; only organizer cancels (0.0335ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:8272
+✖ files remain quarantined and cannot be discovered cross-tenant (0.038875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:8954
+✖ 32-person receipts include every opted-in authorized recipient (0.01775ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:10460
+✖ live event replay and membership revocation close an active subscription (0.015292ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:84
+✖ invitations are identity-bound, expirable, single-use and revocable; last owner protected (0.013875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:2143
+✖ receipt privacy opt-out and session logout enforced (0.012125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:2730
+✖ production rejects development authentication, development seed, and missing identity configuration (0.01175ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:3589
+✖ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (0.014666ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:5304
+✖ production configuration requires explicit storage, HTTPS identity and assurance policy (0.014416ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:6651
+✖ authentication throttling does not consume the session-status and logout budget (0.025541ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:7481
+✖ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (0.01125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:9235
+✖ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (0.011417ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:11209
+✖ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (0.010792ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:11906
+✖ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (0.012583ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:13471
+✖ identity actions allow only configured provider recovery without arbitrary actions or redirects (0.011375ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:14464
+✖ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (0.012333ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:15727
+✖ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (0.085875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:17993
+✖ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (0.029125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:19818
+✖ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (0.017042ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:21692
+✖ authentication failures retain bounded global evidence without trusting identity or tenant input (0.014916ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:23172
+✖ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (0.014542ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:24747
+✖ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (0.014625ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:25918
+✖ audit storage failure rolls back sign-in and returns a generic unavailable response (0.013916ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:27178
+✖ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (0.014333ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:2:28873
+✖ mention parsing recognizes only explicit Markdown links and bounds unique recipients (0.013833ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:303
+✖ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (0.0135ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:3920
+✖ durable scan jobs retry, reject, recover leases and never resurrect deleted files (0.013959ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:7553
+✖ attachments enforce scanned same-channel access, immutable retries and current history visibility (0.013875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:10464
+✖ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (0.013667ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:11968
+✖ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (0.01375ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:13925
+✖ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (0.013375ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:15842
+✖ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (0.014125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:17455
+✖ source previews enforce scan/ACL/integrity and bound literal Unicode text (0.015417ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:20277
+✖ file revisions serialize numbering, preserve retry identity and withdraw the whole lineage (0.017041ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:24488
+✖ quiet hours evaluate overnight, equal endpoints and timezone DST boundaries (0.0135ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:25277
+✖ notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup (0.018083ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:28648
+✖ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (0.013417ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:33763
+✖ reply activity enforces recipient, current channel access and parent/reply deletion (0.014792ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:35980
+✖ reply alert opt-in is independent, cutoff-bound and deduplicates overlapping categories (0.013416ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:38587
+✖ invitation inbox isolates recipients and serializes concurrent identity acceptance (0.013125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:40942
+✖ recipient decline is scoped, audited and cannot grant or revoke membership (0.016583ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:42458
+✖ accept and decline races serialize without audit foreign-key deadlocks (0.0155ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:43431
+✖ organizer edits enforce revisions, reset rescheduled responses and serialize cancellation (0.013041ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:45849
+✖ meeting roster edits preserve retained RSVP and revoke removed attendee access (0.013458ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:48653
+✖ calendar keyset pages preserve microsecond ordering, range bounds and current access (0.01625ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:50960
+✖ calendar change counters are durable, recipient-scoped and transactional (0.013708ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:53215
+✖ recurring series is atomic, retry-safe, scoped and cancelled without resurrection (0.012875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:55850
+✖ series edits are revision-scoped, preserve cancelled occurrences and serialize individual edits (0.013166ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:58835
+✖ series rescheduling preserves IDs/cancelled exceptions and updates canonical anchor atomically (0.013041ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:62136
+✖ monthly/yearly rules persist policy and preserve legacy retry identity (0.013334ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:64800
+✖ series expansion preserves existing identities and original creation replay (0.012958ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:68327
+✖ upcoming-only series changes preserve historical rows and reject backward shifts (0.012916ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:71615
+✖ upcoming cancellation preserves started meetings and is idempotent (0.0135ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:75081
+✖ personal reminders persist, suppress safely and rearm only after time changes (0.01775ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:80750
+✖ channel posting policy serializes new writes, preserves accepted retries and enforces current roles (0.013417ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:85146
+✖ message reports preserve privacy, bound abuse and serialize audited moderation (0.013209ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:92328
+✖ audit search is tenant authorized, exact, time bounded and bigint safe (0.013209ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:96508
+✖ audit export is scoped, lossless, bounded and audited with serialized generation quotas (0.018583ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:102242
+✖ administrative usage reports preserve exact aggregates, UTC boundaries and current resource authorization (0.014583ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:111027
+✖ group participants, concurrent renames and departure enforce current access without deleting shared history (0.015041ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:116275
+✖ direct participant snapshots do not permit group lifecycle mutations (0.013875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:117395
+✖ administrator group grants explicitly authorize retained history and serialize revocation and limits (0.112542ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:125220
+✖ channel settings enforce current admin access, revisions, archive state and parent-team restoration (0.027208ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:130786
+✖ team ownership transfers atomically to eligible members and inactive owners cannot permit abandonment (0.017625ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:136813
+✖ private/shared explicit grants serialize access, include retained content and revoke without changing team membership (0.015792ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:145539
+✖ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (0.014625ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:156122
+✖ ownerless team recovery requires joined workspace ownership and fences reactivation without restoring former ownership (0.017042ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:163668
+✖ deleted file recovery rechecks owner, ACL, archive, quota and lifecycle token, rescans one version and fences old scan leases (0.014334ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:169015
+✖ deleted-file metadata listing is uploader-scoped, bounded and does not expose storage or scan internals (0.014875ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:170017
+✖ owner-only channel preservation freezes destructive message/file paths, serializes hold changes and keeps reads/additions/scanned recovery available (0.017125ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:178921
+✖ manual message retention bounds exact approved batches, honors current owner/hold state and retains files/reference metadata (0.015041ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:190198
+✖ manual file retention keeps families whole, fences scans and preserves recoverable bytes under current owner and hold rules (0.016792ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:203777
+✖ deleted-file keyset pages preserve microseconds and ties, survive boundary removal and recheck uploader/channel access (0.015708ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:12:209389
+✖ original-file pages traverse ties and microseconds, exclude versions/deleted rows and recheck conversation access (0.014083ms)
+  AggregateError [ECONNREFUSED]: 
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async transaction (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:16:15)
+      at async migrate (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/services/core/db.ts:31:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:28:3)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [
+      Error: connect ECONNREFUSED ::1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16),
+      Error: connect ECONNREFUSED 127.0.0.1:55432
+          at createConnectionError (node:net:1905:14)
+          at afterConnectMultiple (node:net:1935:16)
+    ]
+  }
+
+test at tests/core.test.ts:1:1151
+✖ /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts (0.105541ms)
+  TypeError: Cannot read properties of undefined (reading 'close')
+      at TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:48:13)
+      at TestHook.runInAsyncScope (node:async_hooks:227:14)
+      at TestHook.run (node:internal/test_runner/test:1382:25)
+      at TestHook.run (node:internal/test_runner/test:1726:18)
+      at TestHook.run (node:internal/util:581:20)
+      at Test.runHook (node:internal/test_runner/test:1269:20)
+      at after (node:internal/test_runner/test:1322:20)
+      at Test.run (node:internal/test_runner/test:1408:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:8943) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows (6.1s)
+  ✓  2 [chrome] › tests/browser/moderation.spec.ts:3:1 › channel policy updates live, retains drafts and restores member posting (7.2s)
+  ✓  3 [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt (2.9s)
+
+  3 passed (16.8s)

@@ -1,0 +1,4 @@
+{"database":"concord","remaining_fixture_organizations":0}
+{"latestNormalVersions":{"revisions":2,"all_deleted":true,"all_jobs_cancelled":true},"boundary":"Normal original/revision soft-delete retains historical rows and S3 bytes, no purge."}
+{"database":"concord_test","remaining_fixture_organizations":0}
+New source/search fixture SQL rows and upload spool files removed in finally, including inline revision3. Source volumes preserved; no reset/restore/S3 purge. OS clipboard neither read nor changed.

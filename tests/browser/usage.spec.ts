@@ -25,6 +25,6 @@ test('usage reports refresh real activity, reject mismatched scope and recover f
     await page.getByLabel('WORKSPACE',{exact:true}).selectOption(org);await expect(panel.getByRole('status')).toContainText(`Report for ${from}`);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   }finally{
     if(message)await page.request.delete(`${api}/v1/channels/${channel}/messages/${message}`,{headers});
-    if(channel)await page.request.patch(`${api}/v1/channels/${channel}/details`,{headers,data:{name,description:'Synthetic usage verification',archived:true}});
+    if(channel)await page.request.patch(`${api}/v1/channels/${channel}/details`,{headers,data:{name,description:'Synthetic usage verification',archived:true,revision:(await (await page.request.get(`${api}/v1/channels/${channel}/settings`)).json()).revision}});
   }
 });

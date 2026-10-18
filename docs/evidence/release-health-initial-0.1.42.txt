@@ -1,0 +1,1 @@
+Final release recording rejected: API health reported hardcoded 0.1.41 while package/images were 0.1.42. No new release.json written by rejected run. Fixed API health to read validated package version; final health evidence recorded separately.

@@ -1,0 +1,4 @@
+{"database":"concord","remaining_fixture_organizations":0}
+{"latestNormalPreview":{"state":"deleted","scan_status":"cancelled"},"boundary":"Normal soft-delete retains historical row and S3 bytes, no purge."}
+{"database":"concord_test","remaining_fixture_organizations":0}
+New source/search browser fixtures removed SQL rows and upload spool files in finally. Legacy Files preview fixture retained under normal soft-delete policy. Source volumes preserved; no reset/restore or S3 purge. OS clipboard neither read nor changed.

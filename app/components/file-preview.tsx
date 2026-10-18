@@ -9,6 +9,10 @@ export function FilePreviewDialog({ stream, file, onClose }: {
   file: { id: string; name: string };
   onClose: () => void;
 }) {
+  return <Modal title={`Preview: ${file.name}`} onClose={onClose}><div className="modal-body"><FilePreviewContent stream={stream} file={file}/></div></Modal>;
+}
+
+export function FilePreviewContent({stream,file}:{stream:string;file:{id:string}}) {
   const [data, setData] = useState<FilePreview | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -39,8 +43,7 @@ export function FilePreviewDialog({ stream, file, onClose }: {
     document.addEventListener("visibilitychange", visibility);
     return () => { active = false; controller?.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", visibility); };
   }, [stream, file.id, attempt]);
-  return <Modal title={`Preview: ${file.name}`} onClose={onClose}>
-    <div className="modal-body">
+  return <>
       <p>Source text only. Formatting, links and formulas are not executed.</p>
       {error ? <div role="alert"><p>{error}</p><button className="secondary" onClick={() => { setError(""); setAttempt(n => n + 1); }}>Retry preview</button></div>
         : !data ? <p role="status">Loading preview…</p>
@@ -48,6 +51,5 @@ export function FilePreviewDialog({ stream, file, onClose }: {
           {data.truncated && <p role="status">Preview truncated to {data.limit.toLocaleString()} text units. Download the file for its complete contents.</p>}
           {data.text ? <pre className="file-preview" tabIndex={0} aria-label="File source text">{data.text}</pre> : <p>This file is empty.</p>}
         </>}
-    </div>
-  </Modal>;
+  </>;
 }

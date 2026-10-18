@@ -1,0 +1,5 @@
+Backup command docker failed (125): docker: Error response from daemon: No such image: sha256:79bc16f158d80b0a03790d4918f14943bdec69470ca0e2901cc634203fec83e2
+
+Run 'docker run --help' for more information
+
+{"cleanupComplete":true,"remainingExerciseResources":[]}

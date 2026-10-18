@@ -1,6 +1,6 @@
 {
   "name": "team-collob-platform",
-  "version": "0.1.41",
+  "version": "0.1.70",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3100",
@@ -16,7 +16,15 @@
     "requirements": "node scripts/requirements.mjs",
     "backup:local": "node scripts/coordinated-backup.mjs",
     "restore:local": "node scripts/restore-coordinated-backup.mjs",
-    "test:recovery": "node scripts/test-coordinated-recovery.mjs"
+    "test:recovery": "node scripts/test-coordinated-recovery.mjs",
+    "recovery:kit": "node scripts/export-recovery-kit.mjs",
+    "test:transfer-recovery": "node scripts/test-transfer-recovery.mjs",
+    "test:file-retention-recovery": "node scripts/test-file-retention-recovery.mjs",
+    "test:scanner-recovery": "node scripts/test-scanner-recovery.mjs",
+    "backup:refresh-scanner": "node scripts/refresh-backup-scanner.mjs",
+    "test:scanner-refresh": "node scripts/test-scanner-refresh.mjs",
+    "backup:verify": "node scripts/verify-backup.mjs",
+    "test:backup-preflight": "node scripts/test-backup-preflight.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1150.0",

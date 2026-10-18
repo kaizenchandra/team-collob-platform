@@ -1,0 +1,63 @@
+
+Running 3 tests using 1 worker
+
+(node:24141) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (1.1m)
+
+  ✘  2 [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content (8.0s)
+(node:24395) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [chrome] › tests/browser/search-pages.spec.ts:10:1 › message and filename search pages retry navigation, retain current cursor, reset filters and protect older downloads (22.5s)
+
+
+  1) [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('dialog', { name: 'Linked message', exact: true }).getByText('linked1792303665709', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('dialog', { name: 'Linked message', exact: true }).getByText('linked1792303665709', { exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByText('linked1792303665709', { exact: true })
+
+
+      24 |     await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await waiting;await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();release?.();await done;await bob.unroute(draftPattern);await bob.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));expect(new URL(bob.url()).searchParams.get('channel')).toBe(alpha);await expect(region).toBeVisible();await card.click();await expect(dialog.getByText(marker,{exact:true})).toBeVisible();
+      25 |     await bob.route(draftPattern,route=>route.request().method()==='PUT'?route.fulfill({status:503,contentType:'application/json',body:'{"error":"Draft save temporarily unavailable"}'}):route.continue());await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('Your draft was kept');expect(new URL(bob.url()).searchParams.get('channel')).toBe(alpha);await bob.unroute(draftPattern);await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(bob.getByRole('heading',{name:/^Linked Beta/,level:1})).toBeVisible();expect((await (await b.request.get(`${api}/v1/channels/${alpha}/draft`)).json()).body).toBe(draft);
+    > 26 |     await login(linked,'bob@acme.test',url);const detail=linked.getByRole('dialog',{name:'Linked message',exact:true});await expect(detail.getByText(marker,{exact:true})).toBeVisible();await detail.getByRole('button',{name:'Close dialog',exact:true}).click();expect(new URL(linked.url()).hash).toBe('');await linked.evaluate(id=>{window.location.hash='message-'+id;},message);await expect(detail.getByText(marker,{exact:true})).toBeVisible();await linked.reload();await expect(detail.getByText(marker,{exact:true})).toBeVisible();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                             ^
+      27 |     const axe=await new AxeBuilder({page:linked}).include('dialog[aria-label="Linked message"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await linked.screenshot({path:'docs/evidence/linked-message.png'});await linked.setViewportSize({width:390,height:844});expect(await linked.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(await detail.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
+      28 |     const updated='Updated '+marker;expect((await a.request.patch(`${api}/v1/channels/${beta}/messages/${message}`,{headers,data:{body:`**${updated}**`}})).status()).toBe(200);await expect(detail.getByText(updated,{exact:true})).toBeVisible({timeout:10000});await expect(detail.getByText('@Bob Chen',{exact:true})).toHaveCount(0);
+      29 |     const target=`**/v1/organizations/${org}/channels/${beta}/messages/${message}`;await linked.route(target,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Linked message temporarily unavailable"}'}));await expect(detail.getByRole('alert')).toContainText('Linked message temporarily unavailable',{timeout:10000});await expect(detail.getByRole('article')).toHaveCount(0);await linked.unroute(target);await detail.getByRole('button',{name:'Retry message',exact:true}).click();await expect(detail.getByText(updated,{exact:true})).toBeVisible();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/linked-message.spec.ts:26:429
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content 
+  2 passed (1.6m)

@@ -1,0 +1,251 @@
+ Image concord-scanner:0.1.10-local Building 
+ Image concord-web:0.1.63-local Building 
+ Image concord-api:0.1.63-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.89kB done
+#1 DONE 0.0s
+
+#2 [web internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.70kB done
+#2 DONE 0.0s
+
+#3 [clamav internal] load build definition from Dockerfile
+#3 transferring dockerfile: 175B done
+#3 DONE 0.0s
+
+#4 [api internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#4 DONE 1.6s
+
+#5 [api internal] load .dockerignore
+#5 transferring context: 142B done
+#5 DONE 0.0s
+
+#6 [web build 1/6] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#6 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.0s done
+#6 DONE 0.0s
+
+#7 [web internal] load build context
+#7 transferring context: 2.30MB 0.1s done
+#7 DONE 0.1s
+
+#8 [web build 2/6] WORKDIR /app
+#8 CACHED
+
+#9 [web build 3/6] COPY package.json package-lock.json ./
+#9 DONE 0.9s
+
+#10 [clamav internal] load metadata for docker.io/clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+#10 DONE 2.7s
+
+#11 [clamav internal] load .dockerignore
+#11 transferring context: 2B done
+#11 DONE 0.0s
+
+#12 [web build 4/6] RUN npm ci
+#12 ...
+
+#13 [clamav internal] load build context
+#13 transferring context: 363B done
+#13 DONE 0.1s
+
+#14 [clamav 1/2] FROM docker.io/clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+#14 resolve docker.io/clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6 0.0s done
+#14 DONE 0.2s
+
+#12 [web build 4/6] RUN npm ci
+#12 ...
+
+#14 [clamav 1/2] FROM docker.io/clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+#14 sha256:fe5bd983a40af0b4772cfd83d75106234d98219dfe47eff195d35e4aa426db84 81.79MB / 112.85MB 4.8s
+#14 sha256:134b4d67f1e48d8f9f642542c3a62aced0bcca6d6f8ddbc1d496c45fc933feeb 1.23kB / 1.23kB 0.9s done
+#14 sha256:d7a6a000bfe6fc736d9f5d487d8cc29dc8ef5eea3c5ef5321ce3d5c3bed988d7 1.56kB / 1.56kB 1.1s done
+#14 sha256:9b392526e73d161094fc987f0a12b9395b9ee437226cbed1d6812ed51762b565 344B / 344B 1.1s done
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 3.15MB / 34.53MB 3.8s
+#14 sha256:c03aeff1bf165dadbc277498e23ccee00fbc399217127a17dd1cc044e3c09445 3.15MB / 7.39MB 3.6s
+#14 sha256:e2de96513ba9eb53b431787ec8a65cdde380ac4772a3e4c4b714dcfde2a102b5 1.05MB / 3.85MB 3.6s
+#14 sha256:fe5bd983a40af0b4772cfd83d75106234d98219dfe47eff195d35e4aa426db84 88.08MB / 112.85MB 5.3s
+#14 sha256:c03aeff1bf165dadbc277498e23ccee00fbc399217127a17dd1cc044e3c09445 4.19MB / 7.39MB 4.4s
+#14 sha256:e2de96513ba9eb53b431787ec8a65cdde380ac4772a3e4c4b714dcfde2a102b5 2.10MB / 3.85MB 4.4s
+#14 ...
+
+#12 [web build 4/6] RUN npm ci
+#12 5.854 npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+#12 ...
+
+#14 [clamav 1/2] FROM docker.io/clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+#14 sha256:fe5bd983a40af0b4772cfd83d75106234d98219dfe47eff195d35e4aa426db84 112.85MB / 112.85MB 7.2s done
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 23.07MB / 34.53MB 9.8s
+#14 sha256:c03aeff1bf165dadbc277498e23ccee00fbc399217127a17dd1cc044e3c09445 7.39MB / 7.39MB 6.5s done
+#14 sha256:e2de96513ba9eb53b431787ec8a65cdde380ac4772a3e4c4b714dcfde2a102b5 3.85MB / 3.85MB 5.9s done
+#14 extracting sha256:e2de96513ba9eb53b431787ec8a65cdde380ac4772a3e4c4b714dcfde2a102b5 0.1s done
+#14 extracting sha256:c03aeff1bf165dadbc277498e23ccee00fbc399217127a17dd1cc044e3c09445 0.1s done
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 25.17MB / 34.53MB 10.2s
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 27.26MB / 34.53MB 10.5s
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 29.36MB / 34.53MB 10.8s
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 32.51MB / 34.53MB 11.1s
+#14 sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 34.53MB / 34.53MB 11.3s done
+#14 extracting sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813
+#14 extracting sha256:c8c770fdac256a9f61e1290cb4bbd34daf069a860248fe3731a98fa762a74813 0.3s done
+#14 DONE 12.7s
+
+#12 [web build 4/6] RUN npm ci
+#12 ...
+
+#14 [clamav 1/2] FROM docker.io/clamav/clamav:1.5.4@sha256:638d90201ee7ee6a82d249a2fc23b132e578673b5f1f2766852b127676ca1ef6
+#14 extracting sha256:9b392526e73d161094fc987f0a12b9395b9ee437226cbed1d6812ed51762b565 0.0s done
+#14 extracting sha256:d7a6a000bfe6fc736d9f5d487d8cc29dc8ef5eea3c5ef5321ce3d5c3bed988d7 0.0s done
+#14 extracting sha256:134b4d67f1e48d8f9f642542c3a62aced0bcca6d6f8ddbc1d496c45fc933feeb 0.0s done
+#14 extracting sha256:fe5bd983a40af0b4772cfd83d75106234d98219dfe47eff195d35e4aa426db84
+#14 extracting sha256:fe5bd983a40af0b4772cfd83d75106234d98219dfe47eff195d35e4aa426db84 0.2s done
+#14 DONE 13.0s
+
+#12 [web build 4/6] RUN npm ci
+#12 ...
+
+#15 [clamav 2/2] COPY clamd.conf /etc/clamav/clamd.conf
+#15 DONE 1.2s
+
+#12 [web build 4/6] RUN npm ci
+#12 ...
+
+#16 [clamav] exporting to image
+#16 exporting layers 0.1s done
+#16 exporting manifest sha256:d834292dd07b299561a80fe8851d02f4fe7707d18a96fa8f5f444b62a05ff636 done
+#16 exporting config sha256:a6fe89ab53f89df3aa33869a2b1f576a3961909f526e5a2c7a792106b683e76e 0.0s done
+#16 exporting attestation manifest sha256:06a9fb961bd5a40638fb52b69d8c36785106e30ddbfe11f7c271396f908132d8 0.0s done
+#16 exporting manifest list sha256:f1ac8b4a32d5212b6881844e03c97f828d1b92758dec90bd6a0a750029dc478a done
+#16 naming to docker.io/library/concord-scanner:0.1.10-local done
+#16 DONE 0.2s
+
+#17 [clamav] resolving provenance for metadata file
+#17 DONE 0.0s
+
+#12 [web build 4/6] RUN npm ci
+#12 15.67 
+#12 15.67 added 553 packages, and audited 554 packages in 15s
+#12 15.67 
+#12 15.67 243 packages are looking for funding
+#12 15.67   run `npm fund` for details
+#12 15.70 
+#12 15.70 5 high severity vulnerabilities
+#12 15.70 
+#12 15.70 To address all issues (including breaking changes), run:
+#12 15.70   npm audit fix --force
+#12 15.70 
+#12 15.70 Run `npm audit` for details.
+#12 15.70 npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+#12 15.70 npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+#12 15.70 npm warn install-scripts   unrs-resolver@1.12.2 (postinstall: node postinstall.js)
+#12 15.70 npm warn install-scripts
+#12 15.70 npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+#12 15.70 npm notice
+#12 15.70 npm notice New major version of npm available! 11.19.0 -> 12.2.0
+#12 15.70 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+#12 15.70 npm notice To update run: npm install -g npm@12.2.0
+#12 15.70 npm notice
+#12 DONE 16.3s
+
+#18 [api build 5/6] COPY . .
+#18 DONE 0.4s
+
+#19 [web build 6/6] RUN npm run build
+#19 0.184 
+#19 0.184 > team-collob-platform@0.1.63 build
+#19 0.184 > next build && node scripts/prepare-standalone.mjs
+#19 0.184 
+#19 0.348 ▲ Next.js 16.4.0 (Turbopack)
+#19 0.367 ✓ Running next.config.ts took 18ms
+#19 0.375 - Cache Components enabled
+#19 0.375 - Partial Prefetching enabled
+#19 0.375 
+#19 0.387   Creating an optimized production build ...
+#19 2.149 ✓ Compiled successfully in 1760ms
+#19 2.151   Running TypeScript ...
+#19 5.990   Finished TypeScript in 3.8s ...
+#19 5.992   Collecting page data using 5 workers ...
+#19 6.193   Generating static pages using 5 workers (0/4) ...
+#19 6.384   Generating static pages using 5 workers (1/4) 
+#19 6.470   Generating static pages using 5 workers (2/4) 
+#19 6.471   Generating static pages using 5 workers (3/4) 
+#19 6.472 ✓ Generating static pages using 5 workers (4/4) in 279ms
+#19 6.474   Finalizing page optimization ...
+#19 6.527 
+#19 6.528 Route (app)
+#19 6.528 ┌ ○ /
+#19 6.528 └ ○ /_not-found
+#19 6.528 
+#19 6.528 
+#19 6.528 ○  (Static)  prerendered as static content
+#19 6.528 
+#19 DONE 6.6s
+
+#20 [api api-build 1/1] RUN npm prune --omit=dev
+#20 ...
+
+#21 [web web 3/3] COPY --from=build --chown=node:node /app/.next/standalone ./
+#21 DONE 0.1s
+
+#22 [web] exporting to image
+#22 exporting layers
+#22 ...
+
+#20 [api api-build 1/1] RUN npm prune --omit=dev
+#20 1.520 
+#20 1.520 removed 339 packages, and audited 215 packages in 1s
+#20 1.521 
+#20 1.521 100 packages are looking for funding
+#20 1.521   run `npm fund` for details
+#20 1.521 
+#20 1.521 found 0 vulnerabilities
+#20 DONE 1.6s
+
+#22 [web] exporting to image
+#22 exporting layers 1.3s done
+#22 exporting manifest sha256:951be602cfd165978cd09ad0fa6e808a2e673e60d502cd912a14ee2ba40773ba 0.0s done
+#22 exporting config sha256:0672416e9b7fcf874395473e26032a04837ff6f6eec2257a0fdba12b7a2b98d7
+#22 exporting config sha256:0672416e9b7fcf874395473e26032a04837ff6f6eec2257a0fdba12b7a2b98d7 0.0s done
+#22 exporting attestation manifest sha256:6a6d6379c20dddc706fee640747a5771e187c2c86771b8ea648fbd48e060a89d 0.0s done
+#22 exporting manifest list sha256:a381aae866b0d9f84276c129fbaf85f785d3db691b0fd6a529b1d867ce5ded18 0.0s done
+#22 naming to docker.io/library/concord-web:0.1.63-local done
+#22 unpacking to docker.io/library/concord-web:0.1.63-local
+#22 unpacking to docker.io/library/concord-web:0.1.63-local 0.3s done
+#22 DONE 1.7s
+
+#23 [web] resolving provenance for metadata file
+#23 DONE 0.0s
+
+#24 [api api 3/8] COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
+#24 DONE 0.9s
+
+#25 [api api 4/8] COPY --chown=node:node package.json ./
+#25 DONE 0.1s
+
+#26 [api api 5/8] COPY --chown=node:node services ./services
+#26 DONE 0.1s
+
+#27 [api api 6/8] COPY --chown=node:node lib/file-preview.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts ./lib/
+#27 DONE 0.1s
+
+#28 [api api 7/8] COPY --chown=node:node migrations ./migrations
+#28 DONE 0.1s
+
+#29 [api api 8/8] RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
+#29 DONE 0.1s
+
+#30 [api] exporting to image
+#30 exporting layers 10.9s done
+#30 exporting manifest sha256:7a89b56c1269c431c4c4dc9fb308c9cdc0cec55dea87899782339fa57eca9164
+#30 exporting manifest sha256:7a89b56c1269c431c4c4dc9fb308c9cdc0cec55dea87899782339fa57eca9164 0.0s done
+#30 exporting config sha256:c856b5a31d839e987a4f1c760ae134719fdbfb003992adf42a7a2a300ddba43b 0.0s done
+#30 exporting attestation manifest sha256:ea18f93afc5a38066ad947cd87b6a6613b12be06046c33dcc63e051792088bdf 0.0s done
+#30 exporting manifest list sha256:02296569f3233e0c3901f8752f7dc614e1333223eb46dde4683dfaaeee9ddb98 0.0s done
+#30 naming to docker.io/library/concord-api:0.1.63-local done
+#30 unpacking to docker.io/library/concord-api:0.1.63-local
+#30 unpacking to docker.io/library/concord-api:0.1.63-local 2.4s done
+#30 DONE 13.4s
+
+#31 [api] resolving provenance for metadata file
+#31 DONE 0.0s
+ Image concord-api:0.1.63-local Built 
+ Image concord-web:0.1.63-local Built 
+ Image concord-scanner:0.1.10-local Built 

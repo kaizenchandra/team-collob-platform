@@ -1,0 +1,51 @@
+
+Running 2 tests using 1 worker
+
+(node:5579) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh (18.2s)
+
+  ✘  2 [chrome] › tests/browser/file-search.spec.ts:9:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (3.0m)
+
+
+  1) [chrome] › tests/browser/file-search.spec.ts:9:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.selectOption: Test ended.
+    Call log:
+      - waiting for getByRole('region', { name: 'Workspace search results' }).getByLabel('Search type', { exact: true })
+
+
+      21 |     for(const channel of channels)expect((await a.request.post(`${api}/v1/channels/${channel}/messages`,{headers,data:{clientId:randomUUID(),body:token+' message in '+channel}})).status()).toBe(201);
+      22 |     const draft='Unsent draft survives opening searched file';await bob.getByRole('textbox',{name:'Message',exact:true}).fill(draft);
+    > 23 |     const submit=async(q:string)=>{const box=bob.getByRole('textbox',{name:'Search this workspace',exact:true});await box.fill(q);await box.press('Enter');};
+         |                                                                                                                                        ^
+      24 |     const region=bob.getByRole('region',{name:'Workspace search results'}),filesType=()=>region.getByLabel('Search type',{exact:true}).selectOption('files');
+      25 |     await submit(token);await expect(region.getByRole('status').filter({hasText:'2 matching messages'})).toBeVisible();await filesType();await expect(region.getByRole('status').filter({hasText:'3 matching files'})).toBeVisible();await expect(region.getByRole('heading',{name:hiddenName,exact:true})).toHaveCount(0);await expect(region.getByRole('heading',{name:alphaName,exact:true})).toHaveCount(1);await expect(region.getByRole('article').filter({hasText:pendingName}).getByRole('link',{name:/Download/})).toHaveCount(0);
+      26 |     await region.getByLabel('Search conversation',{exact:true}).selectOption(alpha);await expect(region.getByRole('status').filter({hasText:'1 matching files'})).toBeVisible();const download=bob.waitForEvent('download');await region.getByRole('link',{name:'Download '+alphaName,exact:true}).click();const downloaded=await download;expect(downloaded.suggestedFilename()).toBe(alphaName);expect(await readFile((await downloaded.path())!,'utf8')).toBe(content);
+        at filesType (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-search.spec.ts:23:136)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-search.spec.ts:24:126
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-search.spec.ts:9:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact 
+  1 passed (3.3m)

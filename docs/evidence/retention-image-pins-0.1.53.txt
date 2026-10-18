@@ -1,0 +1,1 @@
+{"imagePinsStillMatchAfterRelease":true,"verifiedImagePins":3,"legacyMissingImageRole":"api","portableImageArchive":false}

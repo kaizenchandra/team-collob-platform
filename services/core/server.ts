@@ -1,3 +1,11 @@
+import {registerFileRetention} from './file-retention.ts';
+import {registerMessageRetention} from './message-retention.ts';
+import {registerPreservation,requireUnheld} from './preservation.ts';
+import {registerTeamMembers} from './team-members.ts';
+import {registerChannelAccess} from './channel-access.ts';
+import {registerTeamOwnership} from './team-ownership.ts';
+import {readFileSync} from 'node:fs';
+import {registerChatManagement} from './chat-management.ts';
 import {registerUsage} from './usage.ts';
 import {registerAuditExport} from './audit-export.ts';
 import {registerAuditSearch} from './audit-search.ts';
@@ -21,6 +29,7 @@ import {registerOidc} from "./oidc.ts";
 import {sessionReader} from "./session-policy.ts";
 import {validateConfiguration} from "./config.ts";
 
+const releaseVersion = z.string().regex(/^\d+\.\d+\.\d+$/).parse(JSON.parse(readFileSync(new URL('../../package.json',import.meta.url),'utf8')).version);
 const uuid = z.string().uuid();
 const title = z.string().trim().min(1).max(160);
 const messageSchema = z.object({
@@ -163,7 +172,7 @@ export async function createApp() {
             correlationId: req.id,
         });
     });
-    app.get("/health", async () => ({status: "ok", release: "0.1.41"}));
+    app.get("/health", async () => ({status: "ok", release: releaseVersion}));
     app.get("/ready", async () => {
         await pool.query("SELECT 1");
         return {status: "ready"};
@@ -360,12 +369,15 @@ export async function createApp() {
         return transaction(async (db) => {
             if (b.teamId) {
                 const t = await db.query(
-                    "SELECT 1 FROM team_members WHERE team_id=$1 AND org_id=$2 AND user_id=$3",
+                    "SELECT t.id FROM teams t JOIN team_members tm ON tm.team_id=t.id WHERE t.id=$1 AND t.org_id=$2 AND tm.user_id=$3 AND NOT t.archived FOR UPDATE OF t",
                     [b.teamId, org, req.user.id],
                 );
                 if (!t.rowCount) throw new HttpError(404, "Team unavailable");
             } else if (!["direct", "group"].includes(b.kind))
                 throw new HttpError(400, "Team required");
+            await db.query('SELECT user_id FROM memberships WHERE org_id=$1 AND user_id=$2 FOR SHARE',[org,req.user.id]);
+            if((await member(db,req.user.id,org)).role==='guest')throw new HttpError(403,'Guests cannot create conversations');
+            if(b.teamId&&!(await db.query('SELECT 1 FROM team_members tm JOIN teams t ON t.id=tm.team_id WHERE tm.team_id=$1 AND tm.org_id=$2 AND tm.user_id=$3 AND NOT t.archived',[b.teamId,org,req.user.id])).rowCount)throw new HttpError(404,'Team unavailable');
             const people = [...new Set([req.user.id, ...b.members])];
             if (b.kind === "direct" && people.length !== 2)
                 throw new HttpError(400, "Direct chat needs two people");
@@ -403,6 +415,33 @@ export async function createApp() {
             messages: r.rows.reverse(),
             hasMore: r.rowCount === q.limit,
         };
+    });
+    app.get('/v1/organizations/:id/channels/:channel/files/:file',async req=>{
+        const org=idParam(req),channelId=idParam(req,'channel'),file=idParam(req,'file');
+        z.object({}).strict().parse(req.query);
+        await member(pool,req.user.id,org);
+        const selected=await channel(pool,req.user.id,channelId);
+        if(selected.org_id!==org)throw new HttpError(404,'File unavailable');
+        const row=(await pool.query(`SELECT f.id,f.name,f.mime,f.bytes,f.state,f.created_at,j.status scan_status,c.name channel_name
+          FROM files f JOIN channels c ON c.id=f.channel_id LEFT JOIN file_scan_jobs j ON j.file_id=f.id
+          WHERE c.org_id=$3 AND c.id=$2 AND f.id=$4 AND f.org_id=$3 AND f.revision_root IS NULL AND f.state<>'deleted' AND ${accessSQL}`,[req.user.id,channelId,org,file])).rows[0];
+        if(!row)throw new HttpError(404,'File unavailable');
+        const {channel_name,...value}=row;
+        return {channel:{id:channelId,name:channel_name},file:value};
+    });
+    app.get('/v1/organizations/:id/channels/:channel/messages/:message',async req=>{
+        const org=idParam(req),channelId=idParam(req,'channel'),message=idParam(req,'message');
+        z.object({}).strict().parse(req.query);
+        await member(pool,req.user.id,org);
+        const selected=await channel(pool,req.user.id,channelId);
+        if(selected.org_id!==org)throw new HttpError(404,'Message unavailable');
+        const row=(await pool.query(`SELECT m.id,m.body,m.format,m.created_at,m.edited_at,m.parent_id,u.name,
+          ${mentionProjection},${attachmentProjection},c.name channel_name
+          FROM messages m JOIN channels c ON c.id=m.channel_id JOIN users u ON u.id=m.user_id
+          WHERE c.org_id=$3 AND c.id=$2 AND m.id=$4 AND NOT m.deleted AND ${accessSQL}`,[req.user.id,channelId,org,message])).rows[0];
+        if(!row)throw new HttpError(404,'Message unavailable');
+        const {channel_name,...value}=row;
+        return {channel:{id:channelId,name:channel_name},message:value};
     });
     app.post("/v1/channels/:id/messages", async (req, reply) => {
         const id = idParam(req);
@@ -474,6 +513,7 @@ export async function createApp() {
         return transaction(async (db) => {
             const c = await channel(db, req.user.id, id, true);
             await requirePosting(db,req.user.id,c);
+            await requireUnheld(db,id);
             const r = await db.query(
                 "UPDATE messages SET body=$1,format=coalesce($5,format),edited_at=now() WHERE id=$2 AND channel_id=$3 AND user_id=$4 AND NOT deleted RETURNING id,format",
                 [b.body, mid, id, req.user.id, b.format ?? null],
@@ -490,6 +530,7 @@ export async function createApp() {
         return transaction(async (db) => {
             const c = await channel(db, req.user.id, id, true);
             const role = await member(db, req.user.id, c.org_id);
+            await requireUnheld(db,id);
             const r = await db.query(
                 "UPDATE messages SET body='',deleted=true WHERE id=$1 AND channel_id=$2 AND (user_id=$3 OR $4) RETURNING id",
                 [mid, id, req.user.id, ["admin", "owner"].includes(role.role)],
@@ -736,17 +777,25 @@ export async function createApp() {
     app.get("/v1/organizations/:id/search", async (req) => {
         const org = idParam(req);
         await member(pool, req.user.id, org);
-        const q = z
-            .object({q: z.string().trim().min(1).max(200)})
-            .parse(req.query);
-        return {
-            results: (
-                await pool.query(
-                    `SELECT m.id,m.body,m.channel_id,c.name channel_name,u.name author,m.created_at FROM messages m JOIN channels c ON c.id=m.channel_id JOIN users u ON u.id=m.user_id WHERE c.org_id=$2 AND ${accessSQL} AND NOT m.deleted AND to_tsvector('english',m.body) @@ plainto_tsquery('english',$3) ORDER BY m.created_at DESC LIMIT 50`,
-                    [req.user.id, org, q.q],
-                )
-            ).rows,
-        };
+        const q = z.object({q:z.string().trim().min(1).max(200),type:z.enum(['messages','files']).default('messages'),channelId:z.uuid().optional(),beforeCreated:z.iso.datetime().refine(value=>!value.startsWith('0000-'),'Invalid cursor year').optional(),beforeId:z.uuid().optional()}).strict().parse(req.query);
+        if(!!q.beforeCreated!==!!q.beforeId)throw new HttpError(400,'Provide both search cursor fields');
+        if(q.channelId){const selected=await channel(pool,req.user.id,q.channelId);if(selected.org_id!==org)throw new HttpError(404,'Conversation unavailable');}
+        const pageResult=(rows:Record<string,unknown>[])=>{const page=rows.slice(0,50),last=page.at(-1),hasMore=rows.length>50;return {type:q.type,results:page.map(row=>{const {cursor_created,...result}=row;void cursor_created;return result;}),hasMore,nextCursor:hasMore?{createdAt:last!.cursor_created,id:last!.id}:null};};
+        if(q.type==='files'){
+            const rows=(await pool.query(`SELECT f.id,f.name,f.mime,f.bytes,f.state,f.channel_id,c.name channel_name,f.created_at,
+              to_char(f.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_created
+              FROM files f JOIN channels c ON c.id=f.channel_id
+              WHERE c.org_id=$2 AND ${accessSQL} AND f.state<>'deleted' AND f.revision_root IS NULL
+              AND ($4::uuid IS NULL OR c.id=$4) AND position(lower($3) in lower(f.name))>0
+              AND ($5::timestamptz IS NULL OR (f.created_at,f.id)<($5,$6::uuid))
+              ORDER BY f.created_at DESC,f.id DESC LIMIT 51`,[req.user.id,org,q.q,q.channelId??null,q.beforeCreated??null,q.beforeId??null])).rows;
+            return pageResult(rows);
+        }
+        const rows=(await pool.query(
+            `SELECT m.id,m.body,m.channel_id,c.name channel_name,u.name author,m.created_at,to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_created FROM messages m JOIN channels c ON c.id=m.channel_id JOIN users u ON u.id=m.user_id WHERE c.org_id=$2 AND ${accessSQL} AND NOT m.deleted AND ($4::uuid IS NULL OR c.id=$4) AND to_tsvector('english',m.body) @@ plainto_tsquery('english',$3) AND ($5::timestamptz IS NULL OR (m.created_at,m.id)<($5,$6::uuid)) ORDER BY m.created_at DESC,m.id DESC LIMIT 51`,
+            [req.user.id,org,q.q,q.channelId??null,q.beforeCreated??null,q.beforeId??null],
+        )).rows;
+        return pageResult(rows);
     });
     app.get("/v1/organizations/:id/activity", async (req) => {
         const org = idParam(req);
@@ -787,6 +836,13 @@ export async function createApp() {
   await registerAuditSearch(app);
   await registerAuditExport(app);
   await registerUsage(app);
+  await registerChatManagement(app);
+  await registerTeamOwnership(app);
+  await registerChannelAccess(app);
+  await registerTeamMembers(app);
+  await registerPreservation(app);
+  await registerMessageRetention(app);
+  await registerFileRetention(app);
   await registerMeetingReminders(app);
     const reconcile = await registerOidc(app, origins[0]);
     const readSession = sessionReader(process.env, reconcile);

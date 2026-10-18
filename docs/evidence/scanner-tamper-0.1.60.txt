@@ -1,0 +1,4 @@
+{"scannerTamperRejected":"definition-hash","cleanupComplete":true}
+{"scannerTamperRejected":"definition-set","cleanupComplete":true}
+{"scannerTamperRejected":"scanner-image-binding","cleanupComplete":true}
+{"captureFailureRejected":true,"captureResourcesAndPlaintextCleaned":true,"noBackupPublished":true,"primaryIncludingScannerIdsAndImagesUnchanged":true}

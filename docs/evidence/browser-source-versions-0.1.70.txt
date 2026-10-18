@@ -1,0 +1,14 @@
+
+Running 4 tests using 1 worker
+
+(node:31155) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-scanning.spec.ts:139:1 › file versions preserve old bytes, recover accepted uploads and revoke history after root deletion (11.2s)
+
+  ✓  2 [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (53.0s)
+
+  ✓  3 [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content (29.9s)
+
+  ✓  4 [chrome] › tests/browser/search-pages.spec.ts:10:1 › message and filename search pages retry navigation, retain current cursor, reset filters and protect older downloads (22.2s)
+
+  4 passed (2.0m)

@@ -1,0 +1,11 @@
+
+Running 3 tests using 1 worker
+
+(node:19083) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [chrome] › tests/browser/file-retention.spec.ts:9:1 › owner reviews file-family retention with stale/held/error handling and uploader recovers the retained attachment through a real scan (6.1s)
+  ✓  2 [chrome] › tests/browser/message-retention.spec.ts:8:1 › owner saves manual retention, reviews stale/held batches and confirms irreversible text clearing for isolated expired messages (3.4s)
+  ✓  3 [chrome] › tests/browser/preservation.spec.ts:6:1 › channel owner reviews, applies and releases preservation while another author cannot delete held content (4.2s)
+
+  3 passed (14.8s)

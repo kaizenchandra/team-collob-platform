@@ -1,0 +1,17 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Fixture DELETE failed 400
+    at call (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-preservation-recovery.mjs:11:68)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-preservation-recovery.mjs:19:56 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

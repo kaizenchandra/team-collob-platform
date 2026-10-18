@@ -1,0 +1,57 @@
+
+Running 3 tests using 1 worker
+
+(node:8813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows (4.7s)
+(node:8844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chrome] › tests/browser/moderation.spec.ts:3:1 › channel policy updates live, retains drafts and restores member posting (7.4s)
+  ✓  3 [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt (2.4s)
+
+
+  1) [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('alert')
+    Expected substring: "Workspace refresh unavailable"
+    Error: strict mode violation: getByRole('alert') resolved to 2 elements:
+        1) <div role="alert" class="error-banner">…</div> aka getByRole('alert').filter({ hasText: 'Workspace refresh unavailable' })
+        2) <div role="alert" aria-live="assertive" id="__next-route-announcer__"></div> aka locator('[id="__next-route-announcer__"]')
+
+    Call log:
+      - Expect "toContainText" getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('alert')
+
+
+      16 |     const accessibility=await new AxeBuilder({page:alice}).include('section[aria-label="Chat participants"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(accessibility.violations).toEqual([]);await ap.scrollIntoViewIfNeeded();await alice.screenshot({path:'docs/evidence/group-management.png'});
+      17 |     const bootstrap=`**/v1/organizations/${org}/bootstrap`;await bob.route(bootstrap,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Workspace refresh unavailable"}'}));
+    > 18 |     await bp.getByRole('button',{name:'Leave group',exact:true}).click();await bp.getByRole('button',{name:'Confirm leave group',exact:true}).click();await expect(bob.getByRole('heading',{name:`${renamed} group`,exact:true})).toHaveCount(0);await expect(bob.getByRole('alert')).toContainText('Workspace refresh unavailable');await bob.unroute(bootstrap);expect((await b.request.get(`${api}/v1/channels/${id}/messages`)).status()).toBe(404);
+         |                                                                                                                                                                                                                                                                                       ^
+      19 |     await ap.getByRole('button',{name:'Refresh participants',exact:true}).click();await expect(ap.getByRole('listitem')).toHaveText(['Alice Morgan']);await expect(alice.getByText(body,{exact:true})).toBeVisible();await bob.goto(url);await expect(bob.getByRole('heading',{name:`${renamed} group`,exact:true})).toHaveCount(0);
+      20 |     await alice.reload();await expect(alice.getByRole('heading',{name:`${renamed} group`,exact:true})).toBeVisible();await alice.getByRole('button',{name:'Conversation details',exact:true}).click();await expect(ap.getByRole('listitem')).toHaveText(['Alice Morgan']);await alice.setViewportSize({width:390,height:844});expect(await alice.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      21 |   }finally{
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/chat-management.spec.ts:18:279
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/chat-management-group-part-5776f--across-independent-windows-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/chat-management-group-part-5776f--across-independent-windows-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/chat-management-group-part-5776f--across-independent-windows-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/chat-management-group-part-5776f--across-independent-windows-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/chat-management-group-part-5776f--across-independent-windows-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows 
+  2 passed (16.0s)

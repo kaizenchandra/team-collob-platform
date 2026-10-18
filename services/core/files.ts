@@ -1,3 +1,4 @@
+import {requireUnheld} from './preservation.ts';
 import type {FastifyInstance} from "fastify";
 import {z} from "zod";
 import {createHash, randomUUID} from "node:crypto";
@@ -29,17 +30,54 @@ async function readableFile(user: string, id: string, file: string, preview = fa
 
 export async function registerFiles(app: FastifyInstance) {
     const root = path.resolve(process.env.FILE_ROOT ?? ".data/files");
+    app.get("/v1/channels/:id/deleted-files", async req => {
+        const id = idParam(req);
+        await channel(pool, req.user.id, id);
+        const q = z.object({beforeCreated: z.iso.datetime().refine(v=>!v.startsWith("0000-"),"Invalid cursor year").optional(), beforeId: z.uuid().optional()}).strict().parse(req.query);
+        if (!!q.beforeCreated !== !!q.beforeId) throw new HttpError(400, "Provide both deleted-file cursor fields");
+        const rows = (await pool.query(`SELECT f.id,f.name,f.bytes,f.revision_root,f.revision_number,f.lifecycle_revision,
+          to_char(f.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_created
+          FROM files f JOIN channels c ON c.id=f.channel_id
+          WHERE f.channel_id=$2 AND f.created_by=$1 AND f.state='deleted' AND ${accessSQL}
+          AND ($3::timestamptz IS NULL OR (f.created_at,f.id)<($3,$4::uuid))
+          ORDER BY f.created_at DESC,f.id DESC LIMIT 101`, [req.user.id,id,q.beforeCreated??null,q.beforeId??null])).rows;
+        const page=rows.slice(0,100),last=page.at(-1),hasMore=rows.length>100;
+        return {files: page.map(row=>{const {cursor_created,...file}=row;void cursor_created;return file;}),hasMore,nextCursor:hasMore?{createdAt:last.cursor_created,id:last.id}:null};
+    });
+    app.post("/v1/channels/:id/files/:file/restore", async req => {
+        const id = idParam(req), file = idParam(req, "file");
+        const b = z.object({expectedRevision: z.number().int().positive(), confirm: z.literal(true)}).strict().parse(req.body);
+        return transaction(async db => {
+            await channel(db, req.user.id, id, true);
+            const c = await channel(db, req.user.id, id);
+            const row = (await db.query("SELECT * FROM files WHERE id=$1 AND channel_id=$2 AND created_by=$3", [file, id, req.user.id])).rows[0];
+            if (!row) throw new HttpError(404, "Only the uploader can restore this file");
+            if (c.archived) throw new HttpError(409, "Restore the channel before recovering files");
+            if (row.state !== "deleted" || row.lifecycle_revision !== b.expectedRevision) throw new HttpError(409, "File changed. Refresh deleted files before restoring");
+            if (row.revision_root && !(await db.query("SELECT 1 FROM files WHERE id=$1 AND state<>'deleted'", [row.revision_root])).rowCount) throw new HttpError(409, "Restore the original before this version");
+            await db.query("SELECT pg_advisory_xact_lock(hashtext($1))", [c.org_id]);
+            const usage = (await db.query("SELECT coalesce(sum(bytes),0)::bigint bytes FROM files WHERE org_id=$1 AND state<>'deleted'", [c.org_id])).rows[0];
+            if (Number(usage.bytes) + Number(row.bytes) > 104857600) throw new HttpError(413, "Workspace development quota exceeded (100 MB)");
+            await db.query("UPDATE files SET state='quarantined',lifecycle_revision=lifecycle_revision+1 WHERE id=$1", [file]);
+            await db.query("INSERT INTO file_scan_jobs(file_id) VALUES($1) ON CONFLICT(file_id) DO UPDATE SET status='queued',attempts=0,available_at=now(),lease_id=NULL,lease_until=NULL,last_error=NULL,scanned_at=NULL,scanner_version=NULL", [file]);
+            await audit(db, req.user.id, c.org_id, "file.restore_requested", file, {revision: b.expectedRevision + 1});
+            await event(db, c.org_id, id, "file.uploaded");
+            return {ok: true, state: "quarantined"};
+        });
+    });
     app.get("/v1/channels/:id/files", async (req) => {
         const id = idParam(req);
         await channel(pool, req.user.id, id);
-        return {
-            files: (
-                await pool.query(
-                    "SELECT f.id,f.name,f.mime,f.bytes,f.state,f.created_at,f.created_by,f.revision_number,j.status scan_status,j.attempts FROM files f LEFT JOIN file_scan_jobs j ON j.file_id=f.id WHERE channel_id=$1 AND revision_root IS NULL AND state<>'deleted' ORDER BY created_at DESC LIMIT 100",
-                    [id],
-                )
-            ).rows,
-        };
+        const q = z.object({beforeCreated:z.iso.datetime().refine(v=>!v.startsWith("0000-"),"Invalid cursor year").optional(),beforeId:z.uuid().optional()}).strict().parse(req.query);
+        if (!!q.beforeCreated !== !!q.beforeId) throw new HttpError(400,"Provide both file cursor fields");
+        const rows=(await pool.query(`SELECT f.id,f.name,f.mime,f.bytes,f.state,f.created_at,f.created_by,f.revision_number,j.status scan_status,j.attempts,
+          to_char(f.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_created
+          FROM files f JOIN channels c ON c.id=f.channel_id LEFT JOIN file_scan_jobs j ON j.file_id=f.id
+          WHERE f.channel_id=$2 AND f.revision_root IS NULL AND f.state<>'deleted' AND ${accessSQL}
+          AND ($3::timestamptz IS NULL OR (f.created_at,f.id)<($3,$4::uuid))
+          ORDER BY f.created_at DESC,f.id DESC LIMIT 101`,[req.user.id,id,q.beforeCreated??null,q.beforeId??null])).rows;
+        const page=rows.slice(0,100),last=page.at(-1),hasMore=rows.length>100;
+        return {files:page.map(row=>{const {cursor_created,...file}=row;void cursor_created;return file;}),hasMore,nextCursor:hasMore?{createdAt:last.cursor_created,id:last.id}:null};
     });
     app.get("/v1/channels/:id/files/:file/versions", async (req) => {
         const id = idParam(req), file = idParam(req, "file");
@@ -162,12 +200,16 @@ export async function registerFiles(app: FastifyInstance) {
             file = idParam(req, "file");
         return transaction(async (db) => {
             const c = await channel(db, req.user.id, id, true);
+            await channel(db, req.user.id, id);
+            await requireUnheld(db,id);
             const r = await db.query(
-                "UPDATE files SET state='deleted' WHERE (id=$1 OR revision_root=$1) AND channel_id=$2 AND created_by=$3 RETURNING id",
+                "UPDATE files SET state='deleted',lifecycle_revision=lifecycle_revision+1 WHERE (id=$1 OR revision_root=$1) AND channel_id=$2 AND created_by=$3 AND state<>'deleted' RETURNING id",
                 [file, id, req.user.id],
             );
-            if (!r.rowCount)
+            if (!r.rowCount) {
+                if ((await db.query("SELECT 1 FROM files WHERE id=$1 AND channel_id=$2 AND created_by=$3", [file,id,req.user.id])).rowCount) return {ok: true};
                 throw new HttpError(404, "Only the uploader can delete this file");
+            }
             await db.query("UPDATE file_scan_jobs SET status='cancelled',lease_id=NULL,lease_until=NULL WHERE file_id=ANY($1::uuid[])", [r.rows.map(row => row.id)]);
             await audit(db, req.user.id, c.org_id, "file.deleted", file);
             await event(db, c.org_id, id, "file.deleted");

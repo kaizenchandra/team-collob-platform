@@ -1,0 +1,11 @@
+✔ companion preflight authenticates three/four-image protocols and rejects changed bytes/binding/type/bounds without staging (16.459959ms)
+✔ private envelope preflight keeps legacy scope and rejects unsafe keys/files and oversized input (6.963625ms)
+✔ preflight CLI needs opt-in, uses no Docker, and reports success without any restore claim (202.960667ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 326.386125

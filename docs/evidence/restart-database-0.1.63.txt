@@ -1,0 +1,182 @@
+ Image postgres:17.6 Pulling 
+ 4a399977b8a4 Pulling fs layer 0B
+ f7047d88fb1d Pulling fs layer 0B
+ 51365f04b688 Pulling fs layer 0B
+ 151cf5cacbc6 Pulling fs layer 0B
+ 23e324b994c6 Pulling fs layer 0B
+ fe4fdfae8861 Pulling fs layer 0B
+ 25728ea3d6cc Pulling fs layer 0B
+ 7448673bc12c Pulling fs layer 0B
+ 36d4eb47026a Pulling fs layer 0B
+ 02d5c5546489 Pulling fs layer 0B
+ 7bd85ddce6ac Pulling fs layer 0B
+ 266c7c6a33be Pulling fs layer 0B
+ 690e7081aba2 Pulling fs layer 0B
+ e6a5751455f4 Pulling fs layer 0B
+ f9ddf7fc0e59 Downloading 3.146MB
+ f9ddf7fc0e59 Download complete 0B
+ 4a399977b8a4 Download complete 0B
+ b8c0a7b6017f Download complete 0B
+ e6a5751455f4 Download complete 0B
+ 51365f04b688 Downloading 1.049MB
+ 51365f04b688 Downloading 3.146MB
+ 51365f04b688 Downloading 6.291MB
+ 151cf5cacbc6 Downloading 3.144kB
+ 51365f04b688 Downloading 10.49MB
+ 23e324b994c6 Download complete 0B
+ 151cf5cacbc6 Download complete 0B
+ 51365f04b688 Downloading 13.63MB
+ 51365f04b688 Downloading 16.78MB
+ fe4fdfae8861 Downloading 1.049MB
+ 51365f04b688 Downloading 18.87MB
+ fe4fdfae8861 Downloading 2.097MB
+ 51365f04b688 Downloading 19.92MB
+ fe4fdfae8861 Downloading 2.097MB
+ 51365f04b688 Downloading 19.92MB
+ fe4fdfae8861 Downloading 6.291MB
+ 51365f04b688 Downloading 24.12MB
+ fe4fdfae8861 Downloading 8.389MB
+ 51365f04b688 Downloading 24.12MB
+ fe4fdfae8861 Downloading 8.389MB
+ 51365f04b688 Downloading 25.17MB
+ 51365f04b688 Downloading 25.17MB
+ 25728ea3d6cc Downloading 2.097MB
+ fe4fdfae8861 Downloading 10.49MB
+ fe4fdfae8861 Downloading 13.63MB
+ 51365f04b688 Downloading 26.21MB
+ 25728ea3d6cc Downloading 2.097MB
+ 25728ea3d6cc Downloading 2.097MB
+ fe4fdfae8861 Downloading 13.63MB
+ 51365f04b688 Downloading 26.21MB
+ fe4fdfae8861 Downloading 14.68MB
+ 51365f04b688 Downloading 26.21MB
+ 25728ea3d6cc Downloading 3.146MB
+ 25728ea3d6cc Downloading 4.194MB
+ fe4fdfae8861 Downloading 17.83MB
+ 51365f04b688 Downloading 27.26MB
+ 25728ea3d6cc Downloading 4.194MB
+ fe4fdfae8861 Downloading 18.87MB
+ 51365f04b688 Downloading 27.26MB
+ fe4fdfae8861 Downloading 19.92MB
+ 51365f04b688 Downloading 28.31MB
+ 25728ea3d6cc Downloading 5.243MB
+ fe4fdfae8861 Downloading 20.97MB
+ 51365f04b688 Downloading 28.31MB
+ 25728ea3d6cc Downloading 5.243MB
+ fe4fdfae8861 Downloading 25.17MB
+ 51365f04b688 Downloading 28.31MB
+ 25728ea3d6cc Download complete 0B
+ fe4fdfae8861 Downloading 26.21MB
+ 51365f04b688 Downloading 29.36MB
+ fe4fdfae8861 Downloading 29.36MB
+ 51365f04b688 Downloading 29.36MB
+ 51365f04b688 Download complete 0B
+ 7448673bc12c Download complete 0B
+ fe4fdfae8861 Downloading 30.41MB
+ 51365f04b688 Extracting 1B
+ fe4fdfae8861 Downloading 32.51MB
+ 51365f04b688 Extracting 1B
+ fe4fdfae8861 Downloading 34.6MB
+ 51365f04b688 Extracting 1B
+ 02d5c5546489 Download complete 0B
+ fe4fdfae8861 Downloading 36.7MB
+ 51365f04b688 Extracting 1B
+ fe4fdfae8861 Downloading 38.8MB
+ 23e324b994c6 Pull complete 0B
+ 25728ea3d6cc Extracting 1B
+ 51365f04b688 Pull complete 0B
+ fe4fdfae8861 Downloading 39.85MB
+ 36d4eb47026a Download complete 0B
+ 25728ea3d6cc Pull complete 0B
+ 36d4eb47026a Extracting 1B
+ fe4fdfae8861 Downloading 42.99MB
+ 36d4eb47026a Pull complete 0B
+ fe4fdfae8861 Downloading 46.14MB
+ 266c7c6a33be Download complete 0B
+ fe4fdfae8861 Downloading 47.19MB
+ fe4fdfae8861 Downloading 48.23MB
+ 7bd85ddce6ac Downloading 1.049MB
+ fe4fdfae8861 Downloading 48.23MB
+ 7bd85ddce6ac Downloading 1.049MB
+ fe4fdfae8861 Downloading 53.48MB
+ 7bd85ddce6ac Downloading 2.097MB
+ fe4fdfae8861 Downloading 55.57MB
+ 7bd85ddce6ac Downloading 2.097MB
+ fe4fdfae8861 Downloading 55.57MB
+ 7bd85ddce6ac Downloading 2.097MB
+ 690e7081aba2 Downloading 1.049MB
+ fe4fdfae8861 Downloading 58.72MB
+ 7bd85ddce6ac Downloading 2.097MB
+ 690e7081aba2 Download complete 0B
+ fe4fdfae8861 Downloading 60.82MB
+ 7bd85ddce6ac Downloading 3.146MB
+ fe4fdfae8861 Downloading 62.91MB
+ 7bd85ddce6ac Downloading 3.146MB
+ fe4fdfae8861 Downloading 65.01MB
+ 7bd85ddce6ac Downloading 4.194MB
+ fe4fdfae8861 Downloading 66.06MB
+ 7bd85ddce6ac Downloading 4.194MB
+ fe4fdfae8861 Downloading 68.16MB
+ 7bd85ddce6ac Downloading 5.243MB
+ fe4fdfae8861 Downloading 70.25MB
+ 7bd85ddce6ac Downloading 5.243MB
+ fe4fdfae8861 Downloading 72.35MB
+ 7bd85ddce6ac Downloading 5.243MB
+ fe4fdfae8861 Downloading 74.45MB
+ 7bd85ddce6ac Downloading 6.291MB
+ fe4fdfae8861 Downloading 76.55MB
+ 7bd85ddce6ac Downloading 6.291MB
+ fe4fdfae8861 Downloading 77.59MB
+ 7bd85ddce6ac Downloading 6.291MB
+ f7047d88fb1d Download complete 0B
+ fe4fdfae8861 Downloading 79.69MB
+ 7bd85ddce6ac Downloading 7.34MB
+ fe4fdfae8861 Downloading 81.79MB
+ 7bd85ddce6ac Downloading 7.34MB
+ fe4fdfae8861 Downloading 83.89MB
+ 7bd85ddce6ac Download complete 0B
+ 7bd85ddce6ac Extracting 1B
+ fe4fdfae8861 Downloading 85.98MB
+ 690e7081aba2 Pull complete 0B
+ f7047d88fb1d Pull complete 0B
+ 7bd85ddce6ac Pull complete 0B
+ fe4fdfae8861 Downloading 87.03MB
+ 151cf5cacbc6 Pull complete 0B
+ fe4fdfae8861 Downloading 90.18MB
+ fe4fdfae8861 Downloading 92.27MB
+ fe4fdfae8861 Downloading 94.37MB
+ fe4fdfae8861 Downloading 97.52MB
+ fe4fdfae8861 Downloading 100.7MB
+ fe4fdfae8861 Downloading 102.8MB
+ fe4fdfae8861 Downloading 104.9MB
+ fe4fdfae8861 Downloading 105.9MB
+ fe4fdfae8861 Downloading 110.1MB
+ fe4fdfae8861 Downloading 112.7MB
+ fe4fdfae8861 Download complete 0B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ fe4fdfae8861 Extracting 1B
+ 7448673bc12c Pull complete 0B
+ 02d5c5546489 Pull complete 0B
+ fe4fdfae8861 Pull complete 0B
+ 4a399977b8a4 Pull complete 0B
+ e6a5751455f4 Pull complete 0B
+ 266c7c6a33be Pull complete 0B
+ Image postgres:17.6 Pulled 
+ Network concord-collaboration_default Creating 
+ Network concord-collaboration_default Creating 
+ Network concord-collaboration_default Created 
+ Network concord-collaboration_default Created 
+ Container concord-collaboration-postgres-1 Creating 
+ Container concord-collaboration-postgres-1 Created 
+ Container concord-collaboration-postgres-1 Starting 
+ Container concord-collaboration-postgres-1 Started 
+ Container concord-collaboration-postgres-1 Waiting 
+ Container concord-collaboration-postgres-1 Healthy 

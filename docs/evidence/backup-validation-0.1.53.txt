@@ -1,0 +1,15 @@
+✔ backup validation rejects missing, corrupt, duplicate and unsafe-path file data (7.08425ms)
+✔ version2 backups require valid scoped lineages and unique revision ordinals (0.852209ms)
+✔ version3 calendar manifests require complete bounded counts and digests (1.409583ms)
+✔ version4 requires reminder count and digest while version3 keeps its original scope (0.59475ms)
+✔ version5 requires a complete bounded moderation manifest and preserves legacy scope (2.085875ms)
+✔ version6 requires preservation/job/file digests and lifecycle revisions without broadening legacy claims (1.173125ms)
+✔ version7 requires bounded retention/reference manifests while version6 keeps its recorded scope (1.26025ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.275708

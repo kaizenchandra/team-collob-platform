@@ -1,0 +1,24 @@
+{"backup":{"artifact":".data/backups/core-83852196-19a5-4193-ae6b-5b1dcb11092f.jwe","sha256":"3a171e19c41bc7c0b30f33221ec15ead77b52926490c67a2167f78b71243c9f6","snapshotAt":"2026-10-16T21:06:02.199Z","counts":{"messages":446,"memberships":44,"files":108,"message_attachments":15,"file_scan_jobs":91,"channels":64,"channel_members":113,"team_members":20,"message_mentions":0,"message_reports":17,"audit":4128,"outbox":1274,"meetings":157,"meeting_series":28,"meeting_attendees":274,"calendar_versions":17,"meeting_reminders":8,"channel_preservation":3,"channel_message_retention":4,"reactions":42,"saved_messages":2,"read_positions":2},"bytes":1431153,"durationMs":510,"keyStoredSeparately":true}}
+file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/backup-common.mjs:13
+    child.on('close',code=>{clearTimeout(timer);if(failed)return;if(code!==0)reject(Object.assign(new Error(`Backup command ${cmd} failed (${code}): ${Buffer.concat(err).toString().slice(0,1000)}`),{stdout:Buffer.concat(out).toString()}));else resolve(Buffer.concat(out));});
+                                                                                                  ^
+
+Error: Backup command /Users/mwgbh/Library/Caches/JetBrains/WebStorm2026.2/acp-agents/.runtimes/node/24.19.0/bin/node failed (1): Backup command docker failed (1): Expected values to be strictly deep-equal:
++ actual - expected
+... Skipped lines
+
+  {
+    audit: [
+      '{"id":4177,"org_id":"a0064936-ddaf-49e1-80aa-06b440359d26","actor_id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","action":"channel.created","target":"86654cc3-d2dc-469e-9557-8c45ddcefd31","metadata":{},"created_at":"2026-10-16T21:06:00.65805+00:00"}',
+      '{"id":4178,"org_id":"a0064936-ddaf-49e1-80aa-06b440359d26","actor_id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","action":"channel.created","target":"06832285-f0fc-4246-9a5a-593f42277e80","metadata":{},"created_at":"2026-10-16T21:06:00.668604+00:00"}',
+      '{"id":4179,"org_id":"a0064936-ddaf-49e1-80aa-06b440359d26","actor_id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","action":"channel.created","target":"4f5ea49f-87dd-4d57-a024-a7d9b48ce7de","metadata":{},"created_at":"2026-10-16T21:06:00.684188+00:00"}',
+...
+      '{"id":4191,"org_id":"a0064936-ddaf-49e1-80aa-06b440359d26","actor_id":"eeeeeeee-eeee-4eee
+    at ChildProcess.<anonymous> (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/backup-common.mjs:13:99)
+    at ChildProcess.emit (node:events:509:28)
+    at maybeClose (node:internal/child_process:1141:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:306:5) {
+  stdout: '{"cleanupComplete":true,"remainingExerciseResources":[]}\n'
+}
+
+Node.js v24.19.0

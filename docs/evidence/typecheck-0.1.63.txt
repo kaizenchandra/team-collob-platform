@@ -1,0 +1,4 @@
+
+> team-collob-platform@0.1.63 typecheck
+> tsc --noEmit
+

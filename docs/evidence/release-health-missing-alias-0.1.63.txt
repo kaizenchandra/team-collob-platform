@@ -1,0 +1,27 @@
+Error response from daemon: No such image: chrislusf/seaweedfs:4.48
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: docker image inspect chrislusf/seaweedfs:4.48
+Error response from daemon: No such image: chrislusf/seaweedfs:4.48
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at inspect (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/record-release.mjs:7:34)
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/record-release.mjs:13:194 {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '[]\n',
+    'Error response from daemon: No such image: chrislusf/seaweedfs:4.48\n'
+  ],
+  pid: 42348,
+  stdout: '[]\n',
+  stderr: 'Error response from daemon: No such image: chrislusf/seaweedfs:4.48\n'
+}
+
+Node.js v24.19.0

@@ -1,3 +1,4 @@
+import {requireUnheld} from './preservation.ts';
 import type {FastifyInstance} from 'fastify';
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
@@ -42,6 +43,7 @@ export async function registerModeration(app:FastifyInstance){
       }
       if(r.revision!==b.revision)throw new HttpError(409,'Report changed. Refresh the review queue.');
       if(b.action==='remove'){
+        await requireUnheld(db,c.id);
         const removed=await db.query("UPDATE messages SET body='',deleted=true WHERE id=$1 AND channel_id=$2 AND NOT deleted RETURNING id",[r.message_id,c.id]);
         await db.query('DELETE FROM message_mentions WHERE message_id=$1',[r.message_id]);
         if(removed.rowCount){await event(db,org,c.id,'message.deleted',{id:r.message_id});await audit(db,req.user.id,org,'message.deleted',r.message_id);}

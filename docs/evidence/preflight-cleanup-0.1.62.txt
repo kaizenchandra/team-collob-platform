@@ -1,0 +1,13 @@
+{
+  "syntheticSourceOrganizations": 0,
+  "restoreOrCaptureContainers": [],
+  "restoreVolumes": [],
+  "restoreNetworks": [],
+  "temporaryCaptureOrFixtureImageTags": [],
+  "temporary": [],
+  "negativeOrCandidateArtifacts": [],
+  "release": "0.1.62-local",
+  "healthyServices": 10,
+  "genuinePairsAndPins": "Retained unchanged; no purge",
+  "sourceS3FixtureBytes": "Retained under existing no-purge policy"
+}

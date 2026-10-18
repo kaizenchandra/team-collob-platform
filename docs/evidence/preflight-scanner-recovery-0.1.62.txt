@@ -1,0 +1,8 @@
+{"scannerTamperRejected":"definition-hash","cleanupComplete":true}
+{"scannerTamperRejected":"definition-set","cleanupComplete":true}
+{"scannerTamperRejected":"scanner-image-binding","cleanupComplete":true}
+{"captureFailureRejected":true,"captureResourcesAndPlaintextCleaned":true,"noBackupPublished":true,"primaryIncludingScannerIdsAndImagesUnchanged":true}
+{"disposableScannerImageAbsentBeforeRestore":true}
+{"exercise":"concord-restore-d10978ab","snapshotAt":"2026-10-17T11:02:23.955Z","scannerRefreshVerified":false,"imageArchiveVerified":true,"imagesImported":true,"scannerVerified":true,"scannerVersion":"ClamAV 1.5.4/28156/Sat Oct 17 06:25:46 2026","fileRetentionFreshScanVerified":false,"fileRetentionMetadataVerified":true,"fileRetentionApiVerified":false,"imageApiVerified":false,"retentionMetadataVerified":true,"retentionApiVerified":false,"preservationMetadataVerified":true,"preservationApiVerified":false,"moderationMetadataVerified":true,"moderationApiVerified":false,"reminderApiVerified":false,"reminderMetadataVerified":true,"calendarApiVerified":false,"calendarVerified":true,"revisionRootsVerified":[],"revisionMetadataVerified":true,"filesVerified":117,"local":62,"s3":55,"countsMatch":true,"authorizedDownload":false,"crossTenantDenied":false,"durationMs":23255,"sourceUntouched":true}
+{"cleanupComplete":true,"remainingExerciseResources":[]}
+{"exactMissingScannerImageRecovered":true,"primaryIncludingScannerIdsAndImagesUnchanged":true}

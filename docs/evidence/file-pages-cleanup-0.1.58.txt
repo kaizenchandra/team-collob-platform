@@ -1,0 +1,6 @@
+{
+  "syntheticPaginationAndRetentionBrowserOrganizations": 0,
+  "syntheticPaginationTestOrganizations": 0,
+  "realSourceS3FixtureBytes": "Retained under existing no-purge policy",
+  "existingRecoveryRegressionFixture": "Archived under its existing test contract"
+}

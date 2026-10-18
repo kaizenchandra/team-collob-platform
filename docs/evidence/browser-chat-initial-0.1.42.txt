@@ -1,0 +1,46 @@
+
+Running 1 test using 1 worker
+
+(node:8517) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows (1.0m)
+
+
+  1) [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.selectOption: Test ended.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Start a conversation' }).getByLabel('Type', { exact: true })
+
+
+       6 |   test.setTimeout(60000);const a=await browser.newContext(),b=await browser.newContext(),alice=await a.newPage(),bob=await b.newPage();let id='';const name=`Group lifecycle ${Date.now()}`,renamed=`Renamed ${Date.now()}`,body=`Retained group history ${Date.now()}`;
+       7 |   try{
+    >  8 |     await login(alice,'alice@acme.test');await alice.getByRole('button',{name:'New conversation',exact:true}).click();const dialog=alice.getByRole('dialog',{name:'Start a conversation'});await dialog.getByLabel('Name',{exact:true}).fill(name);await dialog.getByLabel('Type',{exact:true}).selectOption('group');await dialog.getByLabel('Bob Chen',{exact:true}).check();const created=alice.waitForResponse(r=>r.url()===`${api}/v1/organizations/${org}/channels`&&r.request().method()==='POST');await dialog.getByRole('button',{name:'Create conversation',exact:true}).click();const response=await created;expect(response.status()).toBe(200);id=(await response.json()).id;const url=`/?org=${org}&channel=${id}`;
+         |                                                                                                                                                                                                                                                                                                 ^
+       9 |     await login(bob,'bob@acme.test',url);await alice.getByRole('button',{name:'Conversation details',exact:true}).click();await bob.getByRole('button',{name:'Conversation details',exact:true}).click();const ap=alice.getByRole('region',{name:'Chat participants'}),bp=bob.getByRole('region',{name:'Chat participants'});
+      10 |     await expect(ap.getByRole('listitem')).toHaveText(['Alice Morgan','Bob Chen']);await expect(bp.getByRole('listitem')).toHaveCount(2);
+      11 |     let failed=false;const pattern=`**/v1/channels/${id}/chat`;await alice.route(pattern,async route=>{if(!failed){failed=true;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"Participants temporarily unavailable"}'});}else await route.continue();});await ap.getByRole('button',{name:'Refresh participants',exact:true}).click();await expect(ap.getByRole('alert')).toContainText('Participants temporarily unavailable');await expect(ap.getByRole('listitem')).toHaveCount(0);await ap.getByRole('button',{name:'Refresh participants',exact:true}).click();await expect(ap.getByRole('listitem')).toHaveCount(2);await alice.unroute(pattern);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/chat-management.spec.ts:8:289
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/chat-management-group-part-5776f--across-independent-windows-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/chat-management-group-part-5776f--across-independent-windows-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/chat-management-group-part-5776f--across-independent-windows-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/chat-management-group-part-5776f--across-independent-windows-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/chat-management-group-part-5776f--across-independent-windows-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/chat-management.spec.ts:5:1 › group participants, rename conflicts and departure persist across independent windows 

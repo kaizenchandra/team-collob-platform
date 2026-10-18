@@ -1,0 +1,146 @@
+
+> team-collob-platform@0.1.49 test
+> node scripts/test-core.mjs
+
+✔ backup validation rejects missing, corrupt, duplicate and unsafe-path file data (5.009125ms)
+✔ version2 backups require valid scoped lineages and unique revision ordinals (0.817333ms)
+✔ version3 calendar manifests require complete bounded counts and digests (1.050333ms)
+✔ version4 requires reminder count and digest while version3 keeps its original scope (0.567583ms)
+✔ version5 requires a complete bounded moderation manifest and preserves legacy scope (3.183542ms)
+✔ scanner probe accepts a fragmented current capability response (15.246709ms)
+✔ scanner probe rejects stale, future, missing and invalid signature metadata (6.182333ms)
+✔ scanner probe rejects unsupported protocol, oversized and incomplete responses (4.715959ms)
+✔ scanner probe enforces a deadline and validates timeout configuration (32.598708ms)
+✔ scanner sends framed bytes only after readiness and accepts only definitive verdicts (6.111291ms)
+✔ anonymous and cross-origin requests are rejected (384.811208ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (11.425584ms)
+✔ private-channel visibility excludes a team guest (18.933375ms)
+✔ concurrent retried writes commit one message and one ordered event (41.735375ms)
+✔ message edit ownership, threads, reactions and monotonic read position (25.756333ms)
+✔ search and draft persistence survive a fresh application instance (14.941834ms)
+✔ private tasks and forms enforce assignment and response permissions (19.405708ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (25.425834ms)
+✔ meeting attendees must be tenant members; only organizer cancels (20.658583ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (19.18975ms)
+✔ 32-person receipts include every opted-in authorized recipient (282.533042ms)
+✔ live event replay and membership revocation close an active subscription (1098.786792ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (69.419583ms)
+✔ receipt privacy opt-out and session logout enforced (25.341375ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (651.625458ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (29.706917ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (0.660125ms)
+✔ authentication throttling does not consume the session-status and logout budget (122.922208ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (86.913083ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (151.200083ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (8.346083ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (67.66075ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (4.90375ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (2.904583ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (30.118792ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (20.555541ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (48.909208ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (54.021959ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (44.897666ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (23.396125ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (36.021917ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (53.441583ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (3.648208ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (121.898333ms)
+✔ durable scan jobs retry, reject, recover leases and never resurrect deleted files (102.528875ms)
+✔ attachments enforce scanned same-channel access, immutable retries and current history visibility (87.345542ms)
+✔ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (53.798709ms)
+✔ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (25.713334ms)
+✔ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (46.63125ms)
+✔ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (2.985291ms)
+✔ source previews enforce scan/ACL/integrity and bound literal Unicode text (74.722625ms)
+✔ file revisions serialize numbering, preserve retry identity and withdraw the whole lineage (148.268375ms)
+✔ quiet hours evaluate overnight, equal endpoints and timezone DST boundaries (0.926375ms)
+✔ notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup (105.202458ms)
+✔ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (155.52ms)
+✔ reply activity enforces recipient, current channel access and parent/reply deletion (120.792958ms)
+✔ reply alert opt-in is independent, cutoff-bound and deduplicates overlapping categories (119.149667ms)
+✔ invitation inbox isolates recipients and serializes concurrent identity acceptance (44.796875ms)
+✔ recipient decline is scoped, audited and cannot grant or revoke membership (20.173208ms)
+✔ accept and decline races serialize without audit foreign-key deadlocks (40.9455ms)
+✔ organizer edits enforce revisions, reset rescheduled responses and serialize cancellation (39.356209ms)
+✔ meeting roster edits preserve retained RSVP and revoke removed attendee access (57.232083ms)
+✔ calendar keyset pages preserve microsecond ordering, range bounds and current access (30.949375ms)
+✔ calendar change counters are durable, recipient-scoped and transactional (47.140167ms)
+✔ recurring series is atomic, retry-safe, scoped and cancelled without resurrection (52.806125ms)
+✔ series edits are revision-scoped, preserve cancelled occurrences and serialize individual edits (49.31275ms)
+✔ series rescheduling preserves IDs/cancelled exceptions and updates canonical anchor atomically (55.237584ms)
+✔ monthly/yearly rules persist policy and preserve legacy retry identity (37.835291ms)
+✔ series expansion preserves existing identities and original creation replay (65.13575ms)
+✔ upcoming-only series changes preserve historical rows and reject backward shifts (54.896708ms)
+✔ upcoming cancellation preserves started meetings and is idempotent (59.238208ms)
+✔ personal reminders persist, suppress safely and rearm only after time changes (102.619958ms)
+✔ channel posting policy serializes new writes, preserves accepted retries and enforces current roles (79.871958ms)
+✔ message reports preserve privacy, bound abuse and serialize audited moderation (176.394334ms)
+✔ audit search is tenant authorized, exact, time bounded and bigint safe (90.336167ms)
+✔ audit export is scoped, lossless, bounded and audited with serialized generation quotas (160.20775ms)
+✔ administrative usage reports preserve exact aggregates, UTC boundaries and current resource authorization (160.598583ms)
+✔ group participants, concurrent renames and departure enforce current access without deleting shared history (132.269042ms)
+✔ direct participant snapshots do not permit group lifecycle mutations (35.952208ms)
+✔ administrator group grants explicitly authorize retained history and serialize revocation and limits (2012.4235ms)
+✔ channel settings enforce current admin access, revisions, archive state and parent-team restoration (238.140709ms)
+✔ team ownership transfers atomically to eligible members and inactive owners cannot permit abandonment (172.224375ms)
+✔ private/shared explicit grants serialize access, include retained content and revoke without changing team membership (2073.305ms)
+✖ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (10472.285208ms)
+✔ ownerless team recovery requires joined workspace ownership and fences reactivation without restoring former ownership (392.937583ms)
+✔ deleted file recovery rechecks owner, ACL, archive, quota and lifecycle token, rescans one version and fences old scan leases (116.324458ms)
+✔ deleted-file metadata listing is uploader-scoped, bounded and does not expose storage or scan internals (12.673416ms)
+✔ meeting timezone resolves normal and non-hour offsets (6.364708ms)
+✔ DST gaps are rejected for every repeated-time choice (2.318625ms)
+✔ DST folds require choice and resolve to distinct instants (0.731584ms)
+✔ invalid local date and zone cannot silently normalize (0.193833ms)
+✔ editor initialization uses stored timezone for normal and folded instants (0.491541ms)
+✔ weekly recurrence preserves local time across DST (5.202792ms)
+✔ recurrence rejects any invalid later occurrence and bounds expansion (2.025167ms)
+✔ monthly rules anchor to original date without short-month drift (1.81875ms)
+✔ monthly overnight duration follows clamped start rather than a drifting end anchor (0.62475ms)
+✔ yearly leap-day anchoring and five-year horizon are explicit (3.419333ms)
+✔ unconfirmed operations survive a new reader with their immutable ID and thread (2.456167ms)
+✔ pending scope cannot cross identity, organization or channel and sign-in removes previous identity (0.259292ms)
+✔ storage failure cannot silently discard the operation; malformed storage fails closed (0.104375ms)
+✔ pending operation capacity is bounded without evicting unresolved sends (3.043125ms)
+✔ formatted pending operations retain the original format and legacy records remain plain-compatible (0.208833ms)
+✔ attachment references survive recovery and cannot change on an unconfirmed operation (0.497375ms)
+✔ upload recovery retains scoped identity without storing bytes and clears on logout (0.729959ms)
+✔ release evidence requires every service and actual expected images (2.371083ms)
+ℹ tests 105
+ℹ suites 0
+ℹ pass 104
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22259.7555
+
+✖ failing tests:
+
+test at tests/core.test.ts:12:145539
+✖ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (10472.285208ms)
+  error: canceling statement due to statement timeout
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:2145:321)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    length: 226,
+    severity: 'ERROR',
+    code: '57014',
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: 'SQL statement "SELECT 1 FROM ONLY "public"."audit" x WHERE $1 OPERATOR(pg_catalog.=) "actor_id" FOR KEY SHARE OF x"',
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'postgres.c',
+    line: '3405',
+    routine: 'ProcessInterrupts'
+  }

@@ -1,0 +1,10 @@
+{
+  "syntheticRecoveryOrganizations": 0,
+  "containers": [],
+  "volumes": [],
+  "networks": [],
+  "disposableImages": [],
+  "temporary": [],
+  "negativeEnvelopes": [],
+  "sourceS3FixtureBytes": "Retained under existing no-purge policy"
+}

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Users, Plus } from "lucide-react";
 import { api, type Person } from "@/lib/contracts";
+import {TeamMembers} from "./team-members";
+import {TeamOwnership} from "./team-ownership";
 import { Avatar, Empty, Unavailable } from "./primitives";
 type Report = (e: unknown) => void;
 export function TeamsPanel({
@@ -10,12 +12,17 @@ export function TeamsPanel({
   role,
   refresh,
   report,
+  people,
+  userId,
 }: {
+  people: Person[];
+  userId: string;
   org: string;
   role: string;
   refresh: () => Promise<void>;
   report: Report;
 }) {
+  const [ownership,setOwnership]=useState<string|null>(null),[membersTeam,setMembersTeam]=useState<string|null>(null);
   const [teams, setTeams] = useState<
     { id: string; name: string; joined: boolean; archived: boolean }[]
   >([]);
@@ -73,6 +80,8 @@ export function TeamsPanel({
             >
               {t.joined ? "Leave team" : "Join team"}
             </button>
+            {t.joined&&["owner","admin"].includes(role)&&<><button className="secondary" onClick={()=>setMembersTeam(membersTeam===t.id?null:t.id)}>{membersTeam===t.id?'Hide team members':'Manage team members'}</button>{membersTeam===t.id&&<TeamMembers key={`${org}:${t.id}`} org={org} team={t.id} people={people} userId={userId} onChanged={async()=>{await load();await refresh();}}/>}</>}
+            {t.joined&&<><button className="secondary" onClick={()=>setOwnership(ownership===t.id?null:t.id)}>{ownership===t.id?'Hide ownership':'Manage team ownership'}</button>{ownership===t.id&&<TeamOwnership key={`${org}:${t.id}`} org={org} team={t.id} onChanged={async()=>{await load();await refresh();}}/>}</>}
             {["owner", "admin"].includes(role) && (
               <button
                 className="secondary"

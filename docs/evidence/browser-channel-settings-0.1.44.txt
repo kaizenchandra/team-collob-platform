@@ -1,0 +1,54 @@
+
+Running 3 tests using 1 worker
+
+(node:8581) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/channel-settings.spec.ts:5:1 › admins edit channel details and archive/restore live without overwriting conflicts or losing drafts (1.0m)
+(node:8810) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chrome] › tests/browser/moderation.spec.ts:3:1 › channel policy updates live, retains drafts and restores member posting (7.0s)
+  ✓  3 [chrome] › tests/browser/moderation.spec.ts:15:1 › reports survive reload and authorized review removes content with a persistent receipt (2.9s)
+
+
+  1) [chrome] › tests/browser/channel-settings.spec.ts:5:1 › admins edit channel details and archive/restore live without overwriting conflicts or losing drafts 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: apiRequestContext.get: Test ended.
+    Call log:
+      - → GET http://localhost:4100/v1/channels/4ba03ee7-e051-4132-8acc-586209e868e7/settings
+        - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+        - cookie: concord_session=[redacted]
+
+
+      16 |     await bob.reload();await expect(bob.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(draft);await expect(bob.getByRole('button',{name:'Send message',exact:true})).toBeDisabled();await expect(bob.getByText(body,{exact:true})).toBeVisible();const axe=await new AxeBuilder({page:alice}).include('section[aria-label="Channel settings"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await panel.scrollIntoViewIfNeeded();await alice.screenshot({path:'docs/evidence/channel-settings.png'});
+      17 |     await panel.getByRole('checkbox',{name:'Archive channel',exact:true}).uncheck();await panel.getByRole('button',{name:'Save channel settings',exact:true}).click();await expect(bob.getByRole('button',{name:'Send message',exact:true})).toBeEnabled();await bob.getByRole('button',{name:'Send message',exact:true}).click();await expect(alice.getByText(draft,{exact:true})).toBeVisible();await alice.reload();await alice.getByRole('button',{name:'Conversation details',exact:true}).click();await expect(panel.getByLabel('Channel description',{exact:true})).toHaveValue('Other administrator edit');await expect(panel.getByRole('checkbox',{name:'Archive channel',exact:true})).not.toBeChecked();await alice.setViewportSize({width:390,height:844});expect(await alice.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    > 18 |   }finally{if(id){const r=await a.request.get(`${api}/v1/channels/${id}/settings`);if(r.ok()){const s=await r.json();await a.request.patch(`${api}/v1/channels/${id}/details`,{headers,data:{name,description:'Synthetic channel settings verification',archived:true,revision:s.revision}});}}await a.close();await b.close();}
+         |                                           ^
+      19 | });
+      20 |
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/channel-settings.spec.ts:18:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-settings-admins-ed-77df8--conflicts-or-losing-drafts-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-settings-admins-ed-77df8--conflicts-or-losing-drafts-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-settings-admins-ed-77df8--conflicts-or-losing-drafts-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-settings-admins-ed-77df8--conflicts-or-losing-drafts-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-settings-admins-ed-77df8--conflicts-or-losing-drafts-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/channel-settings.spec.ts:5:1 › admins edit channel details and archive/restore live without overwriting conflicts or losing drafts 
+  2 passed (1.2m)

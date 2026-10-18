@@ -1,0 +1,63 @@
+
+Running 3 tests using 1 worker
+
+(node:24643) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (9.8s)
+(node:24690) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  2 [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content (28.8s)
+
+  ✓  3 [chrome] › tests/browser/search-pages.spec.ts:10:1 › message and filename search pages retry navigation, retain current cursor, reset filters and protect older downloads (23.2s)
+
+
+  1) [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('dialog', { name: 'Selected file', exact: true }).getByRole('heading', { name: 'needle1792303724253%_Alpha.txt', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('dialog', { name: 'Selected file', exact: true }).getByRole('heading', { name: 'needle1792303724253%_Alpha.txt', exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Selected file', exact: true }).getByRole('heading', { name: 'needle1792303724253%_Alpha.txt', exact: true })
+
+
+      35 |     await bob.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async(value:string)=>{(window as unknown as {copiedFileLink:string}).copiedFileLink=value;}}});});await detail.getByRole('button',{name:'Copy file link',exact:true}).click();await expect(detail.getByRole('status')).toHaveText('File link copied.');const fileUrl=await bob.evaluate(()=>(window as unknown as {copiedFileLink:string}).copiedFileLink);expect(fileUrl).toBe(`http://localhost:3101/?org=${org}&channel=${alpha}#file-${original}`);expect(new URL(bob.url()).hash).toBe('');
+      36 |     await bob.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('Clipboard denied');}}});});await detail.getByRole('button',{name:'Copy file link',exact:true}).click();await expect(detail.getByRole('status')).toHaveText('Clipboard unavailable. Try copying the link again.');
+    > 37 |     await login(linked,'bob@acme.test',fileUrl);const linkedDetail=linked.getByRole('dialog',{name:'Selected file',exact:true});await expect(linkedDetail.getByRole('heading',{name:alphaName,exact:true})).toBeVisible();await linkedDetail.getByRole('button',{name:'Close dialog',exact:true}).click();await expect(linkedDetail).toHaveCount(0);expect(new URL(linked.url()).hash).toBe('');await linked.evaluate(id=>{window.location.hash='file-'+id;},original);await expect(linkedDetail.getByRole('heading',{name:alphaName,exact:true})).toBeVisible();await linked.reload();await expect(linkedDetail.getByRole('heading',{name:alphaName,exact:true})).toBeVisible();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ^
+      38 |     const linkedDownload=linked.waitForEvent('download');await linkedDetail.getByRole('link',{name:'Download selected file',exact:true}).click();expect(await readFile((await (await linkedDownload).path())!,'utf8')).toBe(content);
+      39 |     await linked.evaluate(()=>{window.location.hash='file-not-a-uuid';});await expect(linkedDetail).toHaveCount(0);await linked.evaluate(id=>{window.location.hash='file-'+id;},original);await expect(linkedDetail.getByRole('heading',{name:alphaName,exact:true})).toBeVisible();
+      40 |     const exactPattern=`**/v1/organizations/${org}/channels/${alpha}/files/${original}`;await bob.route(exactPattern,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"File temporarily unavailable"}'}));await expect(detail.getByRole('alert')).toContainText('File temporarily unavailable',{timeout:10000});await expect(detail.getByRole('article')).toHaveCount(0);await bob.unroute(exactPattern);await detail.getByRole('button',{name:'Retry file',exact:true}).click();await expect(detail.getByRole('heading',{name:alphaName,exact:true})).toBeVisible();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-search.spec.ts:37:532
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact 
+  2 passed (1.1m)

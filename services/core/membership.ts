@@ -71,16 +71,19 @@ export async function registerMembership(app: FastifyInstance) {
             team = idParam(req, "team");
         await member(pool, req.user.id, org);
         return transaction(async (db) => {
-            await db.query(
+            const teamRow=await db.query(
                 "SELECT id FROM teams WHERE id=$1 AND org_id=$2 FOR UPDATE",
                 [team, org],
             );
+            if(!teamRow.rowCount)throw new HttpError(404,"Team unavailable");
             await db.query(
                 "SELECT id FROM channels WHERE team_id=$1 ORDER BY id FOR UPDATE",
                 [team],
             );
+            await db.query("SELECT m.user_id FROM memberships m WHERE m.org_id=$1 AND (m.user_id=$3 OR EXISTS(SELECT 1 FROM team_members tm WHERE tm.team_id=$2 AND tm.user_id=m.user_id AND tm.role='owner')) ORDER BY m.user_id FOR SHARE OF m",[org,team,req.user.id]);
+            await member(db,req.user.id,org);
             const owners = await db.query(
-                "SELECT user_id FROM team_members WHERE team_id=$1 AND role='owner'",
+                "SELECT tm.user_id FROM team_members tm JOIN memberships m ON m.org_id=tm.org_id AND m.user_id=tm.user_id JOIN users u ON u.id=tm.user_id WHERE tm.team_id=$1 AND tm.role='owner' AND m.active AND NOT u.disabled",
                 [team],
             );
             if (
@@ -100,6 +103,13 @@ export async function registerMembership(app: FastifyInstance) {
             return {ok: true};
         });
     });
+    app.get("/v1/channels/:id/settings", async req => transaction(async db => {
+        await channel(db,req.user.id,idParam(req),true);
+        const c=await channel(db,req.user.id,idParam(req));
+        await member(db,req.user.id,c.org_id,true);
+        if(!["standard","private","shared"].includes(c.kind))throw new HttpError(400,"Channel settings are available only for team channels");
+        return {id:c.id,name:c.name,description:c.description,archived:c.archived,kind:c.kind,revision:c.revision};
+    }));
     app.patch("/v1/channels/:id/details", async (req) => {
         const id = idParam(req);
         const b = z
@@ -107,19 +117,26 @@ export async function registerMembership(app: FastifyInstance) {
                 name: z.string().trim().min(1).max(160),
                 description: z.string().max(1000),
                 archived: z.boolean(),
+                revision: z.number().int().positive().optional(),
             })
-            .parse(req.body);
+            .strict().parse(req.body);
         return transaction(async (db) => {
-            const c = await channel(db, req.user.id, id, true);
+            await channel(db, req.user.id, id, true);
+            const c = await channel(db, req.user.id, id);
             if (!["direct", "group"].includes(c.kind))
                 await member(db, req.user.id, c.org_id, true);
+            if (c.revision !== b.revision)
+                throw new HttpError(409, "Conversation changed. Refresh details before retrying.");
+            if(c.team_id && !b.archived && (await db.query("SELECT archived FROM teams WHERE id=$1 AND org_id=$2",[c.team_id,c.org_id])).rows[0]?.archived)
+                throw new HttpError(409,"Restore the parent team before restoring this channel.");
+            if(c.name===b.name&&c.description===b.description&&c.archived===b.archived)return {ok:true,revision:c.revision,changed:false};
             await db.query(
                 "UPDATE channels SET name=$1,description=$2,archived=$3,revision=revision+1 WHERE id=$4",
                 [b.name, b.description, b.archived, id],
             );
-            await audit(db, req.user.id, c.org_id, "channel.updated", id);
-            await event(db, c.org_id, id, "channel.updated");
-            return {ok: true};
+            await audit(db, req.user.id, c.org_id, "channel.updated", id,{revision:c.revision+1,archived:b.archived,nameChanged:c.name!==b.name,descriptionChanged:c.description!==b.description});
+            await event(db, c.org_id, id, "channel.updated",{revision:c.revision+1});
+            return {ok: true,revision:c.revision+1,changed:true};
         });
     });
     app.get("/v1/channels/:id/members", async (req) => {

@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:31481) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/message-retention.spec.ts:8:1 › owner saves manual retention, reviews stale/held batches and confirms irreversible text clearing for isolated expired messages (4.1s)
+
+  1 passed (4.9s)

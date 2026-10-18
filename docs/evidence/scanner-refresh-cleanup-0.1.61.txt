@@ -1,0 +1,16 @@
+{
+  "syntheticSourceOrganizations": 0,
+  "restoreOrCaptureContainers": [],
+  "restoreVolumes": [],
+  "restoreNetworks": [],
+  "temporaryCaptureImageTags": [],
+  "temporary": [],
+  "negativeOrCandidateArtifacts": [],
+  "release": "0.1.61-local",
+  "healthyServices": 10,
+  "genuineRefreshedPairsRetained": [
+    "4a02f12b-99d2-4445-93c3-9713b8db7ef8",
+    "5908c1e9-ef48-48e1-a3ed-2cc30f5b126d"
+  ],
+  "sourceS3FixtureBytes": "Retained under existing no-purge policy"
+}

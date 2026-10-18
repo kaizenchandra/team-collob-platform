@@ -1998,3 +1998,13 @@ dialog h2 { overflow-wrap: anywhere; min-width: 0; }
   z-index: 20;
   max-width: 620px;
 }
+
+.workspace-search { min-width: 0; overflow-wrap: anywhere; }
+.search-filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+.search-filters label { display: flex; flex: 1 1 240px; flex-direction: column; gap: 6px; min-width: 0; }
+.search-filters select { max-width: 100%; }
+.search-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.workspace-search .result-card { overflow-wrap: anywhere; }
+.workspace-search .result-card h2 { margin: 0; font-size: 14px; }
+
+.linked-message { min-width: 0; overflow-wrap: anywhere; }

@@ -1,0 +1,114 @@
+
+Running 3 tests using 1 worker
+
+(node:21540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (33.9s)
+(node:21692) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  2 [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content (8.2s)
+(node:21789) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [chrome] › tests/browser/search-pages.spec.ts:10:1 › message and filename search pages retry navigation, retain current cursor, reset filters and protect older downloads (23.2s)
+
+
+  1) [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact 
+
+    TimeoutError: locator.selectOption: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: 'Workspace search results' }).getByLabel('Search conversation', { exact: true })
+        - locator resolved to <select aria-label="Search conversation">…</select>
+      - attempting select option action
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+        - waiting 20ms
+        2 × waiting for element to be visible and enabled
+          - did not find some options
+        - retrying select option action
+          - waiting 100ms
+        20 × waiting for element to be visible and enabled
+           - did not find some options
+         - retrying select option action
+           - waiting 500ms
+
+
+      39 |     await region.getByLabel('Search conversation',{exact:true}).selectOption(alpha);await expect(region.getByRole('status').filter({hasText:'1 matching file'})).toBeVisible();const download=bob.waitForEvent('download');await region.getByRole('link',{name:'Download '+alphaName,exact:true}).click();const downloaded=await download;expect(downloaded.suggestedFilename()).toBe(alphaName);expect(await readFile((await downloaded.path())!,'utf8')).toBe(content);
+      40 |     await submit(content);await filesType();await expect(region.getByRole('heading',{name:'No matching files',exact:true})).toBeVisible();
+    > 41 |     await submit('%_');await filesType();await expect(region.getByRole('status').filter({hasText:'3 matching files'})).toBeVisible();await region.getByLabel('Search conversation',{exact:true}).selectOption(beta);await expect(region.getByRole('status').filter({hasText:'2 matching files'})).toBeVisible();
+         |                                                                                                                                                                                                  ^
+      42 |     await region.getByRole('article').filter({hasText:betaName}).getByRole('button',{name:'Open files in #Search Beta',exact:true}).click();await expect(bob.getByRole('region',{name:'Conversation files'})).toBeVisible();await expect(bob.getByRole('heading',{name:/^Search Beta/,level:1})).toBeVisible();expect((await (await b.request.get(`${api}/v1/channels/${alpha}/draft`)).json()).body).toBe(draft);
+      43 |     // Search requests belong to a query session. An old held response cannot replace the next query.
+      44 |     const pattern=`**/v1/organizations/${org}/search?*`;let started!:()=>void,finished!:()=>void;const waiting=new Promise<void>(resolve=>{started=resolve;}),done=new Promise<void>(resolve=>{finished=resolve;}),held=new Promise<void>(resolve=>{releaseOld=resolve;});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-search.spec.ts:41:194
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-search-filename-searc-7e784-ns-Files-with-drafts-intact-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('dialog', { name: 'Linked message', exact: true }).getByText('linked1792303208950', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('dialog', { name: 'Linked message', exact: true }).getByText('linked1792303208950', { exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByText('linked1792303208950', { exact: true })
+
+
+      24 |     await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await waiting;await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();release?.();await done;await bob.unroute(draftPattern);await bob.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));expect(new URL(bob.url()).searchParams.get('channel')).toBe(alpha);await expect(region).toBeVisible();await card.click();await expect(dialog.getByText(marker,{exact:true})).toBeVisible();
+      25 |     await bob.route(draftPattern,route=>route.request().method()==='PUT'?route.fulfill({status:503,contentType:'application/json',body:'{"error":"Draft save temporarily unavailable"}'}):route.continue());await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('Your draft was kept');expect(new URL(bob.url()).searchParams.get('channel')).toBe(alpha);await bob.unroute(draftPattern);await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(bob.getByRole('heading',{name:/^Linked Beta/,level:1})).toBeVisible();expect((await (await b.request.get(`${api}/v1/channels/${alpha}/draft`)).json()).body).toBe(draft);
+    > 26 |     await login(linked,'bob@acme.test',url);const detail=linked.getByRole('dialog',{name:'Linked message',exact:true});await expect(detail.getByText(marker,{exact:true})).toBeVisible();await detail.getByRole('button',{name:'Close dialog',exact:true}).click();expect(new URL(linked.url()).hash).toBe('');await linked.evaluate(id=>{window.location.hash='message-'+id;},message);await expect(detail.getByText(marker,{exact:true})).toBeVisible();await linked.reload();await expect(detail.getByText(marker,{exact:true})).toBeVisible();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                             ^
+      27 |     const axe=await new AxeBuilder({page:linked}).include('dialog[aria-label="Linked message"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await linked.screenshot({path:'docs/evidence/linked-message.png'});await linked.setViewportSize({width:390,height:844});expect(await linked.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(await detail.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
+      28 |     const updated='Updated '+marker;expect((await a.request.patch(`${api}/v1/channels/${beta}/messages/${message}`,{headers,data:{body:`**${updated}**`}})).status()).toBe(200);await expect(detail.getByText(updated,{exact:true})).toBeVisible({timeout:10000});await expect(detail.getByText('@Bob Chen',{exact:true})).toHaveCount(0);
+      29 |     const target=`**/v1/organizations/${org}/channels/${beta}/messages/${message}`;await linked.route(target,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Linked message temporarily unavailable"}'}));await expect(detail.getByRole('alert')).toContainText('Linked message temporarily unavailable',{timeout:10000});await expect(detail.getByRole('article')).toHaveCount(0);await linked.unroute(target);await detail.getByRole('button',{name:'Retry message',exact:true}).click();await expect(detail.getByText(updated,{exact:true})).toBeVisible();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/linked-message.spec.ts:26:429
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/linked-message-old-search--339a2-chments-and-revoked-content-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact 
+    [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content 
+  1 passed (1.1m)

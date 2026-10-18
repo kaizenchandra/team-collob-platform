@@ -2,11 +2,9 @@
 /* Remote snapshots and live subscriptions intentionally reset state on resource changes.
    This prevents showing the previous resource while asynchronous requests are pending. */
 /* eslint-disable react-hooks/set-state-in-effect */
-import {uploadFile} from "@/lib/upload-file";
 import {NotificationSettings} from "./notifications";
-import {FileVersionsDialog} from "./file-versions";
 import { useState, useEffect, useCallback, useRef, type FormEvent } from "react";
-import { Plus, CalendarDays, FileText, Upload } from "lucide-react";
+import { Plus, CalendarDays } from "lucide-react";
 import {
   api,
   API,
@@ -18,8 +16,6 @@ import {
   type Channel,
 } from "@/lib/contracts";
 import { Empty, Modal, Unavailable } from "./primitives";
-import { FilePreviewDialog } from "./file-preview";
-import { previewMimeTypes } from "@/lib/file-preview";
 import {MeetingTimezone} from "./meeting-timezone";
 import {resolveMeetingTime,type RepeatedTime} from "@/lib/meeting-time";
 import {MeetingReminderControl} from "./meeting-reminders";
@@ -821,107 +817,7 @@ function RecoverySettings() {
     </section>
   );
 }
-export function FilesPanel({
-  userId,
-  stream,
-  report,
-}: {
-  userId: string;
-  stream: string;
-  report: Report;
-}) {
-  const [files, setFiles] = useState<
-      { id: string; name: string; mime: string; bytes: string; state: string; scan_status: string }[]
-    >([]),
-    [busy, setBusy] = useState(false);
-  const [versions, setVersions] = useState<{id:string;name:string} | null>(null);
-  const [preview, setPreview] = useState<{id:string;name:string} | null>(null);
-  const load = useCallback(async () => {
-    const response=await api<{files: typeof files}>(`/channels/${stream}/files`);
-    setFiles(response.files);
-  },[stream]);
-  useEffect(()=>{
-    let active=true,pending=false;
-    const refresh=async()=>{if(pending)return;pending=true;try{const r=await api<{files: typeof files}>(`/channels/${stream}/files`);if(active)setFiles(r.files);}catch(e){if(active){setFiles([]);report(e);}}finally{pending=false;}};
-    void refresh();const timer=setInterval(()=>{void refresh();},3000);
-    return()=>{active=false;clearInterval(timer);};
-  },[stream,report]);
-  return (
-    <div className="content-pad">
-      <div className="panel-heading">
-        <div>
-          <span className="eyebrow">SHARED IN THIS CONVERSATION</span>
-          <h2>Files</h2>
-        </div>
-        <label className="primary upload-button">
-          <Upload size={16} />
-          {busy ? "Uploading…" : "Upload file"}
-          <input
-            type="file"
-            disabled={busy}
-            onChange={async (e) => {
-              const input=e.currentTarget;
-              const file = input.files?.[0];
-              if (!file) return;
-              setBusy(true);
-              try {
-                await uploadFile(file,userId,stream);
-                await load();
-              } catch (e) {
-                report(e);
-              } finally {
-                input.value="";
-                setBusy(false);
-              }
-            }}
-          />
-        </label>
-      </div>
-      <Unavailable title="Scan before download">
-        Supported: TXT, MD, CSV, PDF, PNG and JPEG up to1MB. Files stay quarantined until a real malware scan succeeds. Rejected files cannot be downloaded. Scanning may take time or remain unavailable; failed jobs can be retried by the uploader. If an upload is interrupted, reselect the same file to retry safely, including after reload. TXT, MD and CSV have source-text previews after scanning. Original files stay at version 1; use Versions to view or upload revisions. Deleting an original deletes all its versions. PDF and image previews and coauthoring remain unavailable.
-      </Unavailable>
-      {files.length ? (
-        files.map((f) => (
-          <div className="file-row" key={f.id}>
-            <FileText size={24} />
-            <div>
-              <strong>{f.name}</strong>
-              <small>
-                {Math.ceil(Number(f.bytes) / 1024)} KB · {f.state} · scan {f.scan_status}
-              </small>
-            </div>
-            <button className="secondary" onClick={()=>setVersions({id:f.id,name:f.name})}>Versions</button>
-            {f.state === "ready" && (previewMimeTypes.includes(f.mime)
-              ? <button className="secondary" onClick={()=>setPreview({id:f.id,name:f.name})}>Preview</button>
-              : <small>Preview unavailable for this format</small>)}
-            {f.state === "ready" && <a className="secondary" href={`${API}/v1/channels/${stream}/files/${f.id}/download`}>Download</a>}
-            {f.state === "quarantined" && f.scan_status === "dead" && <button className="secondary" onClick={async()=>{try{await api(`/channels/${stream}/files/${f.id}/retry`,"POST",{});await load();}catch(e){report(e);}}}>Retry scan</button>}
-            <button
-              className="secondary"
-              onClick={async () => {
-                try {
-                  await api(`/channels/${stream}/files/${f.id}`, "DELETE");
-                  await load();
-                } catch (e) {
-                  report(e);
-                }
-              }}
-            >
-              Delete
-            </button>
-          </div>
-        ))
-      ) : (
-        <Empty title="Everything in its place">
-          Files uploaded to this channel appear here with their processing
-          status.
-        </Empty>
-      )}
-      {versions && <FileVersionsDialog key={versions.id} userId={userId} stream={stream} file={versions} onClose={()=>setVersions(null)} />}
-      {preview && <FilePreviewDialog key={preview.id} stream={stream} file={preview} onClose={()=>setPreview(null)} />}
-    </div>
-  );
-}
+export {FilesPanel} from "./files-panel";
 export function MigrationPanel({
   channel,
   teams,
