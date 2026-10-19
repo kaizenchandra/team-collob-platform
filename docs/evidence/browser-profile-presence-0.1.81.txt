@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:31778) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/conversation-filters.spec.ts:8:1 › personal list filters combine names and flags across channels and chats without reading or discarding drafts (3.3s)
+  ✓  2 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (2.6s)
+  ✓  3 [chrome] › tests/browser/presence-settings.spec.ts:8:1 › workspace presence overrides are observed independently, expire and recover without touching profile or draft (4.0s)
+
+  3 passed (11.1s)

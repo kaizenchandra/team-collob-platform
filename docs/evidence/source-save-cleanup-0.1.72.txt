@@ -1,0 +1,4 @@
+{"release":"0.1.72-local","services":10,"checks":[{"url":"http://localhost:4100/health","status":200},{"url":"http://localhost:4100/ready","status":200},{"url":"http://localhost:3101","status":200}]}
+{"database":"concord","remaining_fixture_organizations":0}
+{"database":"concord_test","remaining_fixture_organizations":0}
+Bookmark/message/draft/org and existing linked/search attachment SQL/spool fixtures cleaned in finally. Source volumes unchanged, no reset/restore/backup-format change. Real S3 bytes retain no-purge lifetime. Copy tests use synthetic clipboard handler only; OS clipboard neither read nor changed.

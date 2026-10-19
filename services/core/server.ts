@@ -1,3 +1,4 @@
+import {registerPresence} from './presence.ts';
 import {registerFileRetention} from './file-retention.ts';
 import {registerMessageRetention} from './message-retention.ts';
 import {registerPreservation,requireUnheld} from './preservation.ts';
@@ -416,6 +417,20 @@ export async function createApp() {
             hasMore: r.rowCount === q.limit,
         };
     });
+    app.get('/v1/organizations/:id/saved-messages',async req=>{
+        const org=idParam(req);
+        await member(pool,req.user.id,org);
+        const q=z.object({beforeCreated:z.iso.datetime().refine(v=>!v.startsWith('0000-'),'Invalid cursor year').optional(),beforeId:z.uuid().optional()}).strict().parse(req.query);
+        if(!!q.beforeCreated!==!!q.beforeId)throw new HttpError(400,'Provide both saved-message cursor fields');
+        const rows=(await pool.query(`SELECT m.id,m.channel_id,c.name channel_name,u.name author,m.created_at,left(m.body,500) excerpt,
+          to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_created
+          FROM saved_messages s JOIN messages m ON m.id=s.message_id JOIN channels c ON c.id=m.channel_id JOIN users u ON u.id=m.user_id
+          WHERE s.user_id=$1 AND c.org_id=$2 AND NOT m.deleted AND ${accessSQL}
+          AND ($3::timestamptz IS NULL OR (m.created_at,m.id)<($3,$4::uuid))
+          ORDER BY m.created_at DESC,m.id DESC LIMIT 51`,[req.user.id,org,q.beforeCreated??null,q.beforeId??null])).rows;
+        const page=rows.slice(0,50),last=page.at(-1),hasMore=rows.length>50;
+        return {messages:page.map(row=>{const {cursor_created,...value}=row;void cursor_created;return value;}),hasMore,nextCursor:hasMore?{createdAt:last.cursor_created,id:last.id}:null};
+    });
     app.get('/v1/organizations/:id/channels/:channel/files/:file',async req=>{
         const org=idParam(req),channelId=idParam(req,'channel'),file=idParam(req,'file');
         z.object({}).strict().parse(req.query);
@@ -436,7 +451,7 @@ export async function createApp() {
         const selected=await channel(pool,req.user.id,channelId);
         if(selected.org_id!==org)throw new HttpError(404,'Message unavailable');
         const row=(await pool.query(`SELECT m.id,m.body,m.format,m.created_at,m.edited_at,m.parent_id,u.name,
-          ${mentionProjection},${attachmentProjection},c.name channel_name
+          ${mentionProjection},${attachmentProjection},c.name channel_name,EXISTS(SELECT 1 FROM saved_messages s WHERE s.message_id=m.id AND s.user_id=$1) saved
           FROM messages m JOIN channels c ON c.id=m.channel_id JOIN users u ON u.id=m.user_id
           WHERE c.org_id=$3 AND c.id=$2 AND m.id=$4 AND NOT m.deleted AND ${accessSQL}`,[req.user.id,channelId,org,message])).rows[0];
         if(!row)throw new HttpError(404,'Message unavailable');
@@ -576,31 +591,19 @@ export async function createApp() {
             return {ok: true};
         });
     });
-    app.post("/v1/channels/:id/messages/:message/save", async (req) => {
-        const id = idParam(req);
-        const mid = idParam(req, "message");
-        await channel(pool, req.user.id, id);
-        const b = z.object({saved: z.boolean()}).parse(req.body);
-        if (
-            !(
-                await pool.query(
-                    "SELECT 1 FROM messages WHERE id=$1 AND channel_id=$2",
-                    [mid, id],
-                )
-            ).rowCount
-        )
-            throw new HttpError(404, "Message unavailable");
-        if (b.saved)
-            await pool.query(
-                "INSERT INTO saved_messages VALUES($1,$2) ON CONFLICT DO NOTHING",
-                [mid, req.user.id],
-            );
-        else
-            await pool.query(
-                "DELETE FROM saved_messages WHERE message_id=$1 AND user_id=$2",
-                [mid, req.user.id],
-            );
-        return {ok: true};
+    app.post("/v1/channels/:id/messages/:message/save", async req => {
+        const id=idParam(req),mid=idParam(req,"message");
+        const b=z.object({saved:z.boolean()}).strict().parse(req.body);
+        z.object({}).strict().parse(req.query);
+        return transaction(async db=>{
+            await channel(db,req.user.id,id,true);
+            const selected=await db.query(`SELECT m.id FROM messages m JOIN channels c ON c.id=m.channel_id
+              WHERE c.id=$2 AND m.id=$3 AND NOT m.deleted AND ${accessSQL} FOR UPDATE OF m`,[req.user.id,id,mid]);
+            if(!selected.rowCount)throw new HttpError(404,"Message unavailable");
+            if(b.saved)await db.query("INSERT INTO saved_messages VALUES($1,$2) ON CONFLICT DO NOTHING",[mid,req.user.id]);
+            else await db.query("DELETE FROM saved_messages WHERE message_id=$1 AND user_id=$2",[mid,req.user.id]);
+            return {ok:true};
+        });
     });
     app.get("/v1/channels/:id/draft", async (req) => {
         const id = idParam(req);
@@ -624,6 +627,19 @@ export async function createApp() {
             [id, req.user.id, b.body],
         );
         return {ok: true};
+    });
+    app.post('/v1/channels/:id/messages/:message/unread',async req=>{
+        const id=idParam(req),mid=idParam(req,'message');
+        z.object({}).strict().parse(req.body);z.object({}).strict().parse(req.query);
+        return transaction(async db=>{
+            const c=await channel(db,req.user.id,id,true);
+            const message=(await db.query(`SELECT greatest(m.seq-1,0)::text boundary FROM messages m JOIN channels c ON c.id=m.channel_id
+              WHERE c.id=$2 AND m.id=$3 AND NOT m.deleted AND ${accessSQL} FOR UPDATE OF m`,[req.user.id,id,mid])).rows[0];
+            if(!message)throw new HttpError(404,'Message unavailable');
+            const changed=await db.query('UPDATE read_positions SET seq=$3::bigint WHERE channel_id=$1 AND user_id=$2 AND seq>$3::bigint RETURNING seq',[id,req.user.id,message.boundary]);
+            if(changed.rowCount)await event(db,c.org_id,id,'read.changed');
+            return {ok:true};
+        });
     });
     app.post("/v1/channels/:id/read", async (req) => {
         const id = idParam(req);
@@ -654,17 +670,17 @@ export async function createApp() {
             ).rows,
         };
     });
-    app.patch("/v1/channels/:id/preferences", async (req) => {
-        const id = idParam(req);
-        await channel(pool, req.user.id, id);
-        const b = z
-            .object({pinned: z.boolean(), muted: z.boolean(), hidden: z.boolean()})
-            .parse(req.body);
-        await pool.query(
-            "INSERT INTO channel_preferences VALUES($1,$2,$3,$4,$5) ON CONFLICT(channel_id,user_id) DO UPDATE SET pinned=$3,muted=$4,hidden=$5",
-            [id, req.user.id, b.pinned, b.muted, b.hidden],
-        );
-        return {ok: true};
+    app.patch("/v1/channels/:id/preferences",async req=>{
+        const id=idParam(req);
+        const b=z.object({pinned:z.boolean().optional(),muted:z.boolean().optional(),hidden:z.boolean().optional()}).strict().refine(value=>Object.keys(value).length>0,'Provide a preference').parse(req.body);
+        z.object({}).strict().parse(req.query);
+        return transaction(async db=>{
+            await channel(db,req.user.id,id,true);
+            await db.query(`INSERT INTO channel_preferences(channel_id,user_id,pinned,muted,hidden)
+              VALUES($1,$2,coalesce($3::boolean,false),coalesce($4::boolean,false),coalesce($5::boolean,false))
+              ON CONFLICT(channel_id,user_id) DO UPDATE SET pinned=coalesce($3::boolean,channel_preferences.pinned),muted=coalesce($4::boolean,channel_preferences.muted),hidden=coalesce($5::boolean,channel_preferences.hidden)`,[id,req.user.id,b.pinned??null,b.muted??null,b.hidden??null]);
+            return {ok:true};
+        });
     });
     const typing = new Map<
         string,
@@ -800,19 +816,22 @@ export async function createApp() {
     app.get("/v1/organizations/:id/activity", async (req) => {
         const org = idParam(req);
         await member(pool, req.user.id, org);
-        const q = z.object({filter: z.enum(["unread", "mentions", "replies"]).default("unread")}).parse(req.query);
-        return {
-            items: (await pool.query(
+        const q = z.object({filter:z.enum(["unread","mentions","replies"]).default("unread"),beforeCreated:z.iso.datetime().refine(v=>!v.startsWith('0000-'),'Invalid cursor year').optional(),beforeId:z.uuid().optional()}).strict().parse(req.query);
+        if(!!q.beforeCreated!==!!q.beforeId)throw new HttpError(400,'Provide both activity cursor fields');
+        const rows=(await pool.query(
                 `SELECT m.id,m.body,m.format,${mentionProjection},m.channel_id,c.name channel_name,u.name author,m.created_at,
+       to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') cursor_created,
        EXISTS(SELECT 1 FROM message_mentions mm WHERE mm.message_id=m.id AND mm.user_id=$1) mentioned,
        EXISTS(SELECT 1 FROM messages parent WHERE parent.id=m.parent_id AND parent.channel_id=m.channel_id AND parent.org_id=m.org_id AND parent.user_id=$1 AND NOT parent.deleted) replied
        FROM messages m JOIN channels c ON c.id=m.channel_id JOIN users u ON u.id=m.user_id
        LEFT JOIN read_positions r ON r.channel_id=c.id AND r.user_id=$1
        WHERE c.org_id=$2 AND ${accessSQL} AND m.user_id<>$1 AND NOT m.deleted
        AND (($3='unread' AND m.seq>coalesce(r.seq,0)) OR ($3='mentions' AND EXISTS(SELECT 1 FROM message_mentions mm WHERE mm.message_id=m.id AND mm.user_id=$1)) OR ($3='replies' AND EXISTS(SELECT 1 FROM messages parent WHERE parent.id=m.parent_id AND parent.channel_id=m.channel_id AND parent.org_id=m.org_id AND parent.user_id=$1 AND NOT parent.deleted)))
-       ORDER BY m.created_at DESC,m.id DESC LIMIT 50`, [req.user.id, org, q.filter]
-            )).rows
-        };
+       AND ($4::timestamptz IS NULL OR (m.created_at,m.id)<($4,$5::uuid))
+       ORDER BY m.created_at DESC,m.id DESC LIMIT 51`, [req.user.id, org, q.filter,q.beforeCreated??null,q.beforeId??null]
+        )).rows;
+        const page=rows.slice(0,50),last=page.at(-1),hasMore=rows.length>50;
+        return {items:page.map(({cursor_created,...item})=>{void cursor_created;return item;}),hasMore,nextCursor:hasMore?{createdAt:last!.cursor_created,id:last!.id}:null};
     });
     app.post("/v1/organizations/:id/feedback", async (req) => {
         const org = idParam(req);
@@ -831,6 +850,7 @@ export async function createApp() {
     await registerWork(app);
     await registerFiles(app);
   await registerNotifications(app);
+  await registerPresence(app);
   await registerPostingPolicy(app);
   await registerModeration(app);
   await registerAuditSearch(app);

@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:40494) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/activity-sources.spec.ts:8:1 › activity exact sources recover failures and preserve filters, drafts and cancelled navigation (8.9s)
+  ✓  2 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (13.0s)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:489:1 › reply activity shows another user response and withdraws it after parent deletion (11.8s)
+  ✓  4 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (2.7s)
+
+  4 passed (37.4s)

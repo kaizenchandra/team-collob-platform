@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:37483) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/notification-sources.spec.ts:10:1 › browser mention and reply activation opens exact current sources while retaining drafts and enforcing current permissions (17.9s)
+  ✓  2 [chrome] › tests/browser/notifications.spec.ts:3:1 › saved quiet hours suppress mention alerts; native browser construction is deduplicated across tabs (11.8s)
+  ✓  3 [chrome] › tests/browser/notifications.spec.ts:37:1 › explicit reply opt-in invokes one native reply notification across two tabs (11.7s)
+
+  3 passed (42.2s)

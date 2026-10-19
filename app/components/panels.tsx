@@ -2,6 +2,7 @@
 /* Remote snapshots and live subscriptions intentionally reset state on resource changes.
    This prevents showing the previous resource while asynchronous requests are pending. */
 /* eslint-disable react-hooks/set-state-in-effect */
+import {PresenceSettings} from "./presence-settings";
 import {NotificationSettings} from "./notifications";
 import { useState, useEffect, useCallback, useRef, type FormEvent } from "react";
 import { Plus, CalendarDays } from "lucide-react";
@@ -645,10 +646,12 @@ export function CalendarPanel({
   );
 }
 export function SettingsPanel({
+  org,
   session,
   onSave,
   report,
 }: {
+  org: string;
   session: Session;
   onSave: () => Promise<void>;
   report: Report;
@@ -674,6 +677,7 @@ export function SettingsPanel({
         </div>
       </div>
       <div className="content-pad">
+        <PresenceSettings key={`${session.user.id}:${org}`} />
         <form
           className="card settings-form"
           onSubmit={async (e) => {

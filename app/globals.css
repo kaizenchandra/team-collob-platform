@@ -328,7 +328,7 @@ legend {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #3c9468;
+  background: #7c8393;
   border: 2px solid var(--bg);
 }
 .rail {
@@ -423,6 +423,7 @@ legend {
   justify-content: space-between;
   padding: 16px 5px 10px;
 }
+.sidebar-close { display: none; }
 .sidebar-heading h1 {
   font-size: 17px;
   margin: 0;
@@ -443,6 +444,24 @@ legend {
   background: transparent;
   width: 100%;
   padding: 9px 8px;
+}
+.conversation-list-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 5px 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.conversation-list-filter select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
 }
 .sidebar-link {
   display: flex;
@@ -507,6 +526,23 @@ legend {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.channel-button > svg, .channel-button b { flex-shrink: 0; }
+.channel-button .channel-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.channel-preview {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
 }
 .channel-button.active {
   background: var(--accent-soft);
@@ -1588,6 +1624,7 @@ dialog > .notice {
   }
 }
 @media (max-width: 700px) {
+  .sidebar-close { display: flex; }
   .application {
     grid-template-columns: 54px minmax(0, 1fr);
     grid-template-rows: 57px minmax(0, 1fr);
@@ -2008,3 +2045,26 @@ dialog h2 { overflow-wrap: anywhere; min-width: 0; }
 .workspace-search .result-card h2 { margin: 0; font-size: 14px; }
 
 .linked-message { min-width: 0; overflow-wrap: anywhere; }
+
+.reply-context { margin: 12px 0; padding: 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); min-width: 0; }
+
+.reply-reference { flex-wrap: wrap; }
+.reply-source { color: var(--accent); text-decoration: underline; padding: 3px 0; font-size: inherit; }
+
+.presence-form { display: grid; gap: 8px; margin-top: 16px; }
+.presence-form label { margin: 0; }
+.presence-form select { width: 100%; min-width: 0; }
+.presence-form .primary { justify-self: start; }
+
+.profile-button { display: flex; align-items: center; gap: 8px; text-align: left; }
+.profile-avatar { position: relative; display: inline-flex; flex-shrink: 0; }
+.profile-presence-label { max-width: 95px; font-size: 11px; line-height: 1.3; color: var(--muted); }
+.presence-dot[data-state="available"] { background: #3c9468; }
+.presence-dot[data-state="busy"] { background: #c64b4b; }
+.presence-dot[data-state="dnd"] { background: #a23a6f; }
+.presence-dot[data-state="away"] { background: #b2801d; }
+.presence-dot[data-state="offline"] { background: var(--muted); }
+@media (max-width: 700px) { .profile-presence-label { max-width: 68px; font-size: 9px; overflow-wrap: anywhere; } }
+
+.activity-feed { min-width: 0; overflow-wrap: anywhere; }
+.activity-feed > .secondary { margin-bottom: 12px; }

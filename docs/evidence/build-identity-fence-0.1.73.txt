@@ -1,0 +1,139 @@
+ Image concord-web:0.1.73-local Building 
+ Image concord-api:0.1.73-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.27kB done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.70kB done
+#2 DONE 0.0s
+
+#3 [api internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 0.0s
+
+#4 [web internal] load .dockerignore
+#4 transferring context:
+#4 transferring context: 142B 0.0s done
+#4 DONE 0.0s
+
+#5 [api build 1/6] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#5 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.0s done
+#5 DONE 0.0s
+
+#6 [api internal] load build context
+#6 transferring context: 1.98MB 0.1s done
+#6 transferring context: 1.98MB 0.1s done
+#6 DONE 0.1s
+
+#7 [api build 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [api build 3/6] COPY package.json package-lock.json ./
+#8 CACHED
+
+#9 [api build 4/6] RUN npm ci
+#9 CACHED
+
+#10 [api build 5/6] COPY . .
+#10 DONE 0.5s
+
+#11 [api build 6/6] RUN npm run build
+#11 0.486 
+#11 0.486 > team-collob-platform@0.1.73 build
+#11 0.486 > next build && node scripts/prepare-standalone.mjs
+#11 0.486 
+#11 1.004 ▲ Next.js 16.4.0 (Turbopack)
+#11 1.179 ✓ Running next.config.ts took 176ms
+#11 1.192 - Cache Components enabled
+#11 1.192 - Partial Prefetching enabled
+#11 1.192 
+#11 1.212   Creating an optimized production build ...
+#11 4.590 ✓ Compiled successfully in 3.4s
+#11 4.594   Running TypeScript ...
+#11 13.54   Finished TypeScript in 8.9s ...
+#11 13.56   Collecting page data using 5 workers ...
+#11 13.99   Generating static pages using 5 workers (0/4) ...
+#11 14.25   Generating static pages using 5 workers (1/4) 
+#11 14.38   Generating static pages using 5 workers (2/4) 
+#11 14.38   Generating static pages using 5 workers (3/4) 
+#11 14.39 ✓ Generating static pages using 5 workers (4/4) in 397ms
+#11 14.39   Finalizing page optimization ...
+#11 14.53 
+#11 14.53 Route (app)
+#11 14.53 ┌ ○ /
+#11 14.53 └ ○ /_not-found
+#11 14.53 
+#11 14.53 
+#11 14.53 ○  (Static)  prerendered as static content
+#11 14.53 
+#11 DONE 15.0s
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 ...
+
+#7 [api build 2/6] WORKDIR /app
+#7 CACHED
+
+#7 [web build 2/6] WORKDIR /app
+#7 CACHED
+
+#13 [web web 3/3] COPY --from=build --chown=node:node /app/.next/standalone ./
+#13 DONE 0.3s
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 3.977 
+#12 3.977 removed 339 packages, and audited 215 packages in 4s
+#12 3.979 
+#12 3.979 100 packages are looking for funding
+#12 3.979   run `npm fund` for details
+#12 3.979 
+#12 3.979 found 0 vulnerabilities
+#12 DONE 4.1s
+
+#14 [web] exporting to image
+#14 exporting layers 2.8s done
+#14 exporting manifest sha256:2276a917463555bcb4388f9f54852b1170c8a097e5beed660120e9ad142e7237 0.0s done
+#14 exporting config sha256:7237891fea4c0ea727d57995fcce163b3928fd802a796c2aea3dc8c4c7aca8d3 0.0s done
+#14 exporting attestation manifest sha256:98987aad144eed7fbc7bd31285207d7ec53200f047e3880bc882a33c21947a5f 0.0s done
+#14 exporting manifest list sha256:756410619ca26f6c2c33273e7b0efd8e209b85edf46a8fd52eceb78cf9adf6c3 0.0s done
+#14 naming to docker.io/library/concord-web:0.1.73-local 0.0s done
+#14 unpacking to docker.io/library/concord-web:0.1.73-local
+#14 unpacking to docker.io/library/concord-web:0.1.73-local 0.6s done
+#14 DONE 3.6s
+
+#15 [web] resolving provenance for metadata file
+#15 DONE 0.0s
+
+#16 [api api 7/8] COPY --chown=node:node migrations ./migrations
+#16 CACHED
+
+#17 [api api 3/8] COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
+#17 CACHED
+
+#18 [api api 4/8] COPY --chown=node:node package.json ./
+#18 CACHED
+
+#19 [api api 5/8] COPY --chown=node:node services ./services
+#19 CACHED
+
+#20 [api api 6/8] COPY --chown=node:node lib/file-preview.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts ./lib/
+#20 CACHED
+
+#21 [api api 8/8] RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
+#21 CACHED
+
+#22 [api] exporting to image
+#22 exporting layers done
+#22 exporting manifest sha256:fb8b63816ba1b0a50bc0dec72ea2163ba40d646917e14cdf1612edf9fa23b8e0 0.0s done
+#22 exporting config sha256:c7c7756a2fbcb9edb7ce300bd2728995150186aed98ac43c82e30087e8c4d51a 0.0s done
+#22 exporting attestation manifest sha256:9ce860d65deb525b3045f0bef4be37a2deaabe8ef7e26b324e8129b44c878ffc 0.0s done
+#22 exporting manifest list sha256:e4c1002f02681c439b0065792613d52dab88e1d6b3894edd3ee5b6683d00e15c
+#22 exporting manifest list sha256:e4c1002f02681c439b0065792613d52dab88e1d6b3894edd3ee5b6683d00e15c 0.1s done
+#22 naming to docker.io/library/concord-api:0.1.73-local done
+#22 unpacking to docker.io/library/concord-api:0.1.73-local 0.0s done
+#22 DONE 0.2s
+
+#23 [api] resolving provenance for metadata file
+#23 DONE 0.0s
+ Image concord-api:0.1.73-local Built 
+ Image concord-web:0.1.73-local Built 

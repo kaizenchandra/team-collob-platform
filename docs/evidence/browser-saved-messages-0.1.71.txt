@@ -1,0 +1,59 @@
+
+Running 3 tests using 1 worker
+
+(node:4580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content (32.2s)
+  ✘  2 [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access (2.1s)
+(node:4761) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [chrome] › tests/browser/search-pages.spec.ts:10:1 › message and filename search pages retry navigation, retain current cursor, reset filters and protect older downloads (24.7s)
+
+
+  1) [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status')
+    Expected: "Saved page 2 · 4 messages"
+    Error: strict mode violation: getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status') resolved to 2 elements:
+        1) <p role="status">Loading saved messages…</p> aka getByText('Loading saved messages…')
+        2) <p role="status">…</p> aka getByText('Saved page 1 · 50 messages')
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status') with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status')
+
+
+      14 |     expect((await b.request.post(`${api}/v1/channels/${beta}/messages/${target}/save`,{headers,data:{saved:true}})).status()).toBe(200);const synthetic=Array.from({length:53},()=>randomUUID());await db.query("INSERT INTO messages(id,org_id,channel_id,user_id,client_id,seq,body,created_at) SELECT x,$2,$3,$4,x,n+1,'Saved page fixture '||n::text,now()+n*interval '1 microsecond' FROM unnest($1::uuid[]) WITH ORDINALITY t(x,n)",[synthetic,org,beta,users.alice]);await db.query('UPDATE channels SET sequence=54 WHERE id=$1',[beta]);await db.query('INSERT INTO saved_messages SELECT x,$2 FROM unnest($1::uuid[]) x',[synthetic,users.bob]);expect((await (await b.request.get(`${api}/v1/channels/${beta}/messages`)).json()).messages.some((row:{id:string})=>row.id===target)).toBe(false);
+      15 |     const draft='Draft survives browsing saved messages';await bob.getByRole('textbox',{name:'Message',exact:true}).fill(draft);await bob.getByRole('button',{name:'Saved',exact:true}).click();const region=bob.getByRole('region',{name:'Saved messages',exact:true});await expect(region.getByRole('status')).toHaveText('Saved page 1 · 50 messages');await expect(region.getByText(marker,{exact:true})).toHaveCount(0);
+    > 16 |     const pattern=`**/v1/organizations/${org}/saved-messages?*`;await bob.route(pattern,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Older saved page unavailable"}'}));await region.getByRole('button',{name:'Older saved messages',exact:true}).click();await expect(region.getByRole('alert')).toContainText('Older saved page unavailable');await expect(region.getByRole('status')).toHaveText('Saved page 1 · 50 messages');await bob.unroute(pattern);await region.getByRole('button',{name:'Retry saved messages',exact:true}).click();await expect(region.getByRole('status')).toHaveText('Saved page 2 · 4 messages');
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ^
+      17 |     const card=region.getByRole('article').filter({hasText:marker}),before=(await db.query('SELECT * FROM read_positions WHERE channel_id=$1 AND user_id=$2',[beta,users.bob])).rows;await card.getByRole('button',{name:'Open saved message',exact:true}).click();const detail=bob.getByRole('dialog',{name:'Linked message',exact:true});await expect(detail.getByText(marker,{exact:true})).toBeVisible();await expect(detail.locator('img')).toHaveCount(0);expect(new URL(bob.url()).searchParams.get('channel')).toBe(alpha);expect((await db.query('SELECT * FROM read_positions WHERE channel_id=$1 AND user_id=$2',[beta,users.bob])).rows).toEqual(before);await detail.getByRole('button',{name:'Close dialog',exact:true}).click();await expect(detail).toHaveCount(0);await expect(region.getByRole('status')).toHaveText('Saved page 2 · 4 messages');
+      18 |     const unsavePattern=`**/v1/channels/${beta}/messages/${target}/save`;await bob.route(unsavePattern,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Unsave temporarily unavailable"}'}));await card.getByRole('button',{name:'Unsave',exact:true}).click();await expect(region.getByRole('alert')).toContainText('Unsave temporarily unavailable');await expect(region.getByRole('article')).toHaveCount(0);expect((await db.query('SELECT count(*)::int n FROM saved_messages WHERE message_id=$1 AND user_id=$2',[target,users.bob])).rows[0].n).toBe(1);await bob.unroute(unsavePattern);await region.getByRole('button',{name:'Retry saved messages',exact:true}).click();await expect(card).toHaveCount(1);
+      19 |     await card.getByRole('button',{name:'Unsave',exact:true}).click();await expect(card).toHaveCount(0);await expect(region.getByRole('status')).toHaveText('Saved page 2 · 3 messages');expect((await db.query('SELECT count(*)::int n FROM saved_messages WHERE message_id=$1 AND user_id=$2',[target,users.bob])).rows[0].n).toBe(0);expect((await b.request.post(`${api}/v1/channels/${beta}/messages/${target}/save`,{headers,data:{saved:true}})).status()).toBe(200);await expect(card).toHaveCount(1,{timeout:10000});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/saved-messages.spec.ts:16:604
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access 
+  2 passed (1.0m)

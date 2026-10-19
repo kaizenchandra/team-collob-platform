@@ -1,0 +1,72 @@
+
+Running 3 tests using 1 worker
+
+(node:17240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/conversation-previews.spec.ts:10:1 › literal conversation previews refresh safely without reading messages or replacing drafts (13.1s)
+(node:17290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chrome] › tests/browser/conversation-visibility.spec.ts:8:1 › personal hiding preserves drafts/access/other preferences and supports authorized recovery and failed navigation (9.7s)
+  ✓  3 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (4.7s)
+
+
+  1) [chrome] › tests/browser/conversation-previews.spec.ts:10:1 › literal conversation previews refresh safely without reading messages or replacing drafts 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Toggle conversations', exact: true })
+        - locator resolved to <button aria-label="Toggle conversations">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <aside class="sidebar mobile-open">…</aside> intercepts pointer events
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is visible, enabled and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <aside class="sidebar mobile-open">…</aside> intercepts pointer events
+        - retrying click action
+          - waiting 100ms
+        19 × waiting for element to be visible, enabled and stable
+           - element is visible, enabled and stable
+           - scrolling into view if needed
+           - done scrolling
+           - <aside class="sidebar mobile-open">…</aside> intercepts pointer events
+         - retrying click action
+           - waiting 500ms
+
+
+      49 |     const dismiss=bob.getByRole('button',{name:'Dismiss error',exact:true});if(await dismiss.isVisible())await dismiss.click();
+      50 |     const axe=await new AxeBuilder({page:bob}).include('aside').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await bob.screenshot({path:'docs/evidence/conversation-previews.png'});
+    > 51 |     await bob.setViewportSize({width:390,height:844});await bob.getByRole('button',{name:'Toggle conversations',exact:true}).click();await expect(betaRow.first()).toBeVisible();expect(await bob.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(await sidebar.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);await bob.getByRole('button',{name:'Toggle conversations',exact:true}).click();await bob.setViewportSize({width:1280,height:720});
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                  ^
+      52 |     expect((await b.request.patch(`${api}/v1/channels/${beta}/preferences`,{headers,data:{hidden:true}})).status()).toBe(200);await refresh.click();await expect(betaRow).toHaveCount(0);expect((await b.request.patch(`${api}/v1/channels/${beta}/preferences`,{headers,data:{hidden:false}})).status()).toBe(200);await refresh.click();await expect(betaRow).toHaveCount(2);
+      53 |     await db.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[beta,users.bob]);await refresh.click();await expect(betaRow).toHaveCount(0);await expect(sidebar.getByText('Newer preview wins',{exact:true})).toHaveCount(0);
+      54 |     await expect.poll(async()=>(await (await b.request.get(`${api}/v1/channels/${alpha}/draft`)).json()).body).toBe(draft);await bob.reload();await expect(bob.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(draft);await expect(betaRow).toHaveCount(0);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/conversation-previews.spec.ts:51:434
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/conversation-previews-lite-93c46-essages-or-replacing-drafts-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/conversation-previews-lite-93c46-essages-or-replacing-drafts-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/conversation-previews-lite-93c46-essages-or-replacing-drafts-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/conversation-previews-lite-93c46-essages-or-replacing-drafts-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/conversation-previews-lite-93c46-essages-or-replacing-drafts-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/conversation-previews.spec.ts:10:1 › literal conversation previews refresh safely without reading messages or replacing drafts 
+  2 passed (29.7s)

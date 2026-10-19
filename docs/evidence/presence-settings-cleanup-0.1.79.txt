@@ -1,0 +1,4 @@
+{"release":"0.1.79-local","services":10,"checks":[{"url":"http://localhost:4100/health","status":200},{"url":"http://localhost:4100/ready","status":200},{"url":"http://localhost:3101","status":200}]}
+{"database":"concord","remaining_fixture_organizations":0}
+{"database":"concord_test","remaining_fixture_organizations":0}
+Presence override, filter and unread fixtures cleaned in finally, including presence/draft/preferences/read positions/channel and organization data. Targeted browser suites uploaded no files. No source-volume reset/restore/S3 purge, API/schema/index/event/backup-format change or OS clipboard access.

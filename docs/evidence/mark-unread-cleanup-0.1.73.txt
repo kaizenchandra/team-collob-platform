@@ -1,0 +1,4 @@
+{"release":"0.1.73-local","services":10,"checks":[{"url":"http://localhost:4100/health","status":200},{"url":"http://localhost:4100/ready","status":200},{"url":"http://localhost:3101","status":200}]}
+{"database":"concord","remaining_fixture_organizations":0}
+{"database":"concord_test","remaining_fixture_organizations":0}
+Unread/bookmark/message/draft/org fixture SQL and existing linked attachment spool removed in finally. Source volumes unchanged; no reset/restore/new schema/backup format/S3 purge. Account-switch test uses synthetic Alice/Bob sessions; clipboard handlers synthetic only, OS clipboard neither read nor changed.

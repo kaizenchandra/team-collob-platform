@@ -1,0 +1,4 @@
+{"release":"0.1.74-local","services":10,"checks":[{"url":"http://localhost:4100/health","status":200},{"url":"http://localhost:4100/ready","status":200},{"url":"http://localhost:3101","status":200}]}
+{"database":"concord","remaining_fixture_organizations":0}
+{"database":"concord_test","remaining_fixture_organizations":0}
+Visibility preference/draft/channel/org plus unread/Saved bookmark/message fixture SQL cleaned in finally. Targeted browser suites created no file fixtures; existing source volumes/S3 bytes unchanged. No reset/restore/new schema/backup format/purge or OS clipboard read/write.

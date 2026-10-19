@@ -1,5 +1,7 @@
 "use client";
 import {useEffect,useState} from 'react';
+import {z} from 'zod';
+import {messageLink} from '@/lib/message-link';
 import {api} from '@/lib/contracts';
 type Preferences={browser_replies_enabled:boolean;browser_enabled:boolean;quiet_enabled:boolean;quiet_start:string;quiet_end:string;digest_enabled:boolean;email_provider:string};
 export function NotificationSettings(){
@@ -17,7 +19,7 @@ export function NotificationSettings(){
     void refresh();const timer=setInterval(()=>void refresh(),5000);return()=>{active=false;clearInterval(timer);};
   },[]);
   return <section className="card settings-form"><h2>Browser message alerts</h2>
-    <p>Alerts identify the workspace and channel, without message text. Keep this workspace open. Delivery while closed, mobile push and invitation/call alerts are not available.</p>
+    <p>Alerts identify the workspace and channel, without message text. Clicking an alert opens its exact current message source. Keep this workspace open. Delivery while closed, mobile push and invitation/call alerts are not available.</p>
     <p>Browser permission: {permission}. Permission and saved preferences are both required.</p>
     <button type="button" className="secondary" disabled={permission==='unsupported'} onClick={async()=>{try{setPermission(await Notification.requestPermission());}catch{setError('Permission is unavailable. Check browser settings or use Activity.');}}}>Allow browser notifications</button>
     {error && <div role="alert"><p>{error}</p><button type="button" className="secondary" onClick={()=>setAttempt(n=>n+1)}>Reload notification settings</button></div>}
@@ -42,6 +44,7 @@ export function NotificationSettings(){
     </form>}
   </section>;
 }
+const claims=z.object({items:z.array(z.object({id:z.uuid(),channel_id:z.uuid(),channel_name:z.string(),organization_name:z.string(),kind:z.enum(['mention','reply']).default('mention')})).max(10)});
 export function BrowserMentionAlerts({org,userId}:{org:string;userId:string}){
   const [problem,setProblem]=useState('');
   useEffect(()=>{
@@ -51,22 +54,24 @@ export function BrowserMentionAlerts({org,userId}:{org:string;userId:string}){
       if(pending||failed||typeof Notification==='undefined'||Notification.permission!=='granted')return;
       pending=true;
       try{
-        const result=await api<{items:{id:string;channel_id:string;channel_name:string;organization_name:string;kind?:"mention"|"reply"}[]}>(`/organizations/${org}/notification-claims`,'POST',{},AbortSignal.any([controller.signal,AbortSignal.timeout(8000)]));
+        const result=claims.parse(await api(`/organizations/${org}/notification-claims`,'POST',{},AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])));
         if(!active)return;
         setProblem('');
         for(const item of result.items){
+          const href=messageLink(window.location.origin,{org,channel:item.channel_id,id:item.id});
           let notification:Notification;
           try{notification=new Notification(item.organization_name,{body:`New ${item.kind==='reply'?'reply':'mention'} in ${item.channel_name}`,tag:`${org}:${item.id}`});}
           catch{failed=true;setProblem('This browser could not display notifications. Use Activity; mobile push is not available.');break;}
           open.add(notification);
-          notification.onclick=()=>{notification.close();window.open(`/?org=${encodeURIComponent(org)}&channel=${encodeURIComponent(item.channel_id)}`,'_blank','noopener,noreferrer');};
-          const timer=setTimeout(()=>{notification.close();open.delete(notification);timers.delete(timer);},15000);timers.add(timer);
+          let activated=false;
+          notification.onclick=()=>{if(!active||activated)return;activated=true;notification.onclick=null;notification.close();open.delete(notification);window.open(href,'_blank','noopener,noreferrer');};
+          const timer=setTimeout(()=>{notification.onclick=null;notification.close();open.delete(notification);timers.delete(timer);},15000);timers.add(timer);
         }
       }catch{if(active)setProblem('Browser alerts are temporarily unavailable. Your messages remain in Activity.');}
       finally{pending=false;}
     };
     void poll();const interval=setInterval(()=>void poll(),10000);
-    return()=>{active=false;controller.abort();clearInterval(interval);for(const timer of timers)clearTimeout(timer);for(const notification of open)notification.close();};
+    return()=>{active=false;controller.abort();clearInterval(interval);for(const timer of timers)clearTimeout(timer);for(const notification of open){notification.onclick=null;notification.close();}};
   },[org,userId]);
   return problem?<div className="notice notification-status" role="status">{problem}</div>:null;
 }

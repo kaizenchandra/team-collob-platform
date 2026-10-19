@@ -1,5 +1,5 @@
 {
-  "version": "0.1.70-local",
+  "version": "0.1.84-local",
   "checks": [
     {
       "url": "http://localhost:4100/health",
@@ -15,19 +15,21 @@
     }
   ],
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-18T06:40:56.059Z",
+  "recordedAt": "2026-10-18T22:35:14.069Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "7a6b463b91756c54cef1bbf433b2262d6e30f77307b36b140f5f84799dee67a4",
+  "sourceSha256": "4397eb313051be1eecee7c8bcdc7b02edd62a13c6bfd4f26c6980e8fdfa80db4",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
+    "app/components/activity-feed.tsx",
     "app/components/attachments.tsx",
     "app/components/audit-search.tsx",
     "app/components/channel-access.tsx",
     "app/components/channel-preservation.tsx",
     "app/components/channel-settings.tsx",
     "app/components/chat-management.tsx",
+    "app/components/conversation-visibility.tsx",
     "app/components/file-preview.tsx",
     "app/components/file-recovery.tsx",
     "app/components/file-retention.tsx",
@@ -48,8 +50,12 @@
     "app/components/notifications.tsx",
     "app/components/panels.tsx",
     "app/components/posting-policy.tsx",
+    "app/components/presence-provider.tsx",
+    "app/components/presence-settings.tsx",
     "app/components/primitives.tsx",
     "app/components/recurrence-preview.tsx",
+    "app/components/reply-context.tsx",
+    "app/components/saved-messages.tsx",
     "app/components/series-rescheduler.tsx",
     "app/components/team-members.tsx",
     "app/components/team-ownership.tsx",
@@ -207,6 +213,7 @@
     "services/core/oidc-state.ts",
     "services/core/oidc.ts",
     "services/core/posting-policy.ts",
+    "services/core/presence.ts",
     "services/core/preservation.ts",
     "services/core/promote-files.ts",
     "services/core/provider-reconciliation.ts",
@@ -222,12 +229,16 @@
     "services/core/work.ts",
     "tests/backup-preflight.test.mjs",
     "tests/backup.test.mjs",
+    "tests/browser/activity-sources.spec.ts",
     "tests/browser/audit.spec.ts",
     "tests/browser/calendar.spec.ts",
     "tests/browser/channel-access.spec.ts",
     "tests/browser/channel-settings.spec.ts",
     "tests/browser/chat-management.spec.ts",
     "tests/browser/collaboration.spec.ts",
+    "tests/browser/conversation-filters.spec.ts",
+    "tests/browser/conversation-previews.spec.ts",
+    "tests/browser/conversation-visibility.spec.ts",
     "tests/browser/file-pages.spec.ts",
     "tests/browser/file-recovery-pages.spec.ts",
     "tests/browser/file-recovery.spec.ts",
@@ -237,16 +248,22 @@
     "tests/browser/identity.spec.ts",
     "tests/browser/invitations.spec.ts",
     "tests/browser/linked-message.spec.ts",
+    "tests/browser/mark-unread.spec.ts",
     "tests/browser/message-retention.spec.ts",
     "tests/browser/moderation.spec.ts",
+    "tests/browser/notification-sources.spec.ts",
     "tests/browser/notifications.spec.ts",
+    "tests/browser/presence-settings.spec.ts",
     "tests/browser/preservation.spec.ts",
     "tests/browser/provider-reconciliation.spec.ts",
     "tests/browser/recovery.spec.ts",
+    "tests/browser/reply-context.spec.ts",
+    "tests/browser/saved-messages.spec.ts",
     "tests/browser/search-pages.spec.ts",
     "tests/browser/team-members.spec.ts",
     "tests/browser/team-ownership.spec.ts",
     "tests/browser/team-recovery.spec.ts",
+    "tests/browser/timeline-reply-source.spec.ts",
     "tests/browser/usage.spec.ts",
     "tests/clamav.test.ts",
     "tests/core.test.ts",
@@ -260,17 +277,17 @@
     "tests/restore-transfer.test.mjs",
     "tsconfig.json"
   ],
-  "baseCommit": "ce9ddb6a1bac1c1899e88caf0e2f8619f0e84179",
+  "baseCommit": "90ec45f0e067506c33a40d46cd76fba10db44334",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.70-local": {
-      "imageId": "sha256:2ee9073f79eebbbe372a546759116957cd1d009a4f772fb74b4070e932be6d5a",
-      "created": "2026-10-18T12:06:46.857268559+05:30",
+    "concord-web:0.1.84-local": {
+      "imageId": "sha256:7eb3918571f5f88fa070489ead31d9ab5dbcc74aa9139fefd8773abe9e6fd0d2",
+      "created": "2026-10-19T04:04:28.993715649+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.70-local": {
-      "imageId": "sha256:bb29889ab467d3aa84eec26dcd19c39b8de709d820a22bb6ff6ba4fd479fca57",
-      "created": "2026-10-18T12:06:51.431006941+05:30",
+    "concord-api:0.1.84-local": {
+      "imageId": "sha256:1dfe3c385e0e533867c9d502f0509ba8a7aac750ac57f3cede03e44abe9c6351",
+      "created": "2026-10-19T04:02:22.449606292+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
@@ -291,12 +308,12 @@
   },
   "containers": {
     "web": {
-      "imageId": "sha256:2ee9073f79eebbbe372a546759116957cd1d009a4f772fb74b4070e932be6d5a",
+      "imageId": "sha256:7eb3918571f5f88fa070489ead31d9ab5dbcc74aa9139fefd8773abe9e6fd0d2",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:bb29889ab467d3aa84eec26dcd19c39b8de709d820a22bb6ff6ba4fd479fca57",
+      "imageId": "sha256:1dfe3c385e0e533867c9d502f0509ba8a7aac750ac57f3cede03e44abe9c6351",
       "status": "running",
       "health": "healthy"
     },
@@ -316,12 +333,12 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:bb29889ab467d3aa84eec26dcd19c39b8de709d820a22bb6ff6ba4fd479fca57",
+      "imageId": "sha256:1dfe3c385e0e533867c9d502f0509ba8a7aac750ac57f3cede03e44abe9c6351",
       "status": "running",
       "health": "healthy"
     },
     "file-reconciler": {
-      "imageId": "sha256:bb29889ab467d3aa84eec26dcd19c39b8de709d820a22bb6ff6ba4fd479fca57",
+      "imageId": "sha256:1dfe3c385e0e533867c9d502f0509ba8a7aac750ac57f3cede03e44abe9c6351",
       "status": "running",
       "health": "healthy"
     },
@@ -336,7 +353,7 @@
       "health": "healthy"
     },
     "digest-worker": {
-      "imageId": "sha256:bb29889ab467d3aa84eec26dcd19c39b8de709d820a22bb6ff6ba4fd479fca57",
+      "imageId": "sha256:1dfe3c385e0e533867c9d502f0509ba8a7aac750ac57f3cede03e44abe9c6351",
       "status": "running",
       "health": "healthy"
     }

@@ -1,0 +1,4 @@
+{"release":"0.1.82-local","services":10,"checks":[{"url":"http://localhost:4100/health","status":200},{"url":"http://localhost:4100/ready","status":200},{"url":"http://localhost:3101","status":200}]}
+{"database":"concord","remaining_source_fixture_organizations":0}
+{"database":"concord_test","remaining_source_fixture_organizations":0}
+New alert source fixture cleaned in finally; message mention/notification claim references cascade on message cleanup. Notification preferences restored through existing API. Native constructor regressions retain their existing base-workspace cleanup semantics. No browser file uploads, source-volume reset/restore/S3 purge, API/schema/index/event/backup-format change or OS clipboard access. New activation facade emits no OS toast; native construction does not verify OS toast visibility.

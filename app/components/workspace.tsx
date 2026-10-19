@@ -1,4 +1,8 @@
 "use client";
+import {ActivityFeed} from "./activity-feed";
+import {PresenceProvider,ProfilePresence} from "./presence-provider";
+import {ConversationVisibility,HiddenConversations} from "./conversation-visibility";
+import {SavedMessages} from "./saved-messages";
 import {readFileLink,type FileLinkTarget} from "@/lib/file-link";
 import {LinkedFile} from "./linked-file";
 import {LinkedMessage} from "./linked-message";
@@ -101,6 +105,7 @@ type View =
   | "Chat"
   | "Teams"
   | "Activity"
+  | "Saved"
   | "Calendar"
   | "Calls"
   | "Files"
@@ -111,6 +116,7 @@ type View =
 const nav = [
   ["Activity", Bell],
   ["Chat", MessageSquare],
+  ["Saved", Bookmark],
   ["Teams", Users],
   ["Calendar", CalendarDays],
   ["Calls", Phone],
@@ -138,28 +144,20 @@ export default function Workspace() {
       { user_id: string; name: string; seq: string }[]
     >([]),
     [filter, setFilter] = useState(""),
+    [listFilter,setListFilter]=useState<"all"|"unread"|"pinned"|"muted">("all"),
     [search, setSearch] = useState(""),
     [results, setResults] = useState<{query:string;run:number}|null>(null),
     [modal, setModal] = useState(""),
     [details, setDetails] = useState(false),
     [mobileNav, setMobileNav] = useState(false),
-    [activityFilter, setActivityFilter] = useState<"unread" | "mentions" | "replies">("unread"),
-    [activity, setActivity] = useState<
-      {
-        id: string;
-        body: string;
-        channel_id: string;
-        channel_name: string;
-        author: string;
-        format: "plain" | "markdown-v1";
-        mentions: {id:string;name:string}[];
-        mentioned: boolean;
-        replied: boolean;
-      }[]
-    >([]);
+    [activityFilter, setActivityFilter] = useState<"unread" | "mentions" | "replies">("unread");
   const [linkedMessage,setLinkedMessage]=useState<MessageLinkTarget|null>(null);
   const [linkedFile,setLinkedFile]=useState<FileLinkTarget|null>(null);
+  const [hiddenOpen,setHiddenOpen]=useState(false);
+  const [previewsUnavailable,setPreviewsUnavailable]=useState(false);
+  const bootstrapRequest=useRef(0);
   const selectionRequest=useRef(0);
+  const cancelActivityNavigation=useCallback(()=>{selectionRequest.current++;},[]);
   const identityRef = useRef("");
   const streamRef = useRef(stream);
   useEffect(() => {
@@ -187,10 +185,12 @@ export default function Workspace() {
     streamRef.current = "";
     draftLoaded.current = false;
     latestDraft.current = "";
-    setLinkedMessage(null);setLinkedFile(null);
+    setLinkedMessage(null);setLinkedFile(null);setHiddenOpen(false);
     selectionRequest.current++;
     setSession(null);
     setBoot(null);
+    setPreviewsUnavailable(false);
+    setFilter("");setListFilter("all");
     setOrg("");
     setStream("");
     setMessages([]);
@@ -198,7 +198,7 @@ export default function Workspace() {
     setDraftReady(false);
     setFailed(null);
     setResults(null);
-    setActivity([]);
+    setActivityFilter("unread");
     setReceipts([]);
     setTyping([]);
     setReply(null);
@@ -243,14 +243,25 @@ export default function Workspace() {
       setChecking(false);
     }
   }, [report]);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (signal?:AbortSignal) => {
     if (!org) return;
-    const b = await api<Bootstrap>(`/organizations/${org}/bootstrap`);
-    if (orgRef.current !== org) return;
-    setBoot(b);
-    setStream((s) =>
-      b.channels.some((c) => c.id === s) ? s : (b.channels[0]?.id ?? ""),
-    );
+    const user=identityRef.current,request=++bootstrapRequest.current;
+    const current=()=>orgRef.current===org&&identityRef.current===user&&bootstrapRequest.current===request;
+    try {
+      const b = await api<Bootstrap>(`/organizations/${org}/bootstrap`,"GET",undefined,signal??AbortSignal.timeout(8000));
+      if (!current()) return;
+      setBoot(b);
+      setPreviewsUnavailable(false);
+      setStream((s) =>
+        b.channels.some((c) => c.id === s) ? s : (b.channels[0]?.id ?? ""),
+      );
+    } catch(e) {
+      if (current()) {
+        setBoot(previous=>previous?{...previous,channels:previous.channels.map(c=>({...c,preview:null}))}:previous);
+        setPreviewsUnavailable(true);
+      }
+      throw e;
+    }
   }, [org]);
   const history = useCallback(async () => {
     if (!stream) return;
@@ -440,23 +451,6 @@ export default function Workspace() {
     }, 600);
     return () => clearTimeout(timer);
   }, [draft, stream]);
-  useEffect(() => {
-    if (view !== "Activity" || !org) return;
-    let active = true, pending = false;
-    setActivity([]);
-    const load = async () => {
-      if (pending) return;
-      pending = true;
-      try {
-        const response = await api<{items: typeof activity}>(`/organizations/${org}/activity?filter=${activityFilter}`);
-        if (active && orgRef.current === org) setActivity(response.items);
-      } catch (error) { if (active) { setActivity([]); report(error); } }
-      finally { pending = false; }
-    };
-    void load();
-    const timer = setInterval(() => { void load(); },5000);
-    return () => { active = false; clearInterval(timer); };
-  },[view,org,activityFilter,report]);
   useEffect(() => {
     const event = new BroadcastChannel("concord-session");
     event.onmessage = (e) => {
@@ -661,10 +655,11 @@ export default function Workspace() {
     session.organizations.find((o) => o.id === org)?.name ?? "Workspace";
   const visible =
     boot?.channels.filter(
-      (c) => !c.hidden && c.name.toLowerCase().includes(filter.toLowerCase()),
+      (c) => !c.hidden && c.name.toLowerCase().includes(filter.toLowerCase()) &&
+        (listFilter==="all"||(listFilter==="unread"?c.unread>0:listFilter==="pinned"?c.pinned:c.muted)),
     ) ?? [];
   return (
-    <div className="application">
+    <PresenceProvider org={org} userId={session.user.id}><div className="application">
       {org && <BrowserMentionAlerts key={`${session.user.id}:${org}`} org={org} userId={session.user.id} />}
       <a className="skip-link" href="#main">
         Skip to content
@@ -694,14 +689,7 @@ export default function Workspace() {
           >
             <HelpCircle size={20} />
           </button>
-          <button
-            className="profile-button"
-            aria-label="Open profile settings"
-            onClick={() => setView("Settings")}
-          >
-            <Avatar name={session.user.name} small />
-            <span className="presence-dot" />
-          </button>
+          <ProfilePresence name={session.user.name} onOpen={()=>setView("Settings")}/>
         </div>
       </header>
       <nav className="rail" aria-label="Main navigation">
@@ -743,7 +731,7 @@ export default function Workspace() {
           </button>
         </div>
       </nav>
-      <aside className={`sidebar ${mobileNav ? "mobile-open" : ""}`}>
+      <aside id="conversation-sidebar" className={`sidebar ${mobileNav ? "mobile-open" : ""}`}>
         <div className="workspace-switch">
           <label htmlFor="workspace">WORKSPACE</label>
           <div>
@@ -765,14 +753,16 @@ export default function Workspace() {
                 orgRef.current = destination;
                 streamRef.current = "";
                 selectionRequest.current++;
-                setLinkedMessage(null);setLinkedFile(null);
+                setLinkedMessage(null);setLinkedFile(null);setHiddenOpen(false);
                 setOrg(destination);
                 setBoot(null);
+                setPreviewsUnavailable(false);
+                setFilter("");setListFilter("all");
                 setStream("");
                 setMessages([]);
                 setDraft("");
                 setResults(null);
-                setActivity([]);
+                setActivityFilter("unread");
               }}
             >
               {session.organizations.map((o) => (
@@ -786,6 +776,7 @@ export default function Workspace() {
         </div>
         <div className="sidebar-heading">
           <h1>Conversations</h1>
+          <button className="icon-button sidebar-close" aria-label="Close conversations" onClick={()=>setMobileNav(false)}><X size={18}/></button>
           <button
             className="icon-button"
             aria-label="New conversation"
@@ -803,11 +794,23 @@ export default function Workspace() {
             placeholder="Filter conversations"
           />
         </div>
+        <label className="conversation-list-filter">Show conversations
+          <select aria-label="Conversation list filter" value={listFilter} onChange={e=>setListFilter(e.target.value as typeof listFilter)}>
+            <option value="all">All conversations</option><option value="unread">Unread conversations</option><option value="pinned">Pinned conversations</option><option value="muted">Muted conversations</option>
+          </select>
+        </label>
+        {(filter!==""||listFilter!=="all")&&<>
+          {boot&&visible.length===0&&<p className="sidebar-hint" role="status">No matching conversations.</p>}
+          <button className="sidebar-link" onClick={()=>{setFilter("");setListFilter("all");}}>Clear conversation filters</button>
+        </>}
+        <button className="sidebar-link" onClick={()=>void refresh().catch(report)}><RefreshCw size={16}/>Refresh conversations</button>
+        {previewsUnavailable&&<p className="sidebar-hint" role="status">Conversation previews unavailable. Refresh conversations to retry.</p>}
         <button className="sidebar-link" onClick={() => setView("Activity")}>
           <Bell size={16} />
           Unread activity
           <span>{boot?.channels.reduce((n, c) => n + c.unread, 0) || ""}</span>
         </button>
+        <button className="sidebar-link" onClick={()=>setHiddenOpen(true)}>Hidden conversations <span>{boot?.channels.filter(c=>c.hidden).length||""}</span></button>
         {!!visible.some((c) => c.pinned) && (
           <>
             <div className="section-label">PINNED</div>
@@ -872,7 +875,7 @@ export default function Workspace() {
               onClick={() => select(c.id)}
             />
           ))}
-        {!visible.some((c) => !c.team_id) && (
+        {filter===""&&listFilter==="all"&&!visible.some((c) => !c.team_id) && (
           <p className="sidebar-hint">Good work starts with a conversation.</p>
         )}
         <div className="sidebar-footer">
@@ -894,6 +897,8 @@ export default function Workspace() {
           <button
             onClick={() => setMobileNav(!mobileNav)}
             aria-label="Toggle conversations"
+            aria-expanded={mobileNav}
+            aria-controls="conversation-sidebar"
           >
             <Menu size={20} />
           </button>
@@ -1058,6 +1063,7 @@ export default function Workspace() {
                                   Reply to{" "}
                                   {messages.find((p) => p.id === m.parent_id)
                                     ?.name ?? "earlier message"}
+                                  {!m.deleted&&<button className="reply-source" onClick={()=>{if(m.parent_id){setLinkedFile(null);setLinkedMessage({org,channel:stream,id:m.parent_id});}}}>View replied-to message</button>}
                                 </div>
                               )}
                               {m.deleted ? <><p className="deleted">This message was deleted.</p>{["standard","private","shared"].includes(channel.kind)&&<button aria-label="View report status" onClick={()=>setReporting({channel:stream,id:m.id,deleted:true})}>View report status</button>}</> : <><MessageContent body={m.body} format={m.format} mentions={m.mentions} /><MessageAttachments channelId={stream} attachments={m.attachments} /></>}
@@ -1377,8 +1383,6 @@ export default function Workspace() {
                         perform(() =>
                           api(`/channels/${stream}/preferences`, "PATCH", {
                             pinned: !channel.pinned,
-                            muted: channel.muted,
-                            hidden: channel.hidden,
                           }),
                         )
                       }
@@ -1391,9 +1395,7 @@ export default function Workspace() {
                       onClick={() =>
                         perform(() =>
                           api(`/channels/${stream}/preferences`, "PATCH", {
-                            pinned: channel.pinned,
                             muted: !channel.muted,
-                            hidden: channel.hidden,
                           }),
                         )
                       }
@@ -1401,6 +1403,7 @@ export default function Workspace() {
                       <VolumeX size={15} />
                       {channel.muted ? "Unmute" : "Mute"}
                     </button>
+                    <ConversationVisibility key={`${session.user.id}:${stream}`} id={stream} hidden={channel.hidden} onChanged={()=>refresh(AbortSignal.timeout(8000))}/>
                     {["direct","group"].includes(channel.kind)&&<ChatManagement key={stream} id={stream} people={boot?.people??[]} userId={session.user.id} onSaved={refresh} onLeft={async()=>{
                       try{const pending=pendingFor(window.sessionStorage,session.user.id,org,stream);
                         if(pending)removePending(window.sessionStorage,pending.id);
@@ -1467,6 +1470,7 @@ export default function Workspace() {
           <><div className="page-heading"><h1>Your invitations</h1></div><div className="content-pad"><InvitationInbox onSave={refreshSession} /></div></>
         ) : view === "Settings" ? (
           <SettingsPanel
+            org={org}
             session={session}
             onSave={refreshSession}
             report={report}
@@ -1488,37 +1492,10 @@ export default function Workspace() {
               </Empty>
             )}
           </>
+        ) : view === "Saved" ? (
+          <SavedMessages key={`${session.user.id}:${org}`} org={org} onOpen={(channel,id)=>setLinkedMessage({org,channel,id})}/>
         ) : view === "Activity" ? (
-          <>
-            <div className="page-heading">
-              <div>
-                <span className="eyebrow">STAY IN THE LOOP</span>
-                <h1>Your activity</h1>
-                <p>Catch up on unread conversations or messages mentioning you.</p>
-                <label>Activity filter<select value={activityFilter} onChange={e=>setActivityFilter(e.target.value as "unread" | "mentions" | "replies")}><option value="unread">Unread messages</option><option value="mentions">Mentions of me</option><option value="replies">Replies to me</option></select></label>
-              </div>
-              <Bell size={28} />
-            </div>
-            <div className="content-pad">
-              {activity.length ? (
-                activity.map((a) => (
-                  <div className="result-card" key={a.id}>
-                    <strong>
-                      {a.author} <small>in #{a.channel_name}</small>
-                    </strong>
-                    {a.mentioned && <span className="mention">Mentioned you</span>}
-                    {a.replied && <span className="mention">Replied to you</span>}
-                    <MessageContent body={a.body} format={a.format} mentions={a.mentions} />
-                    <button onClick={() => select(a.channel_id)}>Open conversation</button>
-                  </div>
-                ))
-              ) : (
-                <Empty title="You’re all caught up">
-                  New messages in your conversations will appear here.
-                </Empty>
-              )}
-            </div>
-          </>
+          <ActivityFeed key={`${session.user.id}:${org}`} org={org} filter={activityFilter} onFilter={setActivityFilter} onOpen={(channel,id)=>{setLinkedFile(null);setLinkedMessage({org,channel,id});}} onConversation={channel=>select(channel)} onCancel={cancelActivityNavigation}/>
         ) : view === "Calls" ? (
           <>
             <div className="page-heading">
@@ -1575,8 +1552,9 @@ export default function Workspace() {
           />
         )}
       </main>
+      {hiddenOpen&&<HiddenConversations key={`${session.user.id}:${org}`} org={org} onChanged={()=>refresh(AbortSignal.timeout(8000))} onClose={()=>{selectionRequest.current++;setHiddenOpen(false);}} onOpen={async id=>{const opened=await select(id);if(opened)setHiddenOpen(false);return opened;}}/>}
       {linkedFile?.org===org&&<LinkedFile key={`${session.user.id}:${org}:${linkedFile.channel}:${linkedFile.id}`} target={linkedFile} userId={session.user.id} onClose={()=>closeLinkedFile(linkedFile)}/>}
-      {linkedMessage?.org===org&&<LinkedMessage key={`${session.user.id}:${org}:${linkedMessage.channel}:${linkedMessage.id}`} target={linkedMessage} onClose={()=>closeLinkedMessage(linkedMessage)} onConversation={()=>select(linkedMessage.channel)}/>}
+      {linkedMessage?.org===org&&<LinkedMessage key={`${session.user.id}:${org}:${linkedMessage.channel}:${linkedMessage.id}`} target={linkedMessage} onClose={()=>closeLinkedMessage(linkedMessage)} onConversation={()=>select(linkedMessage.channel)} onMarkedUnread={()=>refresh(AbortSignal.timeout(8000))}/>}
       {reporting&&<MessageReportDialog key={reporting.id} channel={reporting.channel} id={reporting.id} deleted={reporting.deleted} onClose={()=>setReporting(null)}/>}
       {modal && (
         <Modal
@@ -1654,7 +1632,7 @@ export default function Workspace() {
           )}
         </Modal>
       )}
-    </div>
+    </div></PresenceProvider>
   );
 }
 function ChannelButton({
@@ -1666,8 +1644,12 @@ function ChannelButton({
   active: boolean;
   onClick: () => void;
 }) {
+  const previewId=useId();
+  const unread=c.unread>99?"99+":String(c.unread);
   return (
     <button
+      aria-label={`${c.name}${c.unread?` ${unread}`:""}`}
+      aria-describedby={c.preview?previewId:undefined}
       className={`channel-button ${active ? "active" : ""}`}
       onClick={onClick}
     >
@@ -1678,7 +1660,7 @@ function ChannelButton({
       ) : (
         <Hash size={17} />
       )}
-      <span>{c.name}</span>
+      <span className="channel-copy"><span>{c.name}</span>{c.preview&&<small id={previewId} className="channel-preview">{c.preview}</small>}</span>
       {c.muted && <VolumeX size={12} />}{" "}
       {!!c.unread && <b>{c.unread > 99 ? "99+" : c.unread}</b>}
     </button>

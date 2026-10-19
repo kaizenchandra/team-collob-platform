@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:18078) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/conversation-previews.spec.ts:10:1 › literal conversation previews refresh safely without reading messages or replacing drafts (2.7s)
+  ✓  2 [chrome] › tests/browser/conversation-visibility.spec.ts:8:1 › personal hiding preserves drafts/access/other preferences and supports authorized recovery and failed navigation (8.3s)
+  ✓  3 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (3.0s)
+
+  3 passed (14.8s)

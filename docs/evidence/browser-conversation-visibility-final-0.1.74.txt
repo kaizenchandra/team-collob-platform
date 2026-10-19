@@ -1,0 +1,55 @@
+
+Running 1 test using 1 worker
+
+(node:14890) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/conversation-visibility.spec.ts:8:1 › personal hiding preserves drafts/access/other preferences and supports authorized recovery and failed navigation (6.9s)
+
+
+  1) [chrome] › tests/browser/conversation-visibility.spec.ts:8:1 › personal hiding preserves drafts/access/other preferences and supports authorized recovery and failed navigation 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  getByRole('textbox', { name: 'Message', exact: true })
+    Expected: "Draft stays in a hidden conversation"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" getByRole('textbox', { name: 'Message', exact: true }) with timeout 5000ms
+      - waiting for getByRole('textbox', { name: 'Message', exact: true })
+        - locator resolved to <textarea disabled maxlength="10000" aria-label="Message" placeholder="Message Visibility Alpha…"></textarea>
+        13 × unexpected value ""
+           - locator resolved to <textarea maxlength="10000" aria-label="Message" placeholder="Message Visibility Alpha…"></textarea>
+        - unexpected value ""
+
+
+      12 |     const draft='Draft stays in a hidden conversation';await bob.getByRole('textbox',{name:'Message',exact:true}).fill(draft);await bob.getByRole('button',{name:'Conversation details',exact:true}).click();await bob.getByRole('button',{name:'Pin conversation',exact:true}).click();await expect(bob.getByRole('button',{name:'Unpin conversation',exact:true})).toBeVisible();await bob.getByRole('button',{name:'Mute',exact:true}).click();await expect(bob.getByRole('button',{name:'Unmute',exact:true})).toBeVisible();
+      13 |     const pref=`**/v1/channels/${alpha}/preferences`;await bob.route(pref,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Hide temporarily unavailable"}'}));await bob.getByRole('button',{name:'Hide conversation',exact:true}).click();await expect(bob.getByRole('alert').filter({hasText:'Hide temporarily unavailable'})).toContainText('Hide temporarily unavailable');await expect(bob.locator('aside').getByRole('button',{name:/Visibility Alpha/}).first()).toBeVisible();await bob.unroute(pref);await bob.getByRole('button',{name:'Hide conversation',exact:true}).click();await expect(bob.locator('aside').getByRole('button',{name:/Visibility Alpha/})).toHaveCount(0);await expect(bob.getByRole('heading',{name:/^Visibility Alpha/,level:1})).toBeVisible();await expect(bob.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(draft);await expect(bob.getByRole('button',{name:'Show conversation in list',exact:true})).toBeVisible();expect((await db.query('SELECT pinned,muted,hidden FROM channel_preferences WHERE channel_id=$1 AND user_id=$2',[alpha,users.bob])).rows[0]).toEqual({pinned:true,muted:true,hidden:true});
+    > 14 |     await alice.goto(`/?org=${org}&channel=${alpha}`);await expect(alice.locator('aside').getByRole('button',{name:/Visibility Alpha/})).toBeVisible();await bob.reload();await expect(bob.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(draft);await expect(bob.locator('aside').getByRole('button',{name:/Visibility Alpha/})).toHaveCount(0);await expect(bob.getByRole('heading',{name:/^Visibility Alpha/,level:1})).toBeVisible();
+         |                                                                                                                                                                                                                                              ^
+      15 |     await bob.locator('aside').getByRole('button',{name:/Visibility Beta/}).click();await expect(bob.getByRole('heading',{name:/^Visibility Beta/,level:1})).toBeVisible();const betaDraft='Draft before opening hidden Alpha';await bob.getByRole('textbox',{name:'Message',exact:true}).fill(betaDraft);await bob.getByRole('button',{name:/^Hidden conversations/}).click();const dialog=bob.getByRole('dialog',{name:'Hidden conversations',exact:true});await expect(dialog.getByRole('heading',{name:'Visibility Alpha',exact:true})).toBeVisible();
+      16 |     const snapshot=`**/v1/organizations/${org}/bootstrap`;await bob.route(snapshot,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Hidden list temporarily unavailable"}'}));await dialog.getByRole('button',{name:'Refresh hidden conversations',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('Hidden list temporarily unavailable');await expect(dialog.getByRole('article')).toHaveCount(0);await bob.unroute(snapshot);await dialog.getByRole('button',{name:'Refresh hidden conversations',exact:true}).click();await expect(dialog.getByRole('heading',{name:'Visibility Alpha',exact:true})).toBeVisible();
+      17 |     const draftPattern=`**/v1/channels/${beta}/draft`;let started!:()=>void,finished!:()=>void;const waiting=new Promise<void>(resolve=>{started=resolve;}),done=new Promise<void>(resolve=>{finished=resolve;}),held=new Promise<void>(resolve=>{releaseDraft=resolve;});await bob.route(draftPattern,async route=>{if(route.request().method()==='PUT'){const response=await route.fetch();started();await held;await route.fulfill({response}).catch(()=>{});finished();}else await route.continue();});await dialog.getByRole('button',{name:'Open conversation',exact:true}).click();await waiting;await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();releaseDraft?.();await done;await bob.unroute(draftPattern);await bob.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));await expect(bob.getByRole('heading',{name:/^Visibility Beta/,level:1})).toBeVisible();await expect(bob.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(betaDraft);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/conversation-visibility.spec.ts:14:238
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/conversation-visibility-pe-342d9-overy-and-failed-navigation-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/conversation-visibility-pe-342d9-overy-and-failed-navigation-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/conversation-visibility-pe-342d9-overy-and-failed-navigation-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/conversation-visibility-pe-342d9-overy-and-failed-navigation-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/conversation-visibility-pe-342d9-overy-and-failed-navigation-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/conversation-visibility.spec.ts:8:1 › personal hiding preserves drafts/access/other preferences and supports authorized recovery and failed navigation 

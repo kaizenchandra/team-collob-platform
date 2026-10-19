@@ -1,0 +1,47 @@
+
+Running 3 tests using 1 worker
+
+(node:25333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/conversation-filters.spec.ts:8:1 › personal list filters combine names and flags across channels and chats without reading or discarding drafts (3.5s)
+  ✓  2 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (3.3s)
+  ✘  3 [chrome] › tests/browser/presence-settings.spec.ts:8:1 › workspace presence overrides are observed independently, expire and recover without touching profile or draft (11.5s)
+
+
+  1) [chrome] › tests/browser/presence-settings.spec.ts:8:1 › workspace presence overrides are observed independently, expire and recover without touching profile or draft 
+
+    TimeoutError: locator.selectOption: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: 'Workspace presence', exact: true }).getByLabel('Presence state', { exact: true })
+
+
+      12 |     const draft='Draft stays while setting workspace presence';await bob.getByRole('textbox',{name:'Message',exact:true}).fill(draft);await bob.getByRole('button',{name:'Settings',exact:true}).click();const panel=bob.getByRole('region',{name:'Workspace presence',exact:true}),state=panel.getByLabel('Presence state',{exact:true}),duration=panel.getByLabel('Presence duration',{exact:true}),save=panel.getByRole('button',{name:'Set presence',exact:true}),refresh=panel.getByRole('button',{name:'Refresh presence',exact:true}),snapshot=`**/v1/organizations/${org}/bootstrap`,write=`**/v1/organizations/${org}/presence`;
+      13 |     await expect(panel.getByText('Current workspace presence:',{exact:false})).toContainText('Available');const profile=(await (await b.request.get(`${api}/v1/session`)).json()).user;
+    > 14 |     await bob.route(write,route=>Object.keys(route.request().postDataJSON()??{}).length?route.fulfill({status:503,contentType:'application/json',body:'{"error":"Presence write unavailable"}'}):route.continue());await state.selectOption('busy');await duration.selectOption('15');await save.click();await expect(panel.getByRole('alert')).toContainText('Presence write unavailable');await expect(panel.getByText('Current workspace presence:',{exact:false})).toContainText('Available');await expect(panel.getByText(/Presence update accepted/)).toHaveCount(0);await bob.unroute(write);
+         |                                                                                                                                                                                                                                ^
+      15 |     for(const [value,label] of [['busy','Busy'],['dnd','Do not disturb'],['away','Away'],['offline','Offline'],['available','Available']]){
+      16 |       await state.selectOption(value);await save.click();await expect(panel.getByRole('status').filter({hasText:/Presence update accepted/})).toContainText(`${label} for 15 minutes`);await expect(panel.getByText('Current workspace presence:',{exact:false})).toContainText(label);await expect(save).toBeEnabled();await alice.locator('aside.sidebar').getByRole('button',{name:'Refresh conversations',exact:true}).click();await expect(alice.locator('.person').filter({hasText:'Bob Chen'}).locator('small')).toHaveText(`${value} · member`);
+      17 |     }
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/presence-settings.spec.ts:14:224
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/presence-settings-workspac-c8658-t-touching-profile-or-draft-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/presence-settings-workspac-c8658-t-touching-profile-or-draft-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/presence-settings-workspac-c8658-t-touching-profile-or-draft-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/presence-settings-workspac-c8658-t-touching-profile-or-draft-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/presence-settings-workspac-c8658-t-touching-profile-or-draft-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/presence-settings.spec.ts:8:1 › workspace presence overrides are observed independently, expire and recover without touching profile or draft 
+  2 passed (19.0s)

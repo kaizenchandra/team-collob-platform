@@ -1,0 +1,4 @@
+{"release":"0.1.71-local","services":10,"checks":[{"url":"http://localhost:4100/health","status":200},{"url":"http://localhost:4100/ready","status":200},{"url":"http://localhost:3101","status":200}]}
+{"database":"concord","remaining_fixture_organizations":0}
+{"database":"concord_test","remaining_fixture_organizations":0}
+Saved fixture bookmarks, messages, drafts, membership/audit/outbox and organizations removed in finally. Existing linked/search file fixtures cleaned SQL/spool; real S3 bytes retain no-purge lifetime. Source volumes preserved; no reset/restore/new backup format. Synthetic clipboard only in existing message-link test; OS clipboard neither read nor changed.

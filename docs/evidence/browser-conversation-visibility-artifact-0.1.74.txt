@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:15249) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/conversation-visibility.spec.ts:8:1 › personal hiding preserves drafts/access/other preferences and supports authorized recovery and failed navigation (8.8s)
+
+  1 passed (9.7s)
