@@ -1,0 +1,30 @@
+{
+  "recordedAt": "2026-10-20T19:15:01.403Z",
+  "scope": "Short local container-pause control-plane faults; no production soak or cross-network claim",
+  "records": [
+    {
+      "service": "livekit",
+      "failedJoinStatus": 503,
+      "recoveredJoinStatus": 200,
+      "idempotentRetry": true,
+      "endedJoinStatus": 409,
+      "elapsedMs": 5161
+    },
+    {
+      "service": "media-redis",
+      "failedJoinStatus": 503,
+      "recoveredJoinStatus": 200,
+      "idempotentRetry": true,
+      "endedJoinStatus": 409,
+      "elapsedMs": 5149
+    },
+    {
+      "service": "postgres",
+      "failedJoinStatus": 503,
+      "recoveredJoinStatus": 200,
+      "idempotentRetry": true,
+      "endedJoinStatus": 409,
+      "elapsedMs": 12287
+    }
+  ]
+}

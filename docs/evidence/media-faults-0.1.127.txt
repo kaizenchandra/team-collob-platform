@@ -1,0 +1,32 @@
+{"phase":"livekit","status":"pausing"}
+{"service":"livekit","failedJoinStatus":503,"recoveredJoinStatus":200,"idempotentRetry":true,"endedJoinStatus":409,"elapsedMs":5161}
+{"phase":"media-redis","status":"pausing"}
+{"service":"media-redis","failedJoinStatus":503,"recoveredJoinStatus":200,"idempotentRetry":true,"endedJoinStatus":409,"elapsedMs":5149}
+{"phase":"postgres","status":"pausing"}
+{"service":"postgres","failedJoinStatus":503,"recoveredJoinStatus":200,"idempotentRetry":true,"endedJoinStatus":409,"elapsedMs":12287}
+[
+  {
+    "service": "livekit",
+    "failedJoinStatus": 503,
+    "recoveredJoinStatus": 200,
+    "idempotentRetry": true,
+    "endedJoinStatus": 409,
+    "elapsedMs": 5161
+  },
+  {
+    "service": "media-redis",
+    "failedJoinStatus": 503,
+    "recoveredJoinStatus": 200,
+    "idempotentRetry": true,
+    "endedJoinStatus": 409,
+    "elapsedMs": 5149
+  },
+  {
+    "service": "postgres",
+    "failedJoinStatus": 503,
+    "recoveredJoinStatus": 200,
+    "idempotentRetry": true,
+    "endedJoinStatus": 409,
+    "elapsedMs": 12287
+  }
+]

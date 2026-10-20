@@ -1,0 +1,14 @@
+{
+  "scope": "Final API container, includes intentional dependency outage probes returning503 and all browser/capacity checks",
+  "statuses": {
+    "200": 8323,
+    "204": 789,
+    "206": 2,
+    "400": 3,
+    "401": 11,
+    "403": 27,
+    "404": 58,
+    "409": 35,
+    "503": 10
+  }
+}

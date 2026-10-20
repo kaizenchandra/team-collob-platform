@@ -1,0 +1,167 @@
+{
+  "recordedAt": "2026-10-20T19:25:11.900Z",
+  "scope": "32 SDK device sessions, two authenticated users, synthetic microphone sources, real loopback SFU; no UI, video, external-network or production performance claim",
+  "devices": [
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1690184
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1692126
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1681173
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1686056
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1667006
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1656189
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1600182
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1562460
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1514901
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1448871
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1340038
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1182931
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1008436
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 757444
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 488825
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 173033
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1695109
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1691803
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1684542
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1672477
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1654422
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1639583
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1580614
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1534063
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1474058
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1394044
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1252386
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 1086323
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 880930
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 632032
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 318394
+    },
+    {
+      "state": "connected",
+      "remote": 31,
+      "audioReceived": 80209
+    }
+  ],
+  "nextDeviceStatus": 409
+}

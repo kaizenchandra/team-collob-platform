@@ -1,0 +1,22 @@
+{"phase":"livekit","status":"pausing"}
+{"service":"livekit","failedJoinStatus":503,"recoveredJoinStatus":200,"idempotentRetry":true,"endedJoinStatus":409,"elapsedMs":5245}
+{"phase":"media-redis","status":"pausing"}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: media-redis recovery
+
+503 !== 200
+
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/verify-media-faults.mjs:25:59
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 503,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

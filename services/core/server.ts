@@ -166,7 +166,8 @@ export async function createApp() {
                 correlationId: req.id,
             });
         const e = error as Error & { statusCode?: number; code?: string };
-        const code = e.statusCode ?? (e.code === "23505" ? 409 : 500);
+        const unavailable = e.message === 'Query read timeout' || ['ECONNREFUSED','ECONNRESET','ETIMEDOUT','57P01','57P02','57P03','53300','08006','57014'].includes(e.code ?? '');
+        const code = e.statusCode ?? (unavailable ? 503 : e.code === "23505" ? 409 : 500);
         if (code >= 500)
             req.log.error({code: e.code, requestId: req.id}, "Request failed");
         return reply.code(code).send({

@@ -11,11 +11,22 @@ import {sessionReader} from './session-policy.ts';
 const uuid=z.uuid(),empty=z.object({}).strict(),cursor=z.string().regex(/^(0|[1-9]\d{0,18})$/).refine(s=>BigInt(s)<=BigInt('9223372036854775807'));
 const sources=(sharing:boolean)=>[TrackSource.CAMERA,TrackSource.MICROPHONE,...(sharing?[TrackSource.SCREEN_SHARE,TrackSource.SCREEN_SHARE_AUDIO]:[])];
 
+// Durable deletion acknowledgements survive process crashes and ambiguous provider responses.
+export async function retireMediaCredentials(call?:string){
+ const client=mediaClients().rooms;
+ for(const row of (await pool.query('SELECT provider_room FROM media_retired_rooms WHERE ($1::uuid IS NULL OR call_id=$1) ORDER BY created_at',[call??null])).rows){
+  const name=mediaRoomName(row.provider_room);
+  try{await client.deleteRoom(name);}catch{if((await client.listRooms([name])).length)throw new HttpError(503,'Cannot retire stale media credentials; retry when media recovers');}
+  await pool.query('DELETE FROM media_retired_rooms WHERE provider_room=$1',[row.provider_room]);
+ }
+}
+
 export async function provisionMediaRoom(room:string,version:string){
  try{return await provisionRoom(room,version);}catch(e){if(e instanceof HttpError)throw e;throw new HttpError(503,'Media provider unavailable. Retry joining when the service recovers.');}
 }
 async function provisionRoom(room:string,version:string){
  const clients=mediaClients();
+ await retireMediaCredentials();
  // Retired generations are removed before a new generation can accept anyone.
  const retired=(await clients.rooms.listRooms()).filter(r=>/^cc-[0-9a-f-]{36}$/.test(r.name));
  const versions=new Set((await pool.query('SELECT provider_room FROM media_rooms r JOIN media_calls x ON x.id=r.call_id WHERE x.ended_at IS NULL AND r.closed_at IS NULL')).rows.map(r=>mediaRoomName(r.provider_room)));
@@ -31,7 +42,10 @@ async function provisionRoom(room:string,version:string){
 
 export async function reconcileMeetingProtocol(){
  await pool.query("UPDATE media_grants SET revoked_at=now(),hand_raised_at=NULL,hand_order=NULL WHERE revoked_at IS NULL AND (expires_at<=now() OR disconnected_at<now()-interval '25 seconds' OR (connected_at IS NULL AND joined_at<now()-interval '25 seconds'))");
- await pool.query('DELETE FROM media_shares WHERE expires_at<=now() OR EXISTS(SELECT 1 FROM media_grants g JOIN media_calls x ON x.id=g.call_id WHERE g.id=media_shares.grant_id AND (g.revoked_at IS NOT NULL OR x.ended_at IS NOT NULL))');
+ // Serialize expiry with claims and heartbeat renewal, including permission RPCs.
+ const expired=(await pool.query('SELECT s.room_id,r.call_id FROM media_shares s JOIN media_rooms r ON r.id=s.room_id JOIN media_grants g ON g.id=s.grant_id JOIN media_calls x ON x.id=r.call_id WHERE s.expires_at<=now() OR g.revoked_at IS NOT NULL OR x.ended_at IS NOT NULL')).rows;
+ for(const row of expired)await transaction(async db=>{await db.query('SELECT id FROM media_calls WHERE id=$1 FOR NO KEY UPDATE',[row.call_id]);await db.query('DELETE FROM media_shares s USING media_grants g,media_calls x WHERE s.room_id=$1 AND g.id=s.grant_id AND x.id=g.call_id AND (s.expires_at<=now() OR g.revoked_at IS NOT NULL OR x.ended_at IS NOT NULL)',[row.room_id]);});
+ await retireMediaCredentials();
  await pool.query("DELETE FROM media_messages WHERE created_at<now()-interval '30 days'");
  await pool.query("DELETE FROM media_changes WHERE created_at<now()-interval '30 days'");
  await pool.query("DELETE FROM media_provider_events WHERE created_at<now()-interval '30 days'");
@@ -40,15 +54,20 @@ export async function reconcileMeetingProtocol(){
  for(const r of live){
   const found=(await rooms.listRooms([mediaRoomName(r.provider_room)]))[0];const participants=found?await rooms.listParticipants(found.name):[];
   const grants=(await pool.query('SELECT * FROM media_grants WHERE room_id=$1 AND revoked_at IS NULL AND expires_at>now()',[r.id])).rows;
-  const share=(await pool.query('SELECT grant_id FROM media_shares WHERE room_id=$1 AND expires_at>now()',[r.id])).rows[0];
   for(const g of grants){if(!(await sessionReader()(g.session_hash)).rowCount||!(await pool.query(`SELECT 1 FROM channels c WHERE c.id=$2 AND ${accessSQL}`,[g.user_id,(await pool.query('SELECT channel_id FROM media_calls WHERE id=$1',[r.call_id])).rows[0].channel_id])).rowCount)continue;
    const p=participants.find(p=>p.identity===g.id&&p.state===2);
    if(p){
     await pool.query('UPDATE media_grants SET connected_at=coalesce(connected_at,now()),disconnected_at=NULL,provider_sid=$2 WHERE id=$1 AND (connected_at IS NULL OR disconnected_at IS NOT NULL OR provider_sid IS DISTINCT FROM $2)',[g.id,p.sid]);
     await pool.query('UPDATE media_attendance SET left_at=now() WHERE grant_id=$1 AND provider_sid<>$2 AND left_at IS NULL',[g.id,p.sid]);
     await pool.query('INSERT INTO media_attendance(grant_id,provider_sid) VALUES($1,$2) ON CONFLICT(grant_id,provider_sid) WHERE left_at IS NULL DO NOTHING',[g.id,p.sid]);
-    const allowed=sources(share?.grant_id===g.id);const actual=p.permission?.canPublishSources??[];
-    if(actual.length!==allowed.length||actual.some(source=>!allowed.includes(source)))await rooms.updateParticipant(found.name,g.id,{permission:{canPublish:true,canSubscribe:true,canPublishData:false,canUpdateMetadata:false,canPublishSources:allowed}});
+    // Do not let a stale reconciler snapshot undo a newly committed share permission.
+    await transaction(async db=>{
+     if(!(await db.query('SELECT id FROM media_calls WHERE id=$1 AND ended_at IS NULL FOR NO KEY UPDATE',[r.call_id])).rowCount)return;
+     if(!(await db.query('SELECT 1 FROM media_rooms WHERE id=$1 AND provider_room=$2 AND closed_at IS NULL',[r.id,r.provider_room])).rowCount)return;
+     const share=(await db.query('SELECT grant_id FROM media_shares WHERE room_id=$1 AND expires_at>now()',[r.id])).rows[0];
+     const allowed=sources(share?.grant_id===g.id);const actual=p.permission?.canPublishSources??[];
+     if(actual.length!==allowed.length||actual.some(source=>!allowed.includes(source)))await rooms.updateParticipant(found.name,g.id,{permission:{canPublish:true,canSubscribe:true,canPublishData:false,canUpdateMetadata:false,canPublishSources:allowed}});
+    });
    }else{
     await pool.query('UPDATE media_grants SET disconnected_at=now() WHERE id=$1 AND connected_at IS NOT NULL AND disconnected_at IS NULL',[g.id]);
     await pool.query('UPDATE media_attendance SET left_at=now() WHERE grant_id=$1 AND left_at IS NULL',[g.id]);
@@ -101,8 +120,30 @@ export async function registerMeetingProtocol(app:FastifyInstance,readAuth:Retur
   const call=await historyAccess(req,pool);if(!call.ended_at)throw new HttpError(409,'Use your connected room chat while meeting is active');const q=z.object({before:cursor.optional()}).strict().parse(req.query);const messages=(await pool.query('SELECT m.id,m.seq::text,m.user_id,u.name,m.body,m.created_at FROM media_messages m JOIN users u ON u.id=m.user_id WHERE m.call_id=$1 AND m.room_id=$1 AND ($2::bigint IS NULL OR m.seq<$2) ORDER BY m.seq DESC LIMIT 51',[call.id,q.before??null])).rows;return {roomId:call.id,messages:messages.slice(0,50).reverse(),hasMore:messages.length>50,nextCursor:messages.length>50?messages[49].seq:null};
  });
  app.post('/v1/organizations/:id/calls/:call/connections/:grant/share',async req=>{
-  const b=z.object({sharing:z.boolean()}).strict().parse(req.body);const row=await transaction(async db=>{const {grant}=await collaborationGrant(req,db);const owner=(await db.query('SELECT grant_id FROM media_shares WHERE room_id=$1 AND expires_at>now()',[grant.room_id])).rows[0];if(b.sharing&&owner&&owner.grant_id!==grant.id)throw new HttpError(409,'Another participant is sharing in this room');if(b.sharing)await db.query("INSERT INTO media_shares VALUES($1,$2,now()+interval '25 seconds') ON CONFLICT(room_id) DO UPDATE SET grant_id=excluded.grant_id,expires_at=excluded.expires_at",[grant.room_id,grant.id]);else await db.query('DELETE FROM media_shares WHERE room_id=$1 AND grant_id=$2',[grant.room_id,grant.id]);return grant;});
-  const client=mediaClients().rooms;try{await client.updateParticipant(mediaRoomName(row.provider_room),row.id,{permission:{canPublish:true,canSubscribe:true,canPublishData:false,canUpdateMetadata:false,canPublishSources:sources(b.sharing)}});}catch{if(b.sharing){await pool.query('DELETE FROM media_shares WHERE room_id=$1 AND grant_id=$2',[row.room_id,row.id]);throw new HttpError(503,'Sharing permission unavailable');}}return {ok:true};
+  const b=z.object({sharing:z.boolean(),roomVersion:uuid}).strict().parse(req.body);
+  const result=await transaction(async db=>{
+   const {grant}=await collaborationGrant(req,db);
+   // A delayed browser capture-ended callback must never release a newer generation's lease.
+   if(b.roomVersion!==grant.provider_room)return {changed:true};
+   const owner=(await db.query('SELECT grant_id,expires_at FROM media_shares WHERE room_id=$1',[grant.room_id])).rows[0];
+   if(owner&&owner.expires_at<=new Date()){
+    await db.query('DELETE FROM media_shares WHERE room_id=$1',[grant.room_id]);return {changed:true};
+   }
+   if(!b.sharing){await db.query('DELETE FROM media_shares WHERE room_id=$1 AND grant_id=$2',[grant.room_id,grant.id]);return {changed:false};}
+   if(owner&&owner.grant_id!==grant.id)throw new HttpError(409,'Another participant is sharing in this room');
+   // No new permission can be issued until every retired room has acknowledged deletion.
+   await retireMediaCredentials();
+   await db.query("INSERT INTO media_shares VALUES($1,$2,now()+interval '25 seconds') ON CONFLICT(room_id) DO UPDATE SET expires_at=excluded.expires_at",[grant.room_id,grant.id]);
+   try{await mediaClients().rooms.updateParticipant(mediaRoomName(grant.provider_room),grant.id,{permission:{canPublish:true,canSubscribe:true,canPublishData:false,canUpdateMetadata:false,canPublishSources:sources(true)}});}
+   catch{ // Even a timed-out RPC might have succeeded. Commit retirement before returning failure.
+    await db.query('DELETE FROM media_shares WHERE room_id=$1 AND grant_id=$2',[grant.room_id,grant.id]);return {unavailable:true};
+   }
+   return {changed:false};
+  });
+  try{await retireMediaCredentials();}catch{throw new HttpError(503,'Sharing authorization is recovering; reconnect before trying again');}
+  if(result.unavailable)throw new HttpError(503,'Sharing permission unavailable; reconnect before trying again');
+  if(result.changed&&b.sharing)throw new HttpError(409,'Meeting room changed; reconnect and choose Share screen again');
+  return {ok:true};
  });
  app.post('/v1/organizations/:id/calls/:call/connections/:grant/read-chat',async req=>{const b=z.object({seq:cursor}).strict().parse(req.body);await transaction(async db=>{const {grant}=await collaborationGrant(req,db);const maximum=(await db.query('SELECT coalesce(max(seq),0)::text seq FROM media_messages WHERE room_id=$1',[grant.room_id])).rows[0].seq;if(BigInt(b.seq)>BigInt(maximum))throw new HttpError(400,'Invalid chat position');await db.query('INSERT INTO media_chat_reads VALUES($1,$2,$3,$4) ON CONFLICT(room_id,user_id) DO UPDATE SET last_seq=greatest(media_chat_reads.last_seq,excluded.last_seq)',[grant.call_id,grant.room_id,req.user.id,b.seq]);});return {ok:true};});
  app.post('/v1/organizations/:id/calls/:call/connections/:grant/dismiss-unmute',async req=>{empty.parse(req.body);await transaction(async db=>{const {grant}=await collaborationGrant(req,db);await db.query('UPDATE media_grants SET unmute_requested_at=NULL WHERE id=$1',[grant.id]);});return {ok:true};});

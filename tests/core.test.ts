@@ -2917,3 +2917,27 @@ test('a delayed provider creation is fenced before end and cannot recreate an en
  const ending=req(`calls/${call}/end`,{});release();assert.equal((await joining).statusCode,200);assert.equal((await ending).statusCode,200);assert.deepEqual(events,['create','delete']);const version=(await pool.query('SELECT provider_room FROM media_rooms WHERE id=$1',[call])).rows[0].provider_room;await assert.rejects(provisionMediaRoom(call,version),(e:unknown)=>(e as {statusCode:number}).statusCode===409);assert.deepEqual(events,['create','delete']);
  }finally{release();proto.listRooms=saved.list;proto.createRoom=saved.create;proto.deleteRoom=saved.remove;keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];});if(call)await pool.query("UPDATE media_calls SET ended_at=coalesce(ended_at,now()) WHERE id=$1",[call]);await isolated.close();}
 });
+
+
+test('sharing retirement fences stale commands, competing claims, ambiguous RPCs and expired leases',async()=>{
+ const isolated=await createApp(),{RoomServiceClient}=await import('livekit-server-sdk'),{reconcileMeetingProtocol,retireMediaCredentials}=await import('../services/core/meeting-protocol.ts'),{hash}=await import('../services/core/security.ts');
+ const proto=RoomServiceClient.prototype,saved={list:proto.listRooms,remove:proto.deleteRoom,update:proto.updateParticipant},keys=['LIVEKIT_URL','LIVEKIT_API_URL','LIVEKIT_API_KEY','LIVEKIT_API_SECRET','LIVEKIT_ALLOW_INSECURE_LOCAL'],old=keys.map(k=>process.env[k]);let call='',failPermission=false,failDelete=false;const removed:string[]=[];
+ try{
+ Object.assign(process.env,{LIVEKIT_URL:'ws://localhost:9',LIVEKIT_API_URL:'http://localhost:9',LIVEKIT_API_KEY:'test-only-key',LIVEKIT_API_SECRET:'test-only-signing-secret-at-least-32-characters',LIVEKIT_ALLOW_INSECURE_LOCAL:'true'});
+ proto.listRooms=async names=>failDelete?(names??[]).map(name=>({name})) as Awaited<ReturnType<typeof saved.list>>:[];
+ proto.deleteRoom=async name=>{if(failDelete)throw new Error('Provider outage');removed.push(name);};
+ proto.updateParticipant=async()=>{if(failPermission)throw new Error('Ambiguous provider timeout');return {} as Awaited<ReturnType<typeof saved.update>>;};
+ const req=(user:string,path:string,body:unknown)=>isolated.inject({method:'POST',url:`/v1/organizations/${ids.org}/${path}`,headers:{origin,cookie:cookies[user]},payload:body as Record<string,unknown>});
+ const made=await req('alice','instant-meetings',{clientId:randomUUID(),title:'Sharing credential fence',mode:'video',userIds:[ids.bob]});assert.equal(made.statusCode,200,made.body);call=made.json().id;const a=randomUUID(),b=randomUUID();
+ for(const [id,user,who] of [[a,ids.alice,'alice'],[b,ids.bob,'bob']])await pool.query("INSERT INTO media_grants(id,call_id,room_id,user_id,client_id,session_hash,recording_consent,expires_at,connected_at) VALUES($1,$2,$2,$3,$4,$5,false,now()+interval '5 minutes',now())",[id,call,user,randomUUID(),hash(cookies[who].slice('concord_session='.length))]);
+ const version=async()=>(await pool.query('SELECT provider_room FROM media_rooms WHERE id=$1',[call])).rows[0].provider_room,share=(user:string,grant:string,sharing:boolean,roomVersion:string)=>req(user,`calls/${call}/connections/${grant}/share`,{sharing,roomVersion});
+ let v=await version();assert.equal((await share('bob',a,true,v)).statusCode,404);assert.equal((await share('alice',a,true,randomUUID())).statusCode,409);
+ const race=await Promise.all([share('alice',a,true,v),share('bob',b,true,v)]);assert.deepEqual(race.map(r=>r.statusCode).sort(),[200,409]);const winner=race[0].statusCode===200?['alice',a]:['bob',b];
+ assert.equal((await share(winner[0],winner[1],false,v)).statusCode,200);const next=await version();assert.notEqual(next,v);assert(removed.includes('cc-'+v));
+ assert.equal((await share('bob',b,true,next)).statusCode,200);assert.equal((await share(winner[0],winner[1],false,v)).statusCode,200);assert.equal((await pool.query('SELECT grant_id FROM media_shares WHERE room_id=$1',[call])).rows[0].grant_id,b);assert.equal(await version(),next);
+ // Commit the generation change even if deletion cannot yet be acknowledged.
+ failDelete=true;assert.equal((await share('bob',b,false,next)).statusCode,503);assert.notEqual(await version(),next);assert(Number((await pool.query('SELECT count(*) FROM media_retired_rooms WHERE call_id=$1',[call])).rows[0].count)>0);assert.equal((await share('alice',a,true,await version())).statusCode,503);
+ failDelete=false;await retireMediaCredentials();v=await version();failPermission=true;assert.equal((await share('alice',a,true,v)).statusCode,503);assert.notEqual(await version(),v);assert.equal((await pool.query('SELECT 1 FROM media_shares WHERE room_id=$1',[call])).rowCount,0);failPermission=false;
+ v=await version();assert.equal((await share('alice',a,true,v)).statusCode,200);await pool.query("UPDATE media_shares SET expires_at=now()-interval '1 second' WHERE room_id=$1",[call]);await reconcileMeetingProtocol();assert.notEqual(await version(),v);assert(removed.includes('cc-'+v));assert.equal((await pool.query('SELECT 1 FROM media_shares WHERE room_id=$1',[call])).rowCount,0);
+ }finally{proto.listRooms=saved.list;proto.deleteRoom=saved.remove;proto.updateParticipant=saved.update;keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];});if(call)await pool.query('UPDATE media_calls SET ended_at=coalesce(ended_at,now()) WHERE id=$1',[call]);await isolated.close();}
+});

@@ -5,7 +5,7 @@ import {MeetingPreview,MeetingHistory} from './meeting-panels';
 import {CallCollaboration} from './call-collaboration';
 import {Phone,Video,PhoneOff} from 'lucide-react';
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {Room,RoomEvent,Track,LocalVideoTrack,LocalAudioTrack,AudioPresets,type Participant,type TrackPublication,type VideoCodec} from 'livekit-client';
+import {Room,RoomEvent,Track,createLocalScreenTracks,LocalVideoTrack,LocalAudioTrack,AudioPresets,type Participant,type TrackPublication,type VideoCodec} from 'livekit-client';
 import {z} from 'zod';
 import {API,api,ApiError,type Channel,type Person} from '@/lib/contracts';
 import {mediaCallsSchema,mediaGrantSchema,mediaServiceSchema,mediaStateSchema,mediaIncomingSchema,type MediaGrant,type MediaState} from '@/lib/media-contracts';
@@ -40,12 +40,12 @@ function ConnectedMedia({children,onLeave,grant,base,unmuteRequested,raisedHands
     const next=new Room({adaptiveStream:true,dynacast:true,disconnectOnPageLeave:true,videoCaptureDefaults:{deviceId:ids.videoinput||undefined,resolution:{width:Math.round(c.quality*16/9),height:c.quality,frameRate:c.fps}},audioCaptureDefaults:{deviceId:ids.audioinput||undefined,echoCancellation:c.music?false:c.echo,noiseSuppression:c.music?false:c.noise,autoGainControl:c.music?false:c.gain,channelCount:c.music?2:1},audioOutput:{deviceId:ids.audiooutput||'default'},publishDefaults:{simulcast:true,videoCodec:c.codec,audioPreset:c.music?AudioPresets.musicHighQualityStereo:AudioPresets.speech}});
     const update=()=>{if(active)redraw(n=>n+1);};
     const captureChanged=(publication:TrackPublication,participant:Participant)=>{if(active&&next.state==='connected'&&participant===next.localParticipant){if(publication.source===Track.Source.Microphone)onCaptureChange("microphone",!publication.isMuted);if(publication.source===Track.Source.Camera)onCaptureChange("camera",!publication.isMuted);}};
-    next.on(RoomEvent.LocalTrackUnpublished,pub=>{if(pub.source===Track.Source.ScreenShare)void api(`${base}/connections/${grant.grantId}/share`,'POST',{sharing:false},AbortSignal.timeout(4000)).catch(()=>{});});
+    next.on(RoomEvent.LocalTrackUnpublished,pub=>{if(pub.source===Track.Source.ScreenShare)void api(`${base}/connections/${grant.grantId}/share`,'POST',{sharing:false,roomVersion:grant.roomVersion},AbortSignal.timeout(4000)).catch(()=>{});});
     next.on(RoomEvent.TrackMuted,captureChanged);next.on(RoomEvent.TrackUnmuted,captureChanged);
     for(const event of [RoomEvent.TrackSubscribed,RoomEvent.TrackUnsubscribed,RoomEvent.LocalTrackPublished,RoomEvent.LocalTrackUnpublished,RoomEvent.TrackMuted,RoomEvent.TrackUnmuted,RoomEvent.ParticipantConnected,RoomEvent.ParticipantDisconnected,RoomEvent.ActiveSpeakersChanged,RoomEvent.ConnectionQualityChanged,RoomEvent.RecordingStatusChanged,RoomEvent.AudioPlaybackStatusChanged])next.on(event,update);
     next.on(RoomEvent.ConnectionStateChanged,state=>{if(active){setConnection(state);update();}});
     next.on(RoomEvent.MediaDevicesError,()=>{if(active)setError('A media device is unavailable. Check permissions and device settings.');});
-    next.on(RoomEvent.Disconnected,()=>{if(active){setConnection('Disconnected');onDisconnect();}});
+    next.on(RoomEvent.Disconnected,()=>{if(active){setConnection('Reconnecting');onDisconnect();}});
     try{audio.current=new AudioContext();setAudioContext(audio.current);}catch{/* Native audio playback remains available without spatial processing. */}
     setRoom(next);onRoom(next);
     void (async()=>{try{
@@ -58,6 +58,23 @@ function ConnectedMedia({children,onLeave,grant,base,unmuteRequested,raisedHands
     return()=>{active=false;onRoom(null);next.removeAllListeners();void next.disconnect(true);void audio.current?.close().catch(()=>{});audio.current=null;};
   },[base,grant.grantId,grant.identity,grant.roomVersion,grant.url,grant.token,onLost,onDisconnect,onRoom,onCaptureChange,setDevices]);
   const run=async(fn:()=>Promise<unknown>)=>{if(action.current)return;action.current=true;setBusy(true);setError('');try{await fn();redraw(n=>n+1);}catch(e){setError(e instanceof ApiError?e.message:'Media action failed or was cancelled. Check browser permissions and device capabilities, then try again.');}finally{action.current=false;setBusy(false);}};
+  async function toggleSharing(){
+    if(!room)return;
+    const participant=room.localParticipant,endpoint=`${base}/connections/${grant.grantId}/share`,roomVersion=grant.roomVersion;
+    if(participant.isScreenShareEnabled){await participant.setScreenShareEnabled(false);await api(endpoint,'POST',{sharing:false,roomVersion},AbortSignal.timeout(5000));return;}
+    // Invoke native capture directly in the click stack: Safari requires transient user activation.
+    // Capture stays local until the backend authorizes publication; conflicting claims stop all tracks.
+    const tracks=await createLocalScreenTracks({audio:true,resolution:{width:1920,height:1080,frameRate:15}});
+    try{
+      await api(endpoint,'POST',{sharing:true,roomVersion},AbortSignal.timeout(5000));
+      for(const track of tracks)await participant.publishTrack(track,{source:track.source});
+    }catch(e){
+      await Promise.allSettled(tracks.map(track=>participant.unpublishTrack(track,true)));
+      tracks.forEach(track=>track.stop());
+      await api(endpoint,'POST',{sharing:false,roomVersion},AbortSignal.timeout(5000)).catch(()=>{});
+      throw e;
+    }
+  }
   async function apply(){if(!room)return;const mic=room.localParticipant.getTrackPublication(Track.Source.Microphone)?.track,video=room.localParticipant.getTrackPublication(Track.Source.Camera)?.track;
     if(mic instanceof LocalAudioTrack)await mic.restartTrack({deviceId:deviceIds.audioinput||undefined,echoCancellation:settings.music?false:settings.echo,noiseSuppression:settings.music?false:settings.noise,autoGainControl:settings.music?false:settings.gain,channelCount:settings.music?2:1});
     if(video instanceof LocalVideoTrack){await video.restartTrack({deviceId:deviceIds.videoinput||undefined,resolution:{width:Math.round(settings.quality*16/9),height:settings.quality,frameRate:settings.fps}});if(settings.blur){const effects=await import('@livekit/track-processors');if(!effects.supportsBackgroundProcessors())throw new Error('Background effects unavailable');await video.setProcessor(effects.BackgroundProcessor({mode:'background-blur',blurRadius:10,assetPaths:{tasksVisionFileSet:'/media/vision',modelAssetPath:'/media/selfie_segmenter.tflite'}}));}else await video.stopProcessor();}
@@ -81,7 +98,7 @@ function ConnectedMedia({children,onLeave,grant,base,unmuteRequested,raisedHands
       <button className="secondary" onClick={onLeave}>Leave call</button>
       <button className="secondary" disabled={!room||busy||connection!=='connected'} onClick={()=>void run(async()=>{const enabled=!room!.localParticipant.isMicrophoneEnabled;await room!.localParticipant.setMicrophoneEnabled(enabled);onCaptureChange("microphone",enabled);})}>{room?.localParticipant.isMicrophoneEnabled?'Mute microphone':'Unmute microphone'}</button>
       <button className="secondary" disabled={!room||busy||connection!=='connected'} onClick={()=>void run(async()=>{const enabled=!room!.localParticipant.isCameraEnabled;await room!.localParticipant.setCameraEnabled(enabled);onCaptureChange("camera",enabled);})}>{room?.localParticipant.isCameraEnabled?'Turn camera off':'Turn camera on'}</button>
-      <button className="secondary" disabled={!room||busy||connection!=='connected'||typeof navigator.mediaDevices?.getDisplayMedia!=='function'} onClick={()=>void run(async()=>{const sharing=!room!.localParticipant.isScreenShareEnabled;if(sharing)await api(`${base}/connections/${grant.grantId}/share`,'POST',{sharing:true},AbortSignal.timeout(5000));try{await room!.localParticipant.setScreenShareEnabled(sharing,{audio:true,resolution:{width:1920,height:1080,frameRate:15}});}catch(e){if(sharing)await api(`${base}/connections/${grant.grantId}/share`,'POST',{sharing:false}).catch(()=>{});throw e;}if(!sharing)await api(`${base}/connections/${grant.grantId}/share`,'POST',{sharing:false});})}>{room?.localParticipant.isScreenShareEnabled?'Stop screen sharing':'Share screen'}</button>
+      <button className="secondary" disabled={!room||busy||connection!=='connected'||typeof navigator.mediaDevices?.getDisplayMedia!=='function'} onClick={()=>void run(toggleSharing)}>{room?.localParticipant.isScreenShareEnabled?'Stop screen sharing':'Share screen'}</button>
       <button className="secondary" disabled={!room} onClick={()=>void run(async()=>{await audio.current?.resume();await room!.startAudio();})}>Enable audio playback</button>
       <button className="secondary" disabled={!room||busy||connection!=='connected'} onClick={()=>void run(apply)}>Apply audio/video settings</button>
     </div>
@@ -93,6 +110,7 @@ function ConnectedMedia({children,onLeave,grant,base,unmuteRequested,raisedHands
         {!local&&<label>Playback volume for {p.name}<input type="range" min="0" max="1" step="0.1" value={volume} onChange={e=>setVolumes(v=>({...v,[p.identity]:Number(e.target.value)}))}/></label>}
       </article>;
     })}</div>
+    {typeof navigator.mediaDevices?.getDisplayMedia!=='function'&&<p role="status">Screen sharing is unavailable in this browser. Join with a supported desktop browser to present.</p>}
     <p>{effectsSupported?'Background effects supported; enable blur in settings and Apply.':'Background blur is unavailable in this browser.'} Spatial audio {audioContext?'available':'unavailable'}.</p>
     <details open={showDiagnostics} onToggle={e=>setShowDiagnostics(e.currentTarget.open)}><summary>Call diagnostics</summary><dl className="media-diagnostics">
       <dt>Bytes sent</dt><dd data-testid="media-bytes-sent">{diagnostics.sent}</dd><dt>Bytes received</dt><dd data-testid="media-bytes-received">{diagnostics.received}</dd><dt>Audio bytes received</dt><dd data-testid="media-audio-received">{diagnostics.audioReceived}</dd><dt>Video bytes received</dt><dd data-testid="media-video-received">{diagnostics.videoReceived}</dd><dt>Video frames decoded</dt><dd data-testid="media-frames-decoded">{diagnostics.framesDecoded}</dd><dt>Packets lost</dt><dd>{diagnostics.packetsLost}</dd><dt>Jitter</dt><dd>{diagnostics.jitterMs.toFixed(1)} ms</dd><dt>Round-trip time</dt><dd>{diagnostics.rttMs.toFixed(1)} ms</dd><dt>ICE transport</dt><dd>{diagnostics.transport}</dd>
@@ -173,8 +191,9 @@ export function MediaWorkspace({org,userId,channels,people,visible,onShow,intent
           <ul>{recordings.map(r=><li key={r.id}>{state.rooms.find(room=>room.id===r.room_id)?.name} · {r.status} · {new Date(r.created_at).toLocaleString()}{r.error_code&&` · ${r.error_code}`} {host&&r.status!=='complete'&&r.status!=='failed'&&<button className="secondary" disabled={busy} onClick={()=>void run(async()=>{await api(`${base}/${callId}/recordings/${r.id}/stop`,'POST',{},AbortSignal.timeout(20000));await read();})}>Stop recording</button>}{r.status==='complete'&&<a className="secondary" href={`${API}/v1${base}/${callId}/recordings/${r.id}/download`} download>Download recording</a>}</li>)}</ul>
         </section>}
       </section>}
-      <section aria-label="Audio and video settings" className="media-card"><h2>Audio and video settings</h2><button className="secondary" disabled={busy} onClick={()=>void run(async()=>{const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:true});try{setDevices(await navigator.mediaDevices.enumerateDevices());setNotice('Devices detected. Preview check stopped all capture tracks; nothing was published.');}finally{stream.getTracks().forEach(t=>t.stop());}})}>Check microphone and camera</button>
-        {(['audioinput','videoinput','audiooutput'] as const).map(kind=><label key={kind}>{kind==='audioinput'?'Preferred microphone':kind==='videoinput'?'Preferred camera':'Preferred speaker'}<select value={deviceIds[kind]} disabled={!!grant} onChange={e=>setDeviceIds({...deviceIds,[kind]:e.target.value})}><option value="">System default</option>{devices.filter(d=>d.kind===kind).map(d=><option key={d.deviceId} value={d.deviceId}>{d.label||kind}</option>)}</select></label>)}
+      <section aria-label="Audio and video settings" className="media-card"><h2>Audio and video settings</h2><button className="secondary" disabled={busy||!navigator.mediaDevices?.getUserMedia} onClick={()=>void run(async()=>{const stream=await navigator.mediaDevices.getUserMedia({audio:true,video:true});try{setDevices(await navigator.mediaDevices.enumerateDevices());setNotice('Devices detected. Preview check stopped all capture tracks; nothing was published.');}finally{stream.getTracks().forEach(t=>t.stop());}})}>Check microphone and camera</button>
+        {typeof HTMLMediaElement.prototype.setSinkId!=='function'&&<p>Speaker selection is unavailable in this browser; audio uses the system output.</p>}
+        {(['audioinput','videoinput','audiooutput'] as const).map(kind=><label key={kind}>{kind==='audioinput'?'Preferred microphone':kind==='videoinput'?'Preferred camera':'Preferred speaker'}<select value={deviceIds[kind]} disabled={!!grant||(kind==='audiooutput'&&typeof HTMLMediaElement.prototype.setSinkId!=='function')} onChange={e=>setDeviceIds({...deviceIds,[kind]:e.target.value})}><option value="">System default</option>{devices.filter(d=>d.kind===kind).map(d=><option key={d.deviceId} value={d.deviceId}>{d.label||kind}</option>)}</select></label>)}
         {(['echo','noise','gain','music','blur','spatial'] as const).map(key=><label key={key}><input type="checkbox" checked={settings[key]} onChange={e=>setSettings({...settings,[key]:e.target.checked})}/>{{echo:'Echo cancellation',noise:'Noise suppression',gain:'Automatic gain control',music:'Stereo music mode (use headphones)',blur:'Background blur (supported browsers)',spatial:'Spatial playback (supported browsers)'}[key]}</label>)}
         <label>Camera quality<select value={settings.quality} onChange={e=>setSettings({...settings,quality:Number(e.target.value) as Settings['quality']})}><option value="480">480p</option><option value="720">720p</option><option value="1080">1080p</option></select></label><label>Frame rate<select value={settings.fps} onChange={e=>setSettings({...settings,fps:Number(e.target.value) as Settings['fps']})}><option value="15">15 fps</option><option value="30">30 fps</option></select></label><label>Video codec<select value={settings.codec} onChange={e=>setSettings({...settings,codec:e.target.value as VideoCodec})}><option value="vp8">VP8</option><option value="h264">H264</option><option value="vp9">VP9</option></select></label><p>Join starts only the devices you select. Apply settings during a call to restart existing capture tracks; device or codec support depends on the browser. Music mode disables speech processing. Screen/audio sharing depends on the source chosen in the browser.</p>
       </section>

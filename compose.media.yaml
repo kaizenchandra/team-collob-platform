@@ -68,7 +68,7 @@ services:
     depends_on:
       livekit: {condition: service_healthy}
   media-worker:
-    image: concord-api:0.1.126-local
+    image: concord-api:0.1.127-local
     command: ['node','services/core/media-worker.ts']
     environment:
       <<: *media-env

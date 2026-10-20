@@ -1,0 +1,53 @@
+
+Running 11 tests using 1 worker
+
+(node:65268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization (29.0s)
+  ✓   2 [chrome] › tests/browser/media.spec.ts:44:1 › UI starts a fresh call after ending and acknowledged breakout names can be reused (1.8s)
+  ✓   3 [chrome] › tests/browser/meeting-protocol.spec.ts:8:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (32.6s)
+  ✓   4 [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (5.7s)
+  ✓   5 [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links (6.6s)
+  ✘   6 [chrome] › tests/browser/meeting-resilience.spec.ts:10:1 › sharing retirement rejects refreshed source credentials, reconnects media and fences delayed release (17.5s)
+(node:65588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 [chrome] › tests/browser/meeting-resilience.spec.ts:25:1 › prejoin explains denied, missing and unsupported media; keyboard controls remain usable (1.8s)
+  ✓   8 [chrome] › tests/browser/meeting-resilience.spec.ts:37:1 › authorization loss during reconnect releases tracks and cannot revive a host-ended meeting (33.7s)
+  ✓   9 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (24.1s)
+  ✓  10 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (23.3s)
+  ✓  11 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (1.0s)
+
+
+  1) [chrome] › tests/browser/meeting-resilience.spec.ts:10:1 › sharing retirement rejects refreshed source credentials, reconnects media and fences delayed release 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+       6 | const args=['--host-resolver-rules=MAP localhost 127.0.0.1','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required','--enable-usermedia-screen-capturing','--auto-select-desktop-capture-source=Entire screen'];
+       7 | async function login(c:BrowserContext,email='alice@acme.test'){expect((await c.request.post(`${api}/v1/session`,{headers,data:{email,password:'Development123!'}})).ok()).toBe(true);}
+    >  8 | async function connected(p:Page){await expect(p.getByRole('status').filter({hasText:'Connection: connected'})).toBeVisible({timeout:30000});await expect(p.getByLabel('Remote camera',{exact:true})).toHaveCount(1,{timeout:30000});await expect.poll(()=>p.getByLabel('Remote camera',{exact:true}).evaluate((v:HTMLVideoElement)=>v.videoWidth),{timeout:15000}).toBeGreaterThan(0);}
+         |                                                                                                                                                                                                                                                                                                                                                                    ^
+       9 |
+      10 | test('sharing retirement rejects refreshed source credentials, reconnects media and fences delayed release',async()=>{
+      11 |  test.setTimeout(150000);const browser=await chromium.launch({channel:'chrome',args}),aCtx=await browser.newContext({permissions:['microphone','camera']}),bCtx=await browser.newContext({permissions:['microphone','camera']}),a=await aCtx.newPage(),b=await bCtx.newPage();let call='';
+        at connected (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-resilience.spec.ts:8:356)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-resilience.spec.ts:14:567
+
+    Error Context: test-results/meeting-resilience-sharing-80573--and-fences-delayed-release-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/meeting-resilience-sharing-80573--and-fences-delayed-release-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/meeting-resilience-sharing-80573--and-fences-delayed-release-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/meeting-resilience.spec.ts:10:1 › sharing retirement rejects refreshed source credentials, reconnects media and fences delayed release 
+  10 passed (3.0m)

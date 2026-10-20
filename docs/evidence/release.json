@@ -3,7 +3,7 @@
     "independentPhysicalDevicesVerified": false,
     "scope": "Local browser simulation against real LiveKit SFU and Egress; see docs/MEDIA.md"
   },
-  "version": "0.1.126-local",
+  "version": "0.1.127-local",
   "checks": [
     {
       "url": "http://localhost:4100/health",
@@ -19,10 +19,10 @@
     }
   ],
   "environment": "Loopback Docker development deployment, not full-scope staging or production",
-  "recordedAt": "2026-10-20T18:57:42.981Z",
+  "recordedAt": "2026-10-20T19:25:30.850Z",
   "url": "http://localhost:3101",
   "api": "http://localhost:4100",
-  "sourceSha256": "dddc7f524fe7c098413c69047d85f7a99cd47c58a8598bd173788e231684ccf1",
+  "sourceSha256": "ee4c7bb38cb1a956db9b93f21b0ed07930ec47fd6a9a94b2096692aca13faf13",
   "sourceFiles": [
     ".github/workflows/ci.yml",
     "Dockerfile",
@@ -152,6 +152,7 @@
     "migrations/036_call_collaboration.sql",
     "migrations/037_meeting_protocol.sql",
     "migrations/038_meeting_cleanup_indexes.sql",
+    "migrations/039_share_credential_retirement.sql",
     "next.config.ts",
     "package-lock.json",
     "package.json",
@@ -220,6 +221,7 @@
     "scripts/test-transfer-recovery.mjs",
     "scripts/test-worker-heartbeat-probes.mjs",
     "scripts/verify-backup.mjs",
+    "scripts/verify-media-faults.mjs",
     "scripts/wait-ready.mjs",
     "services/core/attachments.ts",
     "services/core/audit-export.ts",
@@ -316,7 +318,9 @@
     "tests/browser/linked-message.spec.ts",
     "tests/browser/mark-unread.spec.ts",
     "tests/browser/media.spec.ts",
+    "tests/browser/meeting-capacity.spec.ts",
     "tests/browser/meeting-protocol.spec.ts",
+    "tests/browser/meeting-resilience.spec.ts",
     "tests/browser/mention-picker.spec.ts",
     "tests/browser/message-link-clipboard.spec.ts",
     "tests/browser/message-readers.spec.ts",
@@ -349,6 +353,7 @@
     "tests/browser/usage.spec.ts",
     "tests/clamav.test.ts",
     "tests/core.test.ts",
+    "tests/db-timeouts.test.ts",
     "tests/draft-attachments.test.ts",
     "tests/draft-replies.test.ts",
     "tests/file-link.test.ts",
@@ -365,17 +370,17 @@
     "tests/worker-heartbeat.test.ts",
     "tsconfig.json"
   ],
-  "baseCommit": "5caaedb1ae52413956014601a29ce58db925e99e",
+  "baseCommit": "01222f60ed370501f6b817de6984c00c77d1c32b",
   "uncommittedSource": true,
   "images": {
-    "concord-web:0.1.126-local": {
-      "imageId": "sha256:14a25b7df4916d36d98e2c733d47c8bc0912e26ac158e63aa9c93ea8a81a40b7",
-      "created": "2026-10-21T00:22:21.209786723+05:30",
+    "concord-web:0.1.127-local": {
+      "imageId": "sha256:2df57bee1f764184eab71c6ef1d66a4c8814a1252696e6530a678a593ef86ca7",
+      "created": "2026-10-21T00:46:52.806467481+05:30",
       "platform": "linux/arm64"
     },
-    "concord-api:0.1.126-local": {
-      "imageId": "sha256:73f860725e987bb86c91559c5676f3300579f8511769cbbcf9d84dc587cb3ba3",
-      "created": "2026-10-21T00:22:08.768913064+05:30",
+    "concord-api:0.1.127-local": {
+      "imageId": "sha256:ad3f5fd952b7cba3eae1d4bbdf571817cd6a7190a5a9dda0ae122b366d329c75",
+      "created": "2026-10-21T00:43:10.187486467+05:30",
       "platform": "linux/arm64"
     },
     "concord-scanner:0.1.10-local": {
@@ -396,12 +401,12 @@
   },
   "containers": {
     "web": {
-      "imageId": "sha256:14a25b7df4916d36d98e2c733d47c8bc0912e26ac158e63aa9c93ea8a81a40b7",
+      "imageId": "sha256:2df57bee1f764184eab71c6ef1d66a4c8814a1252696e6530a678a593ef86ca7",
       "status": "running",
       "health": "healthy"
     },
     "api": {
-      "imageId": "sha256:73f860725e987bb86c91559c5676f3300579f8511769cbbcf9d84dc587cb3ba3",
+      "imageId": "sha256:ad3f5fd952b7cba3eae1d4bbdf571817cd6a7190a5a9dda0ae122b366d329c75",
       "status": "running",
       "health": "healthy"
     },
@@ -421,12 +426,12 @@
       "health": "healthy"
     },
     "file-worker": {
-      "imageId": "sha256:73f860725e987bb86c91559c5676f3300579f8511769cbbcf9d84dc587cb3ba3",
+      "imageId": "sha256:ad3f5fd952b7cba3eae1d4bbdf571817cd6a7190a5a9dda0ae122b366d329c75",
       "status": "running",
       "health": "healthy"
     },
     "file-reconciler": {
-      "imageId": "sha256:73f860725e987bb86c91559c5676f3300579f8511769cbbcf9d84dc587cb3ba3",
+      "imageId": "sha256:ad3f5fd952b7cba3eae1d4bbdf571817cd6a7190a5a9dda0ae122b366d329c75",
       "status": "running",
       "health": "healthy"
     },
@@ -441,7 +446,7 @@
       "health": "healthy"
     },
     "digest-worker": {
-      "imageId": "sha256:73f860725e987bb86c91559c5676f3300579f8511769cbbcf9d84dc587cb3ba3",
+      "imageId": "sha256:ad3f5fd952b7cba3eae1d4bbdf571817cd6a7190a5a9dda0ae122b366d329c75",
       "status": "running",
       "health": "healthy"
     },
@@ -461,7 +466,7 @@
       "health": "healthy"
     },
     "media-worker": {
-      "imageId": "sha256:73f860725e987bb86c91559c5676f3300579f8511769cbbcf9d84dc587cb3ba3",
+      "imageId": "sha256:ad3f5fd952b7cba3eae1d4bbdf571817cd6a7190a5a9dda0ae122b366d329c75",
       "status": "running",
       "health": "healthy"
     }

@@ -54,3 +54,27 @@ See [the calling checklist, decisions, API contracts, references and verificatio
 Capacity can be lowered with MEDIA_PARTICIPANT_LIMIT (2–32), MEDIA_INVITATION_LIMIT (2–100), MEDIA_ACTIVE_CALL_LIMIT (1–32), identically on API and worker. Reconnect grace remains25 seconds with5-second renewal and server/worker reconciliation. Transient application heartbeat failures retry within grace; explicit authorization denial and expiry stop capture. Never-connected or persistently media-absent device sessions also expire despite application-only heartbeats.
 
 Local TURN is authenticated UDP on3478, with40000–40100 relay ports and loopback-only peer allow-list. It is a local development configuration, not a public TURN/TLS deployment. The final verification report records whether forced relay succeeded; allocation alone does not establish media connectivity. External devices still require trusted HTTPS/WSS, routable ICE and TURN/TLS.
+
+
+## Remaining-phase hardening0.1.127
+
+Migration039 adds durable physical-room retirement. A sharing lease release, failed publication after claiming rights, or sharing lease expiry retires the current physical generation; all participants briefly reconnect with new room-scoped credentials. This prevents a previously refreshed screen-publishing token from bypassing the next sharing owner. Capture never restarts automatically. Delayed stop callbacks carry their original roomVersion and cannot release a newer lease. Provider permission updates and worker reconciliation use the same call lock. Failed deletion is retried durably and blocks a successful handoff. Host removal and recording generation changes clear obsolete sharing leases; host End also drains the call's retired generations. Existing recording segments are reconciled if a sharing retirement closes their physical room; continuous recording across a share-stop rotation is not supplied.
+
+Run verification against the existing local deployment, sequentially:
+
+```sh
+TEST_DATABASE_URL=postgres://concord:local-development-only@localhost:55432/concord_calling_verify_126 TEST_FILE_ROOT=.data/calling-verify-126 npm test
+npm run typecheck
+npm run lint
+caffeinate -i npx playwright test tests/browser/media.spec.ts tests/browser/team-calls.spec.ts tests/browser/meeting-protocol.spec.ts tests/browser/meeting-resilience.spec.ts
+RUN_MEDIA_CAPACITY=1 caffeinate -i npx playwright test tests/browser/meeting-capacity.spec.ts
+# Opt-in fault injection: no other meetings/tests should run; named local containers pause briefly.
+RUN_LOCAL_MEDIA_FAULTS=1 node scripts/verify-media-faults.mjs
+```
+
+On systems without caffeinate, omit its `caffeinate -i` prefix and prevent sleep manually. The dedicated test database must already exist; create an empty disposable database with the same owner, rather than pointing tests at application data. API startup automatically applies migration039, and `npm run db:migrate` applies migrations for a manually launched API using DATABASE_URL. Use the complete compose command above to build/start API, web and all workers with matching0.1.127 image tags.
+
+The32-device probe uses two authenticated users and32 distinct device identities, real SFU transport, synthetic microphones,31 remote peers per device, received-audio statistics and33rd-device denial. It is not32 independent people, a UI/video load test or a production performance guarantee. Fault injection pauses only the named loopback SFU/Redis/PostgreSQL development containers, resumes them in finally, and checks actionable failure, recovery, idempotent join and ended-call denial. Physical/external acceptance steps and a recording sheet are in [MEDIA-DEVICE-ACCEPTANCE.md](MEDIA-DEVICE-ACCEPTANCE.md).
+
+
+If a fault probe is forcibly killed before its finally block runs, explicitly resume the named local containers with `docker unpause concord-collaboration-livekit-1 concord-collaboration-media-redis-1 concord-collaboration-postgres-1`, then check compose health. Do not run fault injection concurrently with tests, backups or meetings. Application database reads have a12-second client deadline in addition to the10-second server statement deadline; uncertain timed-out transaction connections are discarded.

@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:66837) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/meeting-capacity.spec.ts:7:1 › configured 32-device capacity exchanges audio and rejects the next device (24.6s)
+
+  1 passed (25.0s)

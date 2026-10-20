@@ -9,21 +9,30 @@ export const pool = new pg.Pool({
     max: 20,
     connectionTimeoutMillis: 5000,
     statement_timeout: 10000,
+    // Server statement deadlines cannot fire while the DB process/network is stalled.
+    query_timeout: 12000,
 });
 export type DB = Pick<pg.PoolClient, "query">;
 
 export async function transaction<T>(fn: (db: DB) => Promise<T>): Promise<T> {
     const c = await pool.connect();
+    let discard: Error | undefined;
     try {
         await c.query("BEGIN");
         const result = await fn(c);
         await c.query("COMMIT");
         return result;
     } catch (e) {
-        await c.query("ROLLBACK");
+        if (e instanceof Error && e.message === 'Query read timeout') {
+            // The server may still be executing. Never queue rollback or reuse this connection.
+            discard = e;
+        } else {
+            try { await c.query("ROLLBACK"); }
+            catch (rollback) { discard = rollback instanceof Error ? rollback : new Error('Rollback unavailable'); }
+        }
         throw e;
     } finally {
-        c.release();
+        c.release(discard);
     }
 }
 

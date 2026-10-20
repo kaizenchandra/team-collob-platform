@@ -247,3 +247,6 @@ Local release **0.1.124** adds real LiveKit calling, screen sharing, host-contro
 Local release **0.1.125** adds direct and group **Audio call / Video call** actions in conversations, incoming answer/decline controls, missed-call outcomes, raised hands and room-isolated in-call chat. Microphone/camera toggles and screen sharing use real LiveKit tracks. See [calling setup and controls](docs/MEDIA.md).
 
 Calling implementation, setup, policies, official references and verification: [Calling module](docs/CALLING-IMPLEMENTATION.md).
+
+
+Calling hardening0.1.127 adds durable sharing-token retirement, explicit unsupported-device states and bounded database fault recovery. See [calling coverage and verification](docs/CALLING-IMPLEMENTATION.md), [local setup and commands](docs/MEDIA.md), and [independent-device acceptance](docs/MEDIA-DEVICE-ACCEPTANCE.md). Sharing release briefly reconnects participants; external hardware/network acceptance remains pending.

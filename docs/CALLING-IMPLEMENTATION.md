@@ -1,4 +1,4 @@
-# Calling implementation checklist — 0.1.126
+# Calling implementation checklist — 0.1.127
 
 Inspection: Next16.4/React19 client workspace, Fastify5 API, PostgreSQL migrations/transactional outbox, HttpOnly cookie sessions plus existing OIDC/current membership checks, authenticated SSE, LiveKit2.23 client/2.19 server SDK and self-hosted SFU/Redis are present. Native CSS/lucide design system; node:test/Playwright/axe and pinned Docker Compose are the verification tools. Preserve the existing recording/breakout implementation but do not expand it: those features are outside this task. Existing unrelated changes remain intact.
 
@@ -66,7 +66,7 @@ All application paths below are under `/v1/organizations/:org`. Cookie authentic
 | DELETE `calls/:call/connections/:grant` | → `{ok}` | Owner session, repeated departure succeeds; final direct-device hangup ends direct call; group host succession reconciled |
 | GET `calls/:call` | call, logical rooms, current device participants, invitations | Authoritative application snapshot; SDK separately supplies actual media state |
 | POST `.../connections/:grant/hand` | `{raised}` → `{ok}` | Live owner session; repeated raise keeps original monotonic order |
-| POST `.../connections/:grant/share` | `{sharing}` → `{ok}` | Call transaction serializes room lease claim; conflicting owner409; server changes LiveKit allowed sources; periodic reconciliation restores correct rights |
+| POST `.../connections/:grant/share` | `{sharing,roomVersion}` → `{ok}` | Call lock covers lease claim and provider permission update; conflicting owner409; stale start409, stale stop no-op200. Release/expiry rotates physical generation; durable deletion acknowledgement gates subsequent rights |
 | GET / POST `.../connections/:grant/chat` | `?before=seq` / `{clientId,roomId,body}` → page / `{id}` | Live owner session/current room; persistent ACK; immutable call/user/client dedup before rate checks;100/page,10 sends/10 seconds,10000/call |
 | POST `.../connections/:grant/read-chat` | `{seq}` → `{ok}` | Monotonic per-user/room read cursor bounded by existing room sequence |
 | POST `.../participants/:grant/moderate` | `{action:mute|remove|lower-hand|request-unmute}` | Host only, audit; provider mute; ban + revoke all user devices + retire all physical generations on removal; request never activates remote capture |
@@ -122,7 +122,7 @@ Implemented means working code with the local checks below, **not** independent 
 | FE-09 | Implemented | Live device roster/roles, trusted mute/remove/host transfer, user-controlled unmute request and removal notice |
 | FE-10 | Implemented | Independent group leave, direct hangup, confirmed host-only End, SDK/track/timer/subscription cleanup |
 | FE-11 | Implemented | Outcomes/call again/details, provider-observed attendance, distinct meeting duration and retained authorized ended chat |
-| FE-12 | Partial acceptance | Responsive390px fit and scoped axe checks pass; labels/keyboard/focus/confirmation/error states implemented. Physical permission/device errors and Firefox/Safari/OS accessibility matrix not independently accepted |
+| FE-12 | Implemented; partial browser acceptance | Responsive390px and scoped axe, keyboard activation, denied/missing/unsupported capture and output-selector tests pass. Firefox/Safari/OS assistive-technology and physical-device matrix remains unverified |
 | BE-01 | Implemented | Separate lifecycle/invitation/connection state, transaction locks and uniqueness, terminal end fence, repeated operation behavior |
 | BE-02 | Implemented | Authenticated durable event invalidations; first session/device acceptance, resolved ringing and serialized response/end operations |
 | BE-03 | Implemented | Existing cookie/OIDC/current organization/channel ACL on API, tokens, chat and event stream; identifiers grant no access |
@@ -130,12 +130,12 @@ Implemented means working code with the local checks below, **not** independent 
 | BE-05 | Implemented | Server-provisioned generations,15-second least-privilege join tokens, current access renewal, signed raw-body callbacks and replay dedup |
 | BE-06 | Implemented | SDK signaling, authenticated DB-backed app events, snapshot recovery and fallback polling; delayed callbacks cannot revive/end a new generation |
 | BE-07 | Implemented | User/device/session separation, one active call/user, same-call multiple devices,25-second leases/media-loss expiry and attendance |
-| BE-08 | Partial strict enforcement | Atomic one-owner screen lease, trusted source permissions, release/expiry cleanup. Self-hosted provider-refreshed tokens can briefly carry old source rights until2-second reconciliation; zero-window adversarial replay is not guaranteed |
+| BE-08 | Implemented | Atomic one-owner lease and serialized trusted permissions; release/expiry retires physical credentials, acknowledged deletion gates handoff. Old long-lived screen token rejected by actual SFU; stale stop cannot remove a new owner. Brief reconnection required; provider outage prevents successful handoff |
 | BE-09 | Implemented | Server sequence ordering, idempotent raise/lower, authorized host lower, grace preservation and departure/end clearing |
 | BE-10 | Implemented | SQL persistence, client-ID dedup, deterministic sequence pages, persist-before-ACK, size/rate/call caps, read cursors,30-day access/retention policy |
 | BE-11 | Implemented | Trusted media mute, ban/all-device revoke, physical-room retirement/deletion against unexpired token replay, audit, no forced remote unmute |
 | BE-12 | Implemented | Metadata/invitations/outcomes/attendance/moderation audit and scoped history; tokens/chat bodies excluded from application audit logs |
-| BE-13 | Partial production acceptance | Independent worker, leases, timeout/retry, cleanup/indexes, provider-outage503 and idempotent rejoin tested; long-running fault injection, load-at-limit and external network/TURN/TLS acceptance remain |
+| BE-13 | Implemented; partial production acceptance | Independent worker, leases, timeout/retry, durable retirement, fail-closed recovery and terminal fences. Local32-device audio probe passes; extended soak,32-user video/UI load and external network/TURN/TLS acceptance remain |
 
 ## Recorded verification — 0.1.126-local
 
@@ -164,3 +164,42 @@ Acceptance A–D/F–M is verified locally with synthetic capture and the descri
 For reproducible isolated API tests, set `TEST_DATABASE_URL=postgres://concord:local-development-only@localhost:55432/concord_calling_verify_126` and `TEST_FILE_ROOT=.data/calling-verify-126` before `npm test`; create this database first if absent. Browser tests use the loopback development application and synthetic local users in its normal database, creating their own conversations/calls. Run `caffeinate -i npx playwright test tests/browser/media.spec.ts tests/browser/meeting-protocol.spec.ts tests/browser/team-calls.spec.ts` on macOS to avoid idle suspension during acceptance; on other systems run `npx playwright test ...` with the host kept awake. Never point the isolated core suite at the application's database or configure its reconciler against a provider owned by a different database.
 
 Final replay-load regression: fresh SSE streams tail the current cursor and resnapshot, while explicit reconnect cursors can replay. Historical replay previously triggered refresh floods and API429 responses; the failed run is preserved as `browser-media-quota-regression-0.1.126.txt`. The final eight-workflow run passes with the unchanged API quota; sanitized response counts are recorded in `api-load-0.1.126.json`. Live event delivery is additionally checked by counting actual authenticated `media.changed` events in the browser, not inferred from fallback polling.
+
+
+## Remaining-phase implementation — 0.1.127
+
+| Remaining gap | Implementation / acceptance |
+|---|---|
+| BE-08 refreshed sharing-token replay | Migration039 retires physical room generations whenever a share lease is deleted; durable retirement acknowledgements gate new permissions and room provisioning. Commands carry roomVersion. Atomic competing claims, stale releases, ambiguous permission RPCs and expiry tests; real-provider credential replay test. |
+| FE-12 unsupported capabilities | Explicit unsupported-capture/screen/output explanations and disabled output selector; browser permission-denied/missing-device/unsupported/keyboard tests. Existing mobile/axe tests retained. |
+| BE-13 provider faults/recovery | Durable retirement retries survive process/provider failure. Fault tests exercise provider outage, recovery, expired sessions and ended-call barriers. Local capacity probe records actual SFU connection/media results separately from production load acceptance. |
+| Independent-device / external-network acceptance | Deployment template and exact manual acceptance steps retained. Physical hardware, trusted public DNS/certificates and two external networks are environmental dependencies; no simulation is labeled physical acceptance. |
+
+Sharing policy change: a release, failed publication after claiming rights, or expired sharing lease rotates the room generation and briefly reconnects its participants. This application-specific tradeoff revokes provider-refreshed credentials on the self-hosted SFU, which lacks the managed provider's token-revocation guarantee. A stale stop command returns success without touching the new generation; a stale start returns409 and requires reconnect followed by an explicit Share screen action. No screen capture restarts automatically. A permission RPC failure retires the generation even if the RPC may have succeeded. A deletion failure leaves a durable retirement record and returns503; later provisioning and reconciler passes retry deletion before admitting a new publisher. No new screen publisher is authorized while retirement cannot be acknowledged. Existing participants may continue briefly in the retired room during a provider control-plane outage; no successful handoff is reported until it is deleted.
+
+Official LiveKit token/grant and participant-management references above, plus Teams presentation behavior, rechecked2026-10-21. Generation rotation and reconnection on sharing release are application decisions, not Teams behavior.
+
+
+The first actual PostgreSQL-pause probe exposed a stalled socket read that server-side statement_timeout could not bound. The historical failure is preserved in `media-faults-db-timeout-regression-0.1.127.txt`. The final database pool adds a12-second client read deadline alongside the10-second server statement deadline; timed-out transactions destroy their uncertain connection rather than enqueueing rollback or returning it to the pool. Transient database failures return503. The automated regression checks both work/rollback timeouts and ordinary-error rollback behavior.
+
+
+Screen capture now opens the native picker directly in the user click stack before awaiting the permission API. Selected tracks remain local until the server grants publication; conflicts or ambiguous failures stop every selected track and release the scoped claim. This preserves transient browser user activation (including Safari's requirement) without publishing unauthorized media. A browser regression checks capture is invoked before the sharing-permission request; this does not constitute Safari hardware acceptance.
+
+
+The first expanded browser run passed10/11 and measured a remote video's dimensions while its tile was offscreen; the failure log is preserved in `browser-hidden-video-probe-0.1.127.txt`. The probe now scrolls the tile into view before measuring decoded video, consistent with SDK adaptive streaming. The Redis fault harness also now allows bounded recovery retries while provider routing re-registers; its earlier immediate-retry failure is retained in `media-faults-redis-retry-0.1.127.txt`. Failed runs are not counted as acceptance passes.
+
+
+## Final verification — 0.1.127-local
+
+- **Automated:**171/171 pass (`docs/evidence/core-final-0.1.127.txt`), including sharing races/expiry/durable retirement, ambiguous permission updates, stale generation commands and transaction timeout disposal. Migration039 is applied to both the dedicated verification database and running application (`migrations-0.1.127.txt`).
+- **Browser/SFU:**11/11 workflows pass together (`browser-final-0.1.127.txt`) on the final frontend/backend. Synthetic microphones/cameras exchange actual audio, decoded video and native browser screen capture through the SFU. Native capture is invoked before authorization HTTP awaits; publication remains server gated. Long-lived prior-screen-source token replay fails; the next presenter can share, stale stop is harmless, chat recovers, and media reconnects. Permission-denied/missing/unsupported states, keyboard activation, responsive/axe checks and ended-during-offline track cleanup pass. Historical hidden-video probe failures remain recorded; all remote-dimension probes now make their tile visible before measuring adaptive media.
+- **Faults:** actual local SFU, Redis and PostgreSQL container pauses each return503, recover to200 with bounded retry, reuse a device grant on repeated join, and reject re-entry after End with409 (`media-faults-0.1.127.json`). All containers resume. PostgreSQL stalled reads return after approximately12 seconds; provider faults approximately5 seconds. These are short control-plane probes, not a long production soak or continuous-media outage benchmark.
+- **Capacity:** the opt-in32-device probe records32 active sessions,31 remote peers and positive received-audio bytes on each; the33rd device is denied409 (`media-capacity-0.1.127.json`). Two authenticated accounts, synthetic audio and loopback SFU only; no32-user UI/video load claim.
+- **Build/static:** web/API images build (`build-web-final-0.1.127.txt`, `build-api-final-0.1.127.txt`); typecheck passes; lint exits0 with the same preexisting unused eslint-disable warning. Whitespace/diff checks pass.
+- **Network:** authenticated forced loopback TURN/UDP audio and decoded video pass in the browser suite. Different networks, publicly trusted HTTPS/WSS, TURN/TLS and physical shared-system audio remain unverified.
+- **Visual:** `instant-meeting-0.1.127.png`, `media-call-0.1.127.png`, `direct-call-chat-0.1.127.png` and `group-video-call-0.1.127.png` retain the app design. Prior release screenshots/results are preserved.
+- **Physical acceptance:** not executed. [Independent-device prerequisites and A–N recording sheet](MEDIA-DEVICE-ACCEPTANCE.md) identify the exact remaining infrastructure and hardware checks. independentDevicesVerified remains false. Firefox/Safari hardware/assistive-technology matrices, extended soak and production video capacity are not claimed.
+
+New important files: `migrations/039_share_credential_retirement.sql`; `services/core/meeting-protocol.ts`, `media.ts`, `db.ts`, `server.ts`; `app/components/media-workspace.tsx`, `meeting-panels.tsx`; `tests/db-timeouts.test.ts`, `tests/browser/meeting-resilience.spec.ts`, `meeting-capacity.spec.ts`; `scripts/verify-media-faults.mjs`; and the independent-device acceptance document. Existing architecture, identity, entities and design are reused. Compose API/web/worker image tags are0.1.127-local; no new signing secrets or paid services are introduced. Required environment variables and complete setup/migration/testing commands are in MEDIA.md and .env.example.
+
+Release health: all 14 services are running and healthy with matching0.1.127 app/worker images; health, readiness and web checks return200. Evidence: `release-health-0.1.127.txt`, `release.json`. Source SHA256: `ee4c7bb38cb1a956db9b93f21b0ed07930ec47fd6a9a94b2096692aca13faf13`. Final sanitized API counts include intentional503 outage results and no429 responses (`api-load-0.1.127.json`).

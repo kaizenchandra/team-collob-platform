@@ -1,0 +1,52 @@
+
+Running 11 tests using 1 worker
+
+(node:65924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization (17.7s)
+(node:65960) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 [chrome] › tests/browser/media.spec.ts:44:1 › UI starts a fresh call after ending and acknowledged breakout names can be reused (1.2s)
+  ✓   3 [chrome] › tests/browser/meeting-protocol.spec.ts:8:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (30.8s)
+  ✓   4 [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (5.7s)
+  ✓   5 [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links (6.4s)
+  ✓   6 [chrome] › tests/browser/meeting-resilience.spec.ts:10:1 › sharing retirement rejects refreshed source credentials, reconnects media and fences delayed release (14.0s)
+  ✓   7 [chrome] › tests/browser/meeting-resilience.spec.ts:27:1 › prejoin explains denied, missing and unsupported media; keyboard controls remain usable (1.3s)
+  ✓   8 [chrome] › tests/browser/meeting-resilience.spec.ts:39:1 › authorization loss during reconnect releases tracks and cannot revive a host-ended meeting (32.1s)
+  ✓   9 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (25.6s)
+  ✓  10 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (18.0s)
+  ✓  11 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (2.0s)
+
+
+  1) [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+    Call Log:
+    - Timeout 15000ms exceeded while waiting on the predicate
+
+      15 |   expect((await bob.request.post(`${base}/${call}/rooms`,{headers,data:{clientId:randomUUID(),name:'Unauthorized'}})).status()).toBe(403);
+      16 |   for(const p of [a,b]){await p.goto(`http://localhost:3101/?org=${org}&channel=${channel}`);await p.getByRole('button',{name:'Calls',exact:true}).click();const item=p.locator('.media-call-list li').filter({hasText:channelName});await item.getByRole('button',{name:'Open call',exact:true}).click();await p.getByRole('checkbox',{name:'Enable camera when joining'}).check();await p.getByRole('checkbox',{name:/I consent to recording while joined/}).check();await p.getByRole('button',{name:'Join call',exact:true}).click();await expect(p.getByRole('status').filter({hasText:'Connection: connected'})).toBeVisible({timeout:20000});}
+    > 17 |   for(const p of [a,b]){await expect(p.getByLabel('Remote camera',{exact:true})).toHaveCount(1,{timeout:15000});await expect.poll(()=>p.getByLabel('Remote camera',{exact:true}).evaluate((e:HTMLVideoElement)=>e.videoWidth),{timeout:15000}).toBeGreaterThan(0);await p.locator('summary').filter({hasText:'Call diagnostics'}).click();await expect.poll(async()=>Number(await p.getByTestId('media-audio-received').textContent()),{timeout:15000}).toBeGreaterThan(0);await expect.poll(async()=>Number(await p.getByTestId('media-frames-decoded').textContent()),{timeout:15000}).toBeGreaterThan(0);}
+         |                                                                                                                                                                                                                                                ^
+      18 |   await a.getByRole('button',{name:'Mute microphone',exact:true}).click();await expect(a.getByRole('button',{name:'Unmute microphone',exact:true})).toBeVisible();await a.getByRole('button',{name:'Unmute microphone',exact:true}).click();
+      19 |   await a.getByRole('button',{name:'Share screen',exact:true}).click();await expect(b.getByLabel('Remote screen share',{exact:true})).toHaveCount(1,{timeout:20000});await expect.poll(()=>b.getByLabel('Remote screen share',{exact:true}).evaluate((e:HTMLVideoElement)=>e.videoWidth)).toBeGreaterThan(0);await a.getByRole('button',{name:'Stop screen sharing',exact:true}).click();await expect(b.getByLabel('Remote screen share',{exact:true})).toHaveCount(0);
+      20 |   const breakout=await alice.request.post(`${base}/${call}/rooms`,{headers,data:{clientId:randomUUID(),name:'Workshop'}});expect(breakout.ok()).toBe(true);const breakoutId=(await breakout.json()).id;
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/media.spec.ts:17:240
+
+    Error Context: test-results/media-real-LiveKit-transpo-f7823-g-and-current-authorization-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/media-real-LiveKit-transpo-f7823-g-and-current-authorization-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/media-real-LiveKit-transpo-f7823-g-and-current-authorization-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization 
+  10 passed (2.6m)
