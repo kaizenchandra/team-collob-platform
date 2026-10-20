@@ -1,0 +1,8 @@
+import {type Page} from '@playwright/test';
+async function panel(page:Page,name:string){const button=page.getByRole('toolbar',{name:'Call controls'}).getByRole('button',{name:name==='Call chat'?/^Call chat/:name,exact:name!=='Call chat'});if(await button.getAttribute('aria-expanded')!=='true')await button.click();return page;}
+export const chat=(page:Page)=>panel(page,'Call chat');
+export const people=(page:Page)=>panel(page,'Participants');
+export const settings=(page:Page)=>panel(page,'Device settings');
+export async function stage(page:Page){const close=page.getByRole('button',{name:'Close call panel',exact:true});if(await close.isVisible())await close.click();return page;}
+export async function recordingPanel(page:Page){await settings(page);const summary=page.getByText('Recording options',{exact:true});if(!await summary.evaluate(e=>(e.parentElement as HTMLDetailsElement).open))await summary.click();return page;}
+export async function details(page:Page){const summary=page.getByText('Meeting details and history',{exact:true});if(!await summary.evaluate(e=>(e.parentElement as HTMLDetailsElement).open))await summary.click();return page;}

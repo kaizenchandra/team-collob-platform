@@ -1,0 +1,16 @@
+{
+  "source": "Chromium synthetic camera through the real LiveKit SFU",
+  "physicalDevices": false,
+  "original": {
+    "r": 8.817408781694496,
+    "g": 152.7761286332715,
+    "b": 2.28378169449598,
+    "edge": 1.5429035250463823
+  },
+  "blurred": {
+    "r": 16.66790352504638,
+    "g": 167.1784941249227,
+    "b": 6.469310451453309,
+    "edge": 0.5607606679035251
+  }
+}

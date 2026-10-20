@@ -1,0 +1,11 @@
+✔ missing preferences default to None; corrupt preferences require explicit recovery (0.741375ms)
+✔ only bundled or user-library images resolve; missing images do not silently use raw camera (0.255209ms)
+✔ upload validation rejects unsupported content, oversized files and forged raster headers before decoding (1.340791ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.55275

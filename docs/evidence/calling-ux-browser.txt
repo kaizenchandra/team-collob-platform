@@ -1,0 +1,22 @@
+
+Running 15 tests using 1 worker
+
+(node:74175) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/call-window.spec.ts:4:1 › Open call shows prejoin, Answer shows live media, and minimizing preserves the call (9.2s)
+  ✓   2 [chrome] › tests/browser/calling-ux.spec.ts:10:1 › direct video: stable panels, unread/draft recovery, real controls, share cancellation and responsive toolbar (10.6s)
+  ✓   3 [chrome] › tests/browser/calling-ux.spec.ts:31:1 › capture denial and busy-camera recovery keep the audio call connected (6.6s)
+  ✓   4 [chrome] › tests/browser/calling-ux.spec.ts:42:1 › three-person audio and video: avatars, hands, moderation, independent leave and host termination (11.3s)
+  ✓   5 [chrome] › tests/browser/media.spec.ts:7:1 › real LiveKit transport, breakout isolation, consented recording and current authorization (35.3s)
+  ✓   6 [chrome] › tests/browser/media.spec.ts:45:1 › UI starts a fresh call after ending and acknowledged breakout names can be reused (2.6s)
+  ✓   7 [chrome] › tests/browser/meeting-protocol.spec.ts:9:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (38.7s)
+  ✓   8 [chrome] › tests/browser/meeting-protocol.spec.ts:37:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (5.5s)
+  ✓   9 [chrome] › tests/browser/meeting-protocol.spec.ts:46:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links (7.0s)
+  ✓  10 [chrome] › tests/browser/meeting-resilience.spec.ts:11:1 › sharing retirement rejects refreshed source credentials, reconnects media and fences delayed release (12.6s)
+  ✓  11 [chrome] › tests/browser/meeting-resilience.spec.ts:28:1 › prejoin explains denied, missing and unsupported media; keyboard controls remain usable (1.3s)
+  ✓  12 [chrome] › tests/browser/meeting-resilience.spec.ts:40:1 › authorization loss during reconnect releases tracks and cannot revive a host-ended meeting (26.9s)
+  ✓  13 [chrome] › tests/browser/team-calls.spec.ts:12:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (30.4s)
+  ✓  14 [chrome] › tests/browser/team-calls.spec.ts:36:1 › three-person group video, hands and breakout-isolated chat with current authorization (18.8s)
+  ✓  15 [chrome] › tests/browser/team-calls.spec.ts:55:1 › unanswered direct calls become missed and expire without granting media (2.0s)
+
+  15 passed (3.7m)

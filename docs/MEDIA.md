@@ -78,3 +78,14 @@ The32-device probe uses two authenticated users and32 distinct device identities
 
 
 If a fault probe is forcibly killed before its finally block runs, explicitly resume the named local containers with `docker unpause concord-collaboration-livekit-1 concord-collaboration-media-redis-1 concord-collaboration-postgres-1`, then check compose health. Do not run fault injection concurrently with tests, backups or meetings. Application database reads have a12-second client deadline in addition to the10-second server statement deadline; uncertain timed-out transaction connections are discarded.
+
+
+## Call window
+
+**Open call** opens a dedicated call window with pre-join setup; devices are captured only after Preview or Join. **Answer with audio/video** opens that window immediately and connects using the selected mode. Media controls, chat, participants and device settings stay in the window. **Minimize call** (or Escape) keeps the meeting connected; **Return to call** restores the window. Closing pre-join setup stops preview tracks. **Leave call** stops participation; host-confirmed End ends the meeting for everyone. Close the ended-call window to return to the directory. Incoming invitations remain accessible inside an open window.
+
+The call stage now prioritizes remote video in direct calls, uses a group grid and separate shared-content stage, and keeps the toolbar visible while Chat, Participants or Device settings are open. Chat drafts, unread state and local view choices survive panel changes and authorized media reconnections. See [CALLING-UX.md](CALLING-UX.md) for implementation decisions, Teams references, verification and remaining device/browser checks.
+
+## Camera backgrounds
+
+Prejoin setup and in-call Device settings include **Background effects**: None, Blur, built-in images, and private device-local uploads. Preview uses an unpublished camera; Apply changes the real camera publication, and Cancel preserves the prior effect. Saved choices restore before a new camera is published, without enabling the camera automatically. A processing failure stops camera video until an explicit fallback is chosen. See [BACKGROUND-EFFECTS.md](BACKGROUND-EFFECTS.md) for storage/limits, setup, Teams/LiveKit references and separate-session remote-video verification.

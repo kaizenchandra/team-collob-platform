@@ -162,6 +162,8 @@ export default function Workspace() {
   const replyDraft=useReplyDraft(session?.user.id??"",org,stream);
   useEffect(()=>{setModal(value=>value==="mention"?"":value);},[org,stream,session?.user.id]);
   const [mediaIntent,setMediaIntent]=useState<MediaCallIntent|null>(null);
+  const callLaunch=useRef(false),[callLaunchPending,setCallLaunchPending]=useState(false);
+  const callIntentSettled=useCallback(()=>{callLaunch.current=false;setCallLaunchPending(false);},[]);
   const [readerTarget,setReaderTarget]=useState<{key:string;id:string}|null>(null);
   useEffect(()=>setReaderTarget(null),[session?.user.id,org,stream,view,tab]);
   const [linkedMessage,setLinkedMessageTarget]=useState<MessageLinkTarget|null>(null);
@@ -235,6 +237,12 @@ export default function Workspace() {
     },
     [resetSession],
   );
+  async function launchCall(mode:'audio'|'video',personId?:string){
+    if(callLaunch.current)return;callLaunch.current=true;setCallLaunchPending(true);
+    try{const channelId=personId?(await api<{id:string}>(`/organizations/${org}/direct-conversation`,'POST',{userId:personId})).id:stream;
+      setMediaIntent({channelId,key:crypto.randomUUID(),mode,start:true});setView('Calls');
+    }catch(e){callIntentSettled();report(e);}
+  }
   const readStatus=useReadReceipts(session?.user.id??"",org,stream,view==="Chat"&&(tab==="Posts"||details),report);
   const refreshSession = useCallback(async () => {
     try {
@@ -975,7 +983,7 @@ export default function Workspace() {
         </div>
       </aside>
       <main id="main" className="main">
-        <MediaWorkspace key={`${session.user.id}:${org}`} org={org} userId={session.user.id} channels={boot?.channels??[]} people={boot?.people??[]} visible={view==="Calls"} onShow={()=>setView("Calls")} intent={mediaIntent}/>
+        <MediaWorkspace key={`${session.user.id}:${org}`} org={org} userId={session.user.id} channels={boot?.channels??[]} people={boot?.people??[]} visible={view==="Calls"} onShow={()=>setView("Calls")} intent={mediaIntent} onIntentSettled={callIntentSettled}/>
         <MeetingReminders key={org} org={org}/>
         <div className="mobile-toolbar">
           <button
@@ -1038,8 +1046,8 @@ export default function Workspace() {
                     <Video size={17} />
                     Meet
                   </button>
-                  <button className="secondary media-launch" aria-label="Audio call" onClick={()=>{setMediaIntent({channelId:stream,key:crypto.randomUUID(),mode:"audio",start:true});setView("Calls");}}><Phone size={17}/><span>Audio call</span></button>
-                  <button className="secondary media-launch" aria-label="Video call" onClick={()=>{setMediaIntent({channelId:stream,key:crypto.randomUUID(),mode:"video",start:true});setView("Calls");}}><Video size={17}/><span>Video call</span></button>
+                  <button className="secondary media-launch" aria-label="Audio call" title="Start audio call" disabled={callLaunchPending} aria-busy={callLaunchPending} onClick={()=>void launchCall('audio')}><Phone size={17}/><span>Audio call</span></button>
+                  <button className="secondary media-launch" aria-label="Video call" title="Start video call" disabled={callLaunchPending} aria-busy={callLaunchPending} onClick={()=>void launchCall('video')}><Video size={17}/><span>Video call</span></button>
                   <button
                     className="icon-button"
                     aria-label="Open conversation in separate window"
@@ -1479,7 +1487,7 @@ export default function Workspace() {
                         <Avatar name={p.name} small />
                         <div>
                           <strong>{p.name}</strong>
-                          {p.id!==session.user.id&&<><button className="secondary" onClick={()=>void (async()=>{try{const c=await api<{id:string}>(`/organizations/${org}/direct-conversation`,'POST',{userId:p.id});setMediaIntent({channelId:c.id,key:crypto.randomUUID(),mode:'audio',start:true});setView('Calls');}catch(e){report(e);}})()}>Audio call {p.name}</button><button className="secondary" onClick={()=>void (async()=>{try{const c=await api<{id:string}>(`/organizations/${org}/direct-conversation`,'POST',{userId:p.id});setMediaIntent({channelId:c.id,key:crypto.randomUUID(),mode:'video',start:true});setView('Calls');}catch(e){report(e);}})()}>Video call {p.name}</button></>}
+                          {p.id!==session.user.id&&<><button className="secondary" disabled={callLaunchPending} title={`Start audio call with ${p.name}`} onClick={()=>void launchCall('audio',p.id)}>Audio call {p.name}</button><button className="secondary" disabled={callLaunchPending} title={`Start video call with ${p.name}`} onClick={()=>void launchCall('video',p.id)}>Video call {p.name}</button></>}
                           <small>
                             {p.presence} · {p.role}
                           </small>

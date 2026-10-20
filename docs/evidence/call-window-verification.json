@@ -1,0 +1,27 @@
+{
+  "scope": "Call window frontend patch, real local LiveKit with synthetic browser devices",
+  "checks": {
+    "productionWebBuild": "passed",
+    "typecheck": "passed",
+    "lint": "passed with existing notification-permission.tsx warning",
+    "whitespace": "passed"
+  },
+  "browserResults": {
+    "broadRun": {
+      "passed": 9,
+      "failed": 3,
+      "notes": "The new Open/Answer case and sharing case encountered busy invitations following a timed-out fixture. Sequential profile audio-to-video exposed a delayed dialog close event."
+    },
+    "finalFocusedRerun": {
+      "passed": 3,
+      "failed": 0,
+      "checks": [
+        "audio/video Open and Answer; preview cleanup; minimize/restore; mobile fit",
+        "profile audio call followed by instant video meeting",
+        "sharing retirement/reconnect"
+      ],
+      "notes": "Passed after fixture cleanup and the close-event guard. Other nine workflows passed in the broad run; no claim of one combined 12/12 green run."
+    }
+  },
+  "physicalDevicesVerified": false
+}
