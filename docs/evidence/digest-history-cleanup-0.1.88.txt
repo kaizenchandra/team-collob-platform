@@ -1,0 +1,1 @@
+[ { remaining_terminal_history_fixtures: 0 } ]

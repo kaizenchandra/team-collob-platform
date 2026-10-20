@@ -1,0 +1,88 @@
+ Image concord-web:0.1.126-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.26kB done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.77kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 142B done
+#4 DONE 0.0s
+
+#5 [dependencies 1/4] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#5 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 39.49MB 0.2s done
+#6 DONE 0.2s
+
+#7 [dependencies 2/4] WORKDIR /app
+#7 CACHED
+
+#8 [dependencies 3/4] COPY package.json package-lock.json ./
+#8 CACHED
+
+#9 [dependencies 4/4] RUN npm ci
+#9 CACHED
+
+#10 [build 1/2] COPY . .
+#10 DONE 1.0s
+
+#11 [build 2/2] RUN npm run build
+#11 0.405 
+#11 0.405 > team-collob-platform@0.1.126 build
+#11 0.405 > next build && node scripts/prepare-standalone.mjs
+#11 0.405 
+#11 0.731 ▲ Next.js 16.4.0 (Turbopack)
+#11 0.854 ✓ Running next.config.ts took 123ms
+#11 0.860 - Cache Components enabled
+#11 0.860 - Partial Prefetching enabled
+#11 0.860 
+#11 0.873   Creating an optimized production build ...
+#11 3.344 ✓ Compiled successfully in 2.5s
+#11 3.345   Running TypeScript ...
+#11 8.932   Finished TypeScript in 5.6s ...
+#11 8.934   Collecting page data using 5 workers ...
+#11 9.208   Generating static pages using 5 workers (0/4) ...
+#11 9.417   Generating static pages using 5 workers (1/4) 
+#11 9.545   Generating static pages using 5 workers (2/4) 
+#11 9.545   Generating static pages using 5 workers (3/4) 
+#11 9.549 ✓ Generating static pages using 5 workers (4/4) in 341ms
+#11 9.551   Finalizing page optimization ...
+#11 9.630 
+#11 9.631 Route (app)
+#11 9.631 ┌ ○ /
+#11 9.631 └ ○ /_not-found
+#11 9.631 
+#11 9.631 
+#11 9.631 ○  (Static)  prerendered as static content
+#11 9.631 
+#11 DONE 9.9s
+
+#7 [dependencies 2/4] WORKDIR /app
+#7 CACHED
+
+#12 [web 3/3] COPY --from=build --chown=node:node /app/.next/standalone ./
+#12 DONE 0.2s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 1.7s done
+#13 exporting manifest sha256:5bcbf01032f1d28ca8c3416d64658285ec2a500d6a94c8dc9b14a1ec1e9d82bc 0.0s done
+#13 exporting config sha256:ab3714e096cee5f6ea047639b3dc136595bf2cfda2eef04230c5de5726af6589 0.0s done
+#13 exporting attestation manifest sha256:f018139f5d97d0b180aeb05150fbbb912cbc8b69fc4d77837c0775d04897d8af 0.0s done
+#13 exporting manifest list sha256:856488d36fffcb5e2f96204c9219ae38c4409d40637afa68d413d7188108e054 0.0s done
+#13 naming to docker.io/library/concord-web:0.1.126-local done
+#13 unpacking to docker.io/library/concord-web:0.1.126-local
+#13 unpacking to docker.io/library/concord-web:0.1.126-local 0.4s done
+#13 DONE 2.2s
+
+#14 resolving provenance for metadata file
+#14 DONE 0.0s
+ Image concord-web:0.1.126-local Built 

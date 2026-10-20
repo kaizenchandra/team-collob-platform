@@ -23,7 +23,7 @@ services:
       timeout: 3s
       retries: 5
   digest-worker:
-    image: concord-api:0.1.84-local
+    image: concord-api:0.1.126-local
     command: ['node','services/core/digest-worker.ts']
     environment:
       NODE_ENV: development
@@ -42,7 +42,7 @@ services:
     mem_limit: 192m
     cpus: 0.5
     healthcheck:
-      test: ['CMD','node','-e',"const fs=require('node:fs');process.exit(Date.now()-Number(fs.readFileSync('/tmp/concord-digest-heartbeat','utf8'))<60000?0:1)"]
+      test: ['CMD','node','services/core/heartbeat-health.ts','digest']
       interval: 10s
       timeout: 3s
       start_period: 30s

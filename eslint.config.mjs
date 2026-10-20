@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    "public/media/vision/**", // Vendored MediaPipe runtime; never edit generated upstream code.
   ]),
 ]);
 

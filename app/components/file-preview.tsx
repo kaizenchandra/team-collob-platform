@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/contracts";
+import { ApiError, api } from "@/lib/contracts";
 import { filePreviewSchema, type FilePreview } from "@/lib/file-preview";
 import { Modal } from "./primitives";
 
@@ -13,29 +13,32 @@ export function FilePreviewDialog({ stream, file, onClose }: {
 }
 
 export function FilePreviewContent({stream,file}:{stream:string;file:{id:string}}) {
+  return <PreviewContent key={`${stream}:${file.id}`} stream={stream} file={file}/>;
+}
+
+function PreviewContent({stream,file}:{stream:string;file:{id:string}}) {
   const [data, setData] = useState<FilePreview | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    let active = true, pending = false;
+    let active = true;
     let controller: AbortController | undefined;
     const refresh = async () => {
-      if (pending || document.hidden) return;
-      pending = true;
-      controller = new AbortController();
-      const timeout = setTimeout(() => controller?.abort(), 8000);
+      if (controller || document.hidden) return;
+      const current = new AbortController();
+      controller = current;
       try {
-        const response = filePreviewSchema.parse(await api(`/channels/${stream}/files/${file.id}/preview`, "GET", undefined, controller.signal));
-        if (active && !document.hidden) { setData(response); setError(""); }
+        const response = filePreviewSchema.parse(await api(`/channels/${stream}/files/${file.id}/preview`, "GET", undefined, AbortSignal.any([current.signal, AbortSignal.timeout(8000)])));
+        if (active && controller === current && !current.signal.aborted && !document.hidden) { setData(response); setError(""); }
       } catch (e) {
-        if (active) {
+        if (active && controller === current && !current.signal.aborted && !document.hidden) {
           setData(null);
-          setError(e instanceof Error && e.name !== "AbortError" ? e.message : "Preview request interrupted. Retry when connected.");
+          setError(e instanceof ApiError ? e.message : "Preview could not be loaded. Retry when connected.");
         }
-      } finally { clearTimeout(timeout); pending = false; }
+      } finally { if (controller === current) controller = undefined; }
     };
     const visibility = () => {
-      if (document.hidden) { controller?.abort(); setData(null); }
+      if (document.hidden) { controller?.abort(); controller = undefined; setData(null); setError(""); }
       else void refresh();
     };
     void refresh();

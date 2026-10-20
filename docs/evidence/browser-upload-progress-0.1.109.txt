@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:99845) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-mutations.spec.ts:6:1 › file writes abort old reads and recover timed-out accepted uploads with the same operation (27.6s)
+  ✓  2 [chrome] › tests/browser/file-version-mutations.spec.ts:6:1 › version writes cancel with their view and preserve accepted upload identity across close and retry (13.4s)
+  ✓  3 [chrome] › tests/browser/file-write-errors.spec.ts:7:1 › network-lost accepted upload retains identity and file server errors stay local across polling (6.9s)
+  ✓  4 [chrome] › tests/browser/upload-progress.spec.ts:8:1 › native upload byte progress waits for acknowledgement and version cancellation retains safe retry identity (7.8s)
+
+  4 passed (56.8s)

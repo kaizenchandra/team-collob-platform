@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:46802) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (23.6s)
+
+
+  1) [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('status').filter({ hasText: 'Current room: Main room' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('status').filter({ hasText: 'Current room: Main room' }) with timeout 15000ms
+      - waiting for getByRole('status').filter({ hasText: 'Current room: Main room' })
+
+
+      44 |   const room=(await(await alice.request.post(`${base}/${call}/rooms`,{headers,data:{clientId:randomUUID(),name:'Private workshop'}})).json()).id;await b.getByRole('button',{name:'Turn camera off',exact:true}).click();await b.locator('.media-call-list li').filter({hasText:'Team group video'}).getByRole('button',{name:'Open call',exact:true}).click();expect((await alice.request.post(`${base}/${call}/participants/${bg.id}/room`,{headers,data:{roomId:room}})).ok()).toBe(true);await expect(b.getByRole('status').filter({hasText:'Current room: Private workshop'})).toBeVisible({timeout:15000});await expect(b.getByRole('list',{name:'Call messages',exact:true})).not.toContainText('Main room message');await expect(b.getByLabel('Local camera',{exact:true})).toHaveCount(0);await b.getByRole('button',{name:'Turn camera on',exact:true}).click();
+      45 |   await b.getByRole('textbox',{name:'Call message',exact:true}).fill('Only workshop participants');await b.getByRole('button',{name:'Send call message',exact:true}).click();await expect(b.getByRole('list',{name:'Call messages',exact:true})).toContainText('Only workshop participants');expect((await(await alice.request.get(`${base}/${call}/connections/${ag.id}/chat`)).json()).messages.some((m:{body:string})=>m.body==='Only workshop participants')).toBe(false);
+    > 46 |   await a.getByRole('button',{name:'Close Private workshop and return participants',exact:true}).click();await expect(b.getByRole('status').filter({hasText:'Current room: Main room'})).toBeVisible({timeout:15000});await expect(b.getByRole('list',{name:'Call messages',exact:true})).toContainText('Main room message');await connected(a,2);
+         |                                                                                                                                                                                          ^
+      47 |   await a.getByRole('button',{name:'Mute Bob Chen',exact:true}).click();await expect(b.getByRole('button',{name:'Unmute microphone',exact:true})).toBeVisible();await b.getByRole('button',{name:'Unmute microphone',exact:true}).click();
+      48 |   await a.setViewportSize({width:1280,height:1500});await a.getByRole('region',{name:'Live call',exact:true}).screenshot({path:'docs/evidence/group-video-call.png'});await a.setViewportSize({width:390,height:844});expect(await a.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      49 |   await c.getByRole('button',{name:'Leave call',exact:true}).click();await expect(a.getByLabel('Remote camera',{exact:true})).toHaveCount(1,{timeout:10000});state=await(await alice.request.get(`${base}/${call}`)).json();expect(state.participants.some((p:{user_id:string})=>p.user_id===samId)).toBe(false);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/team-calls.spec.ts:46:186
+
+    Error Context: test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization 

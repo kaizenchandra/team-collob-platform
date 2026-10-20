@@ -1,0 +1,95 @@
+# Local-only media. For independent devices, configure trusted HTTPS/WSS, routable ICE and TURN.
+x-media-env: &media-env
+  LIVEKIT_URL: ws://localhost:7880
+  LIVEKIT_API_URL: http://livekit:7880
+  LIVEKIT_API_KEY: local-concord-media
+  LIVEKIT_API_SECRET: local-concord-media-secret-development-only-2026
+  LIVEKIT_ALLOW_INSECURE_LOCAL: 'true'
+  LIVEKIT_RECORDING_ENABLED: 'true'
+  LIVEKIT_EGRESS_HEALTH_URL: http://livekit:9090/
+  MEDIA_RECORDINGS_ROOT: /recordings
+services:
+  media-redis:
+    image: redis:8.2.3-alpine@sha256:08ad0b1d280850169a790dba1393ff7a90aef951fc19632cf4d3ce4f78e679ba
+    command: ['redis-server','--requirepass','local-concord-media-redis-only','--save','','--appendonly','no']
+    restart: unless-stopped
+    mem_limit: 128m
+    healthcheck:
+      test: ['CMD','redis-cli','-a','local-concord-media-redis-only','ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  livekit:
+    image: livekit/livekit-server:v1.13.10@sha256:89ca9ce0791e18d6e03bf6e2c49ceb27e1c754eae8bd50c989386c1a5963791a
+    command: ['--config','/etc/livekit.yaml','--node-ip','127.0.0.1']
+    volumes: ['./infra/livekit/server.yaml:/etc/livekit.yaml:ro']
+    ports: ['127.0.0.1:7880:7880','127.0.0.1:7881:7881','127.0.0.1:7882:7882/udp','127.0.0.1:3478:3478/udp','127.0.0.1:40000-40100:40000-40100/udp']
+    depends_on:
+      media-redis: {condition: service_healthy}
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 2.0
+    healthcheck:
+      test: ['CMD-SHELL','wget -q -O /dev/null http://127.0.0.1:7880/']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  media-recordings-init:
+    image: redis:8.2.3-alpine@sha256:08ad0b1d280850169a790dba1393ff7a90aef951fc19632cf4d3ce4f78e679ba
+    user: '0:0'
+    command: ['sh','-c','mkdir -p /recordings && chown 1001:1000 /recordings && chmod 2770 /recordings']
+    volumes: ['media-recordings:/recordings']
+    restart: 'no'
+  livekit-egress:
+    image: livekit/egress:v1.14.0@sha256:14c1222a0d4a1e440e2cb7e3d53429a5c1a2c9277abae7ac79be336ea32fea25
+    # Share SFU loopback so advertised localhost ICE works for browser AND recording worker.
+    network_mode: 'service:livekit'
+    environment:
+      EGRESS_CONFIG_FILE: /etc/egress.yaml
+    volumes: ['./infra/livekit/egress.yaml:/etc/egress.yaml:ro','media-recordings:/recordings']
+    cap_add: [SYS_ADMIN]
+    shm_size: 1gb
+    mem_limit: 4g
+    cpus: 4.0
+    restart: unless-stopped
+    depends_on:
+      livekit: {condition: service_healthy}
+      media-recordings-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: ['CMD-SHELL','curl -fsS http://127.0.0.1:9090/ >/dev/null']
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 15
+  api:
+    environment:
+      <<: *media-env
+    volumes: ['media-recordings:/recordings:ro']
+    depends_on:
+      livekit: {condition: service_healthy}
+  media-worker:
+    image: concord-api:0.1.126-local
+    command: ['node','services/core/media-worker.ts']
+    environment:
+      <<: *media-env
+      NODE_ENV: development
+      DEV_AUTH: 'true'
+      DATABASE_URL: postgres://concord:local-development-only@postgres:5432/concord
+      OIDC_ISSUER: http://localhost:5180/realms/concord-local
+      OIDC_CLIENT_ID: concord-local
+      OIDC_REQUIRED_ACR: urn:concord:mfa
+    volumes: ['media-recordings:/recordings:ro']
+    depends_on:
+      api: {condition: service_healthy}
+      livekit: {condition: service_healthy}
+    init: true
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ['CMD','node','services/core/heartbeat-health.ts','media']
+      interval: 10s
+      timeout: 3s
+      start_period: 30s
+volumes:
+  media-recordings:

@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:23213) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/message-readers.spec.ts:8:1 › message readers page beyond one hundred with scoped retry, current privacy, cancellation and no composition/read writes (11.1s)
+
+
+  1) [chrome] › tests/browser/message-readers.spec.ts:8:1 › message readers page beyond one hundred with scoped retry, current privacy, cancellation and no composition/read writes 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('article').filter({ hasText: 'Reader source 1792501794128 <img src=x onerror=alert(1)> **literal** ' }).getByRole('button', { name: 'View message readers', exact: true })
+
+
+      24 |     expect((await (await context.request.get(base+'/receipts')).json()).receipts.length).toBe(100);
+      25 |     await page.goto(`/?org=${org}&channel=${channel}`);const input=page.getByRole('textbox',{name:'Message',exact:true});await expect(input).toHaveValue(draft);
+    > 26 |     const article=page.getByRole('article').filter({hasText:marker}),open=article.getByRole('button',{name:'View message readers',exact:true});await open.click();
+         |                                                                                                                                                           ^
+      27 |     const dialog=page.getByRole('dialog',{name:'Message readers',exact:true}),list=dialog.getByRole('list',{name:'Shared message readers',exact:true}),pageStatus=dialog.getByRole('status').filter({hasText:/^Reader page /}),more=dialog.getByRole('button',{name:'More readers',exact:true}),previous=dialog.getByRole('button',{name:'Previous readers',exact:true}),retry=dialog.getByRole('button',{name:'Retry message readers',exact:true}),refresh=dialog.getByRole('button',{name:'Refresh message readers',exact:true}),source=dialog.getByRole('article',{name:'Reader source message',exact:true}),endpoint=`${api}/v1/organizations/${org}/channels/${channel}/messages/${message}/readers`;
+      28 |     const positions=(await db.query('SELECT * FROM read_positions WHERE channel_id=$1 ORDER BY user_id',[channel])).rows,writes:string[]=[];page.on('request',r=>{if(r.method()!=='GET'&&(r.url()===base+'/messages'||r.url()===base+'/read'))writes.push(r.method()+' '+r.url());});
+      29 |     await expect(pageStatus).toHaveText('Reader page 1 · 50 shared readers');await expect(list.getByRole('listitem')).toHaveCount(50);await expect(source).toContainText(marker);await expect(source.locator('img')).toHaveCount(0);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/message-readers.spec.ts:26:155
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/message-readers-message-re-63e86--no-composition-read-writes-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/message-readers-message-re-63e86--no-composition-read-writes-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/message-readers-message-re-63e86--no-composition-read-writes-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/message-readers-message-re-63e86--no-composition-read-writes-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/message-readers.spec.ts:8:1 › message readers page beyond one hundred with scoped retry, current privacy, cancellation and no composition/read writes 

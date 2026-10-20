@@ -1,0 +1,40 @@
+ALTER TABLE media_calls DROP CONSTRAINT media_calls_end_reason_check;
+ALTER TABLE media_calls ADD CHECK(end_reason IN('ended','cancelled','declined','missed','empty','max_duration','busy','unavailable'));
+ALTER TABLE media_calls ADD COLUMN instant boolean NOT NULL DEFAULT false;
+ALTER TABLE media_invitations DROP CONSTRAINT media_invitations_response_check;
+ALTER TABLE media_invitations ADD CHECK(response IN('pending','accepted','declined','missed','cancelled','busy','unavailable'));
+ALTER TABLE media_invitations ADD COLUMN accepted_session text;
+ALTER TABLE media_invitations ADD COLUMN accepted_device uuid;
+ALTER TABLE media_grants ADD COLUMN connected_at timestamptz;
+ALTER TABLE media_grants ADD COLUMN disconnected_at timestamptz;
+ALTER TABLE media_grants ADD COLUMN provider_sid text;
+ALTER TABLE media_grants ADD COLUMN unmute_requested_at timestamptz;
+CREATE SEQUENCE media_hand_sequence;
+ALTER TABLE media_grants ADD COLUMN hand_order bigint;
+UPDATE media_grants SET hand_order=nextval('media_hand_sequence') WHERE hand_raised_at IS NOT NULL;
+CREATE TABLE media_attendance(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),grant_id uuid NOT NULL REFERENCES media_grants,provider_sid text NOT NULL,joined_at timestamptz NOT NULL DEFAULT now(),left_at timestamptz,CHECK(left_at IS NULL OR left_at>=joined_at));
+CREATE UNIQUE INDEX media_live_attendance ON media_attendance(grant_id,provider_sid) WHERE left_at IS NULL;
+CREATE TABLE media_shares(room_id uuid PRIMARY KEY REFERENCES media_rooms,grant_id uuid NOT NULL REFERENCES media_grants,expires_at timestamptz NOT NULL);
+CREATE TABLE media_chat_reads(call_id uuid NOT NULL REFERENCES media_calls,room_id uuid NOT NULL REFERENCES media_rooms,user_id uuid NOT NULL REFERENCES users,last_seq bigint NOT NULL DEFAULT 0,PRIMARY KEY(room_id,user_id));
+ALTER TABLE media_messages ADD COLUMN seq bigserial;
+CREATE UNIQUE INDEX media_message_sequence ON media_messages(seq);
+CREATE INDEX media_chat_sequence ON media_messages(room_id,seq DESC);
+CREATE TABLE media_provider_events(id text PRIMARY KEY,kind text NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE media_changes(id bigserial PRIMARY KEY,org_id uuid NOT NULL REFERENCES organizations,call_id uuid NOT NULL REFERENCES media_calls,kind text NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX media_change_cursor ON media_changes(org_id,id);
+CREATE FUNCTION media_emit_change() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE target uuid; organization uuid;
+BEGIN
+ IF TG_TABLE_NAME='media_calls' THEN target:=NEW.id; ELSE target:=NEW.call_id; END IF;
+ SELECT org_id INTO organization FROM media_calls WHERE id=target;
+ INSERT INTO media_changes(org_id,call_id,kind) VALUES(organization,target,TG_TABLE_NAME);
+ RETURN NEW;
+END $$;
+CREATE TRIGGER media_call_change AFTER INSERT OR UPDATE OF ended_at,host_user_id,ring_until ON media_calls FOR EACH ROW EXECUTE FUNCTION media_emit_change();
+CREATE TRIGGER media_invitation_change AFTER INSERT OR UPDATE OF response ON media_invitations FOR EACH ROW EXECUTE FUNCTION media_emit_change();
+CREATE TRIGGER media_grant_change AFTER INSERT OR UPDATE OF revoked_at,room_id,hand_raised_at,unmute_requested_at,connected_at,disconnected_at ON media_grants FOR EACH ROW EXECUTE FUNCTION media_emit_change();
+CREATE TRIGGER media_chat_change AFTER INSERT ON media_messages FOR EACH ROW EXECUTE FUNCTION media_emit_change();
+CREATE TRIGGER media_room_change AFTER INSERT OR UPDATE OF provider_room,closed_at ON media_rooms FOR EACH ROW EXECUTE FUNCTION media_emit_change();
+
+CREATE TABLE media_event_streams(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES users,session_hash text NOT NULL,expires_at timestamptz NOT NULL);
+CREATE INDEX media_stream_user ON media_event_streams(user_id,expires_at);

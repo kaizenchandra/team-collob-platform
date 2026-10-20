@@ -1,0 +1,5 @@
+Idle worker healthy
+Database failure makes worker unhealthy
+Database recovery restores healthy worker
+PASS: no digest jobs or mail recipients created; only the temporary database was faulted. Probe command matches Compose; interval/retries accelerated for this test.
+Temporary worker container and database cleaned up.

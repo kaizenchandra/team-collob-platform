@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:79339) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/file-preview-lifecycle.spec.ts:6:1 › preview visibility return replaces a pending read and ignores its late response (10.5s)
+
+
+  1) [chrome] › tests/browser/file-preview-lifecycle.spec.ts:6:1 › preview visibility return replaces a pending read and ignores its late response 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 1
+
+    Call Log:
+    - Timeout 1500ms exceeded while waiting on the predicate
+
+      10 |     let started!:()=>void,oldAborted=false,calls=0,writes=0;const reading=new Promise<void>(r=>{started=r;}),old=new Promise<void>(r=>{releaseOld=r;}),fresh=new Promise<void>(r=>{releaseFresh=r;});page.on('request',r=>{if(r.method()!=='GET')writes++;});page.on('requestfailed',r=>{if(r.url()===endpoint)oldAborted=true;});await page.route(pattern,async route=>{calls++;const response=await route.fetch();if(calls===1){started();await old;}else await fresh;await route.fulfill({response}).catch(()=>{});});await reading;
+      11 |     // A visibility facade drives real browser fetch cancellation in the same event-loop turn.
+    > 12 |     await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await expect.poll(()=>calls,{timeout:1500,intervals:[50,100,200]}).toBe(2);await expect.poll(()=>oldAborted).toBe(true);await expect(text).toHaveCount(0);releaseOld?.();await page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));await expect(text).toHaveCount(0);await expect(dialog.getByRole('alert')).toHaveCount(0);releaseFresh?.();await expect(text).toHaveText(source);await page.unroute(pattern);expect(writes).toBe(0);
+         |                                                                                                                                                                                                                                                                                                                                                                 ^
+      13 |     await page.route(pattern,r=>r.fulfill({status:200,contentType:'application/json',body:'{"text":"invalid incomplete preview"}'}));await expect(dialog.getByRole('alert')).toContainText('Preview could not be loaded',{timeout:10000});await expect(text).toHaveCount(0);await page.unroute(pattern);await dialog.getByRole('button',{name:'Retry preview',exact:true}).focus();await dialog.getByRole('button',{name:'Retry preview',exact:true}).press('Enter');await expect(text).toHaveText(source);await expect(dialog.locator('script,a,img,iframe')).toHaveCount(0);
+      14 |     // The real8s deadline clears old source text and releases a read-only retry.
+      15 |     let deadlineStarted!:()=>void;const deadlineRead=new Promise<void>(r=>{deadlineStarted=r;}),deadlineHeld=new Promise<void>(r=>{releaseOld=r;});await page.route(pattern,async route=>{deadlineStarted();await deadlineHeld;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"Obsolete timed-out preview"}'}).catch(()=>{});});await deadlineRead;await expect(dialog.getByRole('alert')).toContainText('Preview could not be loaded',{timeout:12000});await expect(text).toHaveCount(0);const axe=await new AxeBuilder({page}).include('dialog[open]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await dialog.screenshot({path:'docs/evidence/file-preview-read-retry.png'});releaseOld?.();await page.unroute(pattern);await dialog.getByRole('button',{name:'Retry preview',exact:true}).click();await expect(text).toHaveText(source);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-preview-lifecycle.spec.ts:12:353
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-preview-lifecycle-pre-52113-d-ignores-its-late-response-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-preview-lifecycle-pre-52113-d-ignores-its-late-response-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-preview-lifecycle-pre-52113-d-ignores-its-late-response-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-preview-lifecycle-pre-52113-d-ignores-its-late-response-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-preview-lifecycle.spec.ts:6:1 › preview visibility return replaces a pending read and ignores its late response 

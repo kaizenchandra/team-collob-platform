@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+(node:72807) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh (30.1s)
+
+
+  1) [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('region', { name: 'Deleted file recovery' })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('region', { name: 'Deleted file recovery' }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Deleted file recovery' })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      33 |     const recoveryName=`access-recovery-${Date.now()}.txt`,madeRecovery=await b.request.post(base+'/files',{headers,data:{name:recoveryName,mime:'text/plain',content:Buffer.from('Retained recovery access fixture').toString('base64')}});expect(madeRecovery.status()).toBe(200);const deleted=(await madeRecovery.json()).id;files.push(deleted);real.push(deleted);expect((await b.request.delete(`${base}/files/${deleted}`,{headers})).status()).toBe(200);
+      34 |     const recovery=bob.getByRole('region',{name:'Deleted file recovery'});await recovery.getByRole('button',{name:'Refresh deleted files',exact:true}).click();await recovery.getByRole('button',{name:`Restore ${recoveryName} version 1`,exact:true}).click();await expect(recovery.getByRole('group',{name:'Confirm file recovery',exact:true})).toBeVisible();let restorePosts=0;bob.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith('/restore'))restorePosts++;});
+    > 35 |     await row.getByRole('button',{name:'Versions',exact:true}).click();await expect(bob.getByRole('dialog')).toBeVisible();await db.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[channel,users.bob]);await expect(panel.getByText(name,{exact:true})).toHaveCount(0,{timeout:10000});await expect(bob.getByRole('dialog')).toHaveCount(0);await expect(recovery).toHaveCount(0);await expect(bob.getByRole('alert').filter({hasText:'Deleted-file recovery is unavailable.'})).toBeVisible();expect((await b.request.get(base+'/deleted-files')).status()).toBe(404);expect((await b.request.post(`${base}/files/${deleted}/restore`,{headers,data:{expectedRevision:2,confirm:true}})).status()).toBe(404);expect(restorePosts).toBe(0);
+         |                                                                                                                                                                                                                                                                                                                                                                                             ^
+      36 |     await db.query('INSERT INTO channel_members VALUES($1,$2,$3)',[org,channel,users.bob]);await panel.getByRole('button',{name:'Retry files',exact:true}).click();await expect(status).toHaveText('Files page 2 · 3 files');await expect(recovery).toBeVisible();await expect(recovery.locator('.file-row')).toHaveCount(0);await expect(recovery.getByRole('group',{name:'Confirm file recovery',exact:true})).toHaveCount(0);await recovery.getByRole('button',{name:'Refresh deleted files',exact:true}).click();await expect(recovery.getByRole('button',{name:`Restore ${recoveryName} version 1`,exact:true})).toBeVisible();
+      37 |     // A denied Files poll must also cancel a recovery GET already in flight.
+      38 |     let started!:()=>void;const reading=new Promise<void>(r=>{started=r;}),held=new Promise<void>(r=>{releaseRecovery=r;});let readAborted=false;bob.on('requestfailed',r=>{if(r.url()===base+'/deleted-files')readAborted=true;});const recoveryPattern=`**/v1/channels/${channel}/deleted-files`;await bob.route(recoveryPattern,async r=>{started();await held;await r.fulfill({status:503,contentType:'application/json',body:'{"error":"Obsolete recovery access read"}'}).catch(()=>{});});await recovery.getByRole('button',{name:'Refresh deleted files',exact:true}).click();await reading;await db.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[channel,users.bob]);await expect(recovery).toHaveCount(0,{timeout:10000});await expect.poll(()=>readAborted).toBe(true);releaseRecovery?.();await bob.unroute(recoveryPattern);expect(restorePosts).toBe(0);await bob.setViewportSize({width:1280,height:900});await bob.getByRole('alert').filter({hasText:'Deleted-file recovery is unavailable.'}).scrollIntoViewIfNeeded();await bob.screenshot({path:'docs/evidence/file-recovery-access.png'});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-pages.spec.ts:35:381
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh 

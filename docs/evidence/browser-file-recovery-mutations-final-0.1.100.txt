@@ -1,0 +1,11 @@
+
+Running 3 tests using 1 worker
+
+(node:67766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure (23.4s)
+
+  ✓  2 [chrome] › tests/browser/file-recovery-pages.spec.ts:9:1 › uploader pages beyond100 to recover original before version, retries navigation and retains cursor after boundary recovery (6.1s)
+  ✓  3 [chrome] › tests/browser/file-recovery.spec.ts:6:1 › uploader confirms deleted-file recovery, sees stale/error recovery and restores an existing attachment through a real fresh scan (3.6s)
+
+  3 passed (33.8s)

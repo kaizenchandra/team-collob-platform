@@ -1,0 +1,60 @@
+
+Running 6 tests using 1 worker
+
+(node:2458) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response (5.0s)
+  ✘  2 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (2.4s)
+(node:2525) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (1.3s)
+  ✓  4 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (1.1s)
+  ✓  5 [chrome] › tests/browser/reply-context.spec.ts:8:1 › exact replies reveal authorized older parent context with safe refresh, withdrawal and cancellation (27.4s)
+  ✓  6 [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send (26.0s)
+
+
+  1) [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Browser delivery 1792431420673', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('Browser delivery 1792431420673', { exact: true }) resolved to 2 elements:
+        1) <small id="_r_5_" class="channel-preview">Browser delivery 1792431420673</small> aka getByRole('button', { name: 'General 99+' })
+        2) <p>Browser delivery 1792431420673</p> aka getByLabel('Messages').getByText('Browser delivery 1792431420673')
+
+    Call log:
+      - Expect "toBeVisible" getByText('Browser delivery 1792431420673', { exact: true }) with timeout 10000ms
+      - waiting for getByText('Browser delivery 1792431420673', { exact: true })
+
+
+      25 |     .getByRole("button", { name: "Send message", exact: true })
+      26 |     .click();
+    > 27 |   await expect(bob.getByText(text, { exact: true })).toBeVisible({
+         |                                                      ^
+      28 |     timeout: 10000,
+      29 |   });
+      30 |   const message = bob.locator("article").filter({ hasText: text });
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:27:54
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-independent--711b1-s-react-and-recover-a-draft-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft 
+  5 passed (1.1m)

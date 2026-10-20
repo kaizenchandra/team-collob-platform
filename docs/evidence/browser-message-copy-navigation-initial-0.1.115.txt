@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:33880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close (22.4s)
+
+
+  1) [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('button', { name: 'Copy message link', exact: true })
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('button', { name: 'Copy message link', exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('button', { name: 'Copy message link', exact: true })
+
+
+      20 |     await copy.click();let access=await (await owner.request.get(base+'/access')).json();expect((await owner.request.delete(`${base}/explicit-members/${bob}`,{headers,data:{revision:access.revision}})).status()).toBe(200);expect((await context.request.get(sourcePath)).status()).toBe(404);await expect(dialog.getByRole('alert')).toContainText('Conversation unavailable',{timeout:10000});await settle(4);await expect(copied).toHaveCount(0);await expect(unavailable).toHaveCount(0);
+      21 |     // Explicit membership removal intentionally deletes that member's channel draft.
+    > 22 |     access=await (await owner.request.get(base+'/access')).json();expect((await owner.request.put(`${base}/explicit-members/${bob}`,{headers,data:{revision:access.revision,history:'all-retained'}})).status()).toBe(200);await dialog.getByRole('button',{name:'Retry message',exact:true}).click();await expect(copy).toBeEnabled();await copy.click();expect(await count()).toBe(6);await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();await settle(5);await expect(dialog).toHaveCount(0);await page.evaluate(url=>{history.replaceState(null,'',url);window.dispatchEvent(new HashChangeEvent('hashchange'));},sourceUrl);await expect(copy).toBeEnabled();await expect(copied).toHaveCount(0);await expect(unavailable).toHaveCount(0);expect(await count()).toBe(6);
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ^
+      23 |   }finally{await page.unrouteAll({behavior:'wait'});if(channel){const base=`${api}/v1/channels/${channel}`;if(message)await owner.request.delete(`${base}/messages/${message}`,{headers});const response=await owner.request.get(base+'/settings');if(response.ok()){const settings=await response.json();await owner.request.patch(base+'/details',{headers,data:{name:settings.name,description:settings.description,archived:true,revision:settings.revision}});}}await owner.close();}
+      24 | });
+      25 |
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/message-link-clipboard.spec.ts:22:651
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close 

@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:26049) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/composer-input.spec.ts:4:1 › composition Enter preserves multilingual drafts until ordinary Enter explicitly sends; Shift Enter stays multiline (965ms)
+
+
+  1) [chrome] › tests/browser/composer-input.spec.ts:4:1 › composition Enter preserves multilingual drafts until ordinary Enter explicitly sends; Shift Enter stays multiline 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      17 |       return element.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',isComposing:true,bubbles:true,cancelable:true}));
+      18 |     });
+    > 19 |     expect(allowed).toBe(true);expect(posts).toEqual([]);await expect(input).toHaveValue(body);
+         |                     ^
+      20 |     await input.evaluate(element=>element.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:'中'})));
+      21 |     const legacyAllowed=await input.evaluate(element=>element.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',keyCode:229,bubbles:true,cancelable:true})));
+      22 |     expect(legacyAllowed).toBe(true);expect(posts).toEqual([]);await expect(input).toHaveValue(body);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/composer-input.spec.ts:19:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/composer-input-composition-46318-Shift-Enter-stays-multiline-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/composer-input-composition-46318-Shift-Enter-stays-multiline-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/composer-input-composition-46318-Shift-Enter-stays-multiline-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/composer-input-composition-46318-Shift-Enter-stays-multiline-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/composer-input.spec.ts:4:1 › composition Enter preserves multilingual drafts until ordinary Enter explicitly sends; Shift Enter stays multiline 

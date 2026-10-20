@@ -1,0 +1,73 @@
+
+Running 22 tests using 1 worker
+
+(node:23702) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.7s)
+  ✓   2 [chrome] › tests/browser/collaboration.spec.ts:62:1 › private board task and form persist through UI (1.2s)
+  ✓   3 [chrome] › tests/browser/collaboration.spec.ts:100:1 › tenant switching clears conversation data; service limitations explicit (622ms)
+  ✓   4 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (2.7s)
+  ✓   5 [chrome] › tests/browser/collaboration.spec.ts:148:1 › separate windows synchronize and logout clears both (2.0s)
+  ✓   6 [chrome] › tests/browser/collaboration.spec.ts:174:1 › guest adds and deletes an authorized document (663ms)
+  ✓   7 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (1.3s)
+  ✓   8 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.7s)
+Browser under test: 155.0.8059.85
+  ✓   9 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (2.7s)
+  ✘  10 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (751ms)
+(node:23845) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  11 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (1.0s)
+  ✓  12 [chrome] › tests/browser/collaboration.spec.ts:333:1 › blocked browser storage prevents transmission and explains recovery (660ms)
+  ✓  13 [chrome] › tests/browser/collaboration.spec.ts:352:1 › an accepted send remains accepted when the draft update fails (1.9s)
+  ✓  14 [chrome] › tests/browser/collaboration.spec.ts:366:1 › malformed recovery storage can be cleared through Help without signing out (860ms)
+  ✓  15 [chrome] › tests/browser/collaboration.spec.ts:381:1 › formatted composition previews, delivers to another user and edits without changing legacy text (4.7s)
+  ✓  16 [chrome] › tests/browser/collaboration.spec.ts:422:1 › Markdown rejects executable URLs and remote embeds in preview and sent messages (1.2s)
+  ✓  17 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (13.5s)
+  ✓  18 [chrome] › tests/browser/collaboration.spec.ts:489:1 › reply activity shows another user response and withdraws it after parent deletion (12.0s)
+  ✓  19 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (2.9s)
+  ✓  20 [chrome] › tests/browser/message-readers.spec.ts:8:1 › message readers page beyond one hundred with scoped retry, current privacy, cancellation and no composition/read writes (34.6s)
+  ✓  21 [chrome] › tests/browser/read-status.spec.ts:7:1 › visible shared read status recovers without writes, honors privacy, cancels on exit and compares exact bigint positions (45.7s)
+  ✓  22 [chrome] › tests/browser/source-reply.spec.ts:7:1 › an older exact source prepares a scoped reply with both drafts intact and preserves pending send identity (13.2s)
+
+
+  1) [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Markup 1792501963819 <img data-probe src=x onerror="document.body.dataset.injected=1">', { exact: true })
+    Expected: visible
+    Error: strict mode violation: getByText('Markup 1792501963819 <img data-probe src=x onerror="document.body.dataset.injected=1">', { exact: true }) resolved to 2 elements:
+        1) <small id="_r_1l_" class="channel-preview">Markup 1792501963819 <img data-probe src=x onerro…</small> aka getByRole('button', { name: 'General' })
+        2) <p>Markup 1792501963819 <img data-probe src=x onerro…</p> aka getByLabel('Messages').getByText('Markup 1792501963819 <img')
+
+    Call log:
+      - Expect "toBeVisible" getByText('Markup 1792501963819 <img data-probe src=x onerror="document.body.dataset.injected=1">', { exact: true }) with timeout 5000ms
+      - waiting for getByText('Markup 1792501963819 <img data-probe src=x onerror="document.body.dataset.injected=1">', { exact: true })
+
+
+      308 |   await page.getByRole("textbox", { name: "Message", exact: true }).fill(text);
+      309 |   await page.getByRole("button", { name: "Send message", exact: true }).click();
+    > 310 |   await expect(page.getByText(text, { exact: true })).toBeVisible();
+          |                                                       ^
+      311 |   await expect(page.locator("img[data-probe]")).toHaveCount(0);
+      312 |   expect(await page.locator("body").getAttribute("data-injected")).toBeNull();
+      313 | });
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/collaboration.spec.ts:310:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/collaboration-untrusted-message-markup-renders-as-text-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text 
+  21 passed (2.5m)

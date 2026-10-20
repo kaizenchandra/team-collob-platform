@@ -1,5 +1,7 @@
+import {mediaConfiguration} from './media-config.ts';
 // Validate before migrations or listening; production must never inherit local defaults.
 export function validateConfiguration(env: NodeJS.ProcessEnv = process.env) {
+    mediaConfiguration(env);
     if (env.NODE_ENV !== "production") return;
     if (env.DEV_AUTH === "true")
         throw new Error("Development authentication forbidden in production");

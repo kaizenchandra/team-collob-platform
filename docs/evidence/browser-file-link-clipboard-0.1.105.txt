@@ -1,0 +1,10 @@
+
+Running 2 tests using 1 worker
+
+(node:84814) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-link-clipboard.spec.ts:6:1 › selected-file copy serializes native work and ignores outcomes after failed detail reads or close (14.1s)
+
+  ✓  2 [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (53.3s)
+
+  2 passed (1.1m)

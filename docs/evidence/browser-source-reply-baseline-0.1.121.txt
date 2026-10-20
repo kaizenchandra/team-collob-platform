@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:4882) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/source-reply.spec.ts:7:1 › an older exact source prepares a scoped reply with both drafts intact and preserves pending send identity (12.4s)
+
+
+  1) [chrome] › tests/browser/source-reply.spec.ts:7:1 › an older exact source prepares a scoped reply with both drafts intact and preserves pending send identity 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('button', { name: 'Reply to this message', exact: true })
+
+
+      38 |     // Action-time validation must fail closed even when the earlier display was valid.
+      39 |     await page.route(source,r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"Source reply check unavailable"}'}));
+    > 40 |     await reply.click();await expect(dialog.getByRole('alert')).toContainText('Source reply check unavailable');await expect(selected).toHaveCount(0);await expect(reply).toHaveCount(0);
+         |                 ^
+      41 |     expect(new URL(page.url()).searchParams.get('channel')).toBe(active);expect(posts).toHaveLength(0);
+      42 |     await page.unroute(source);await dialog.getByRole('button',{name:'Retry message',exact:true}).click();await expect(reply).toBeEnabled();
+      43 |     // A failed outgoing flush cannot move the conversation or select a new target.
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/source-reply.spec.ts:40:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/source-reply-an-older-exac-ad236-erves-pending-send-identity-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/source-reply-an-older-exac-ad236-erves-pending-send-identity-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/source-reply-an-older-exac-ad236-erves-pending-send-identity-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/source-reply-an-older-exac-ad236-erves-pending-send-identity-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/source-reply.spec.ts:7:1 › an older exact source prepares a scoped reply with both drafts intact and preserves pending send identity 

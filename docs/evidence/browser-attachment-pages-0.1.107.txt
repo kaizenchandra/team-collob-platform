@@ -1,0 +1,11 @@
+
+Running 3 tests using 1 worker
+
+(node:88578) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/attachment-picker.spec.ts:4:1 › attachment picker bounds reads, withdraws invalid/access-failed options and cancels on close (9.3s)
+
+  ✓  2 [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh (29.0s)
+  ✓  3 [chrome] › tests/browser/file-scanning.spec.ts:38:1 › scanned attachments reach another user, survive lost-response retry and disappear after file deletion (4.6s)
+
+  3 passed (44.0s)

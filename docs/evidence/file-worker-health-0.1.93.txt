@@ -1,0 +1,5 @@
+Idle file worker and actual ClamAV probe healthy
+Database failure makes worker unhealthy
+Database recovery restores healthy worker
+PASS: no file rows/jobs/uploads created; no source volumes mounted. Only the temporary database was faulted; actual ClamAV readiness was checked. Probe command matches Compose; interval/retries accelerated for this test.
+Temporary worker container and database cleaned up.

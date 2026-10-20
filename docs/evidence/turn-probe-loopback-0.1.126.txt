@@ -1,0 +1,22 @@
+{
+  "state": "disconnected",
+  "failure": "could not establish pc connection",
+  "stats": [],
+  "configurations": [
+    {
+      "servers": [
+        "turn:127.0.0.1:3478?transport=udp"
+      ],
+      "policy": "relay",
+      "state": "closed"
+    }
+  ],
+  "errors": [],
+  "candidates": [
+    {
+      "type": "relay",
+      "address": "127.0.0.1",
+      "port": 40027
+    }
+  ]
+}

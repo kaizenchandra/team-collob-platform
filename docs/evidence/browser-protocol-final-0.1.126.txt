@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:58985) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/meeting-protocol.spec.ts:8:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (27.4s)
+  ✓  2 [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (4.5s)
+  ✓  3 [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links (6.8s)
+
+  3 passed (39.1s)

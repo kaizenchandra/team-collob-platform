@@ -1,0 +1,35 @@
+# Synthetic keys for loopback development only. Replace through server-side secrets in deployment.
+port: 7880
+bind_addresses: ["0.0.0.0"]
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  use_external_ip: false
+  advertise_internal_ip: true
+  enable_loopback_candidate: true
+redis:
+  address: media-redis:6379
+  password: local-concord-media-redis-only
+keys:
+  local-concord-media: local-concord-media-secret-development-only-2026
+room:
+  auto_create: false
+  empty_timeout: 120
+  departure_timeout: 30
+  max_participants: 34
+logging:
+  level: warn
+
+webhook:
+  api_key: local-concord-media
+  urls: ["http://api:4100/v1/media/webhook"]
+# Authenticated UDP TURN for loopback development; production needs routable TURN/TLS.
+turn:
+  enabled: true
+  udp_port: 3478
+  tls_port: 0
+  relay_range_start: 40000
+  relay_range_end: 40100
+  ttl_seconds: 300
+  per_user_relay_allocation_limit: 4
+  allow_restricted_peer_cidrs: ['127.0.0.0/8']

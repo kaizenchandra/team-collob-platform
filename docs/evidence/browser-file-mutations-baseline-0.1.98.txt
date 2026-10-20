@@ -1,0 +1,43 @@
+
+Running 1 test using 1 worker
+
+(node:58386) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/file-mutations.spec.ts:6:1 › file writes abort old reads and recover timed-out accepted uploads with the same operation (11.7s)
+
+
+  1) [chrome] › tests/browser/file-mutations.spec.ts:6:1 › file writes abort old reads and recover timed-out accepted uploads with the same operation 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      13 |     page.on('requestfailed',request=>{if(request.url()===base&&request.method()==='GET')readAborted=true;});
+      14 |     await page.route(endpoint,async route=>{if(route.request().method()!=='GET'||!first){await route.continue();return;}first=false;startedRead();await heldRead;await route.fulfill({status:503,contentType:'application/json',body:'{"error":"Obsolete pre-write file read"}'}).catch(()=>{});readFinished();});await waitingRead;
+    > 15 |     const deleteRoute=`**/v1/channels/${channel}/files/${file}`;await page.route(deleteRoute,async route=>{if(route.request().method()!=='DELETE'){await route.continue();return;}deletes++;const response=await route.fetch();startedWrite();await heldWrite;await route.fulfill({response}).catch(()=>{});});await row.getByRole('button',{name:'Delete',exact:true}).click();await waitingWrite;await expect.poll(()=>readAborted).toBe(true);await expect(row.getByRole('button',{name:'Delete',exact:true})).toBeDisabled();expect(deletes).toBe(1);releaseRead?.();await readDone;await page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));await expect(panel.getByRole('alert').filter({hasText:'Obsolete pre-write file read'})).toHaveCount(0);releaseWrite?.();await page.unroute(deleteRoute);await expect(row).toHaveCount(0);await page.unroute(endpoint);
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                       ^
+      16 |     const uploadName=`mutation-timeout-${Date.now()}.txt`,selection={name:uploadName,mimeType:'text/plain',buffer:Buffer.from('same upload operation after a real timeout')};let operation='',accepted='',startedUpload!:()=>void;const waitingUpload=new Promise<void>(r=>{startedUpload=r;}),heldUpload=new Promise<void>(r=>{releaseWrite=r;});await page.route(endpoint,async route=>{if(route.request().method()!=='POST'){await route.continue();return;}operation=route.request().postDataJSON().clientId;const response=await route.fetch();expect(response.status()).toBe(200);accepted=(await response.json()).id;files.push(accepted);startedUpload();await heldUpload;await route.fulfill({response}).catch(()=>{});});await panel.locator('input[type="file"]').setInputFiles(selection);await waitingUpload;await expect(page.getByRole('alert').filter({hasText:'File change could not be confirmed'})).toBeVisible({timeout:25000});await expect(panel.locator('input[type="file"]')).toBeEnabled();expect(await page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toContain(operation);releaseWrite?.();await page.unroute(endpoint);
+      17 |     const retry=page.waitForRequest(r=>r.url()===base&&r.method()==='POST');await panel.locator('input[type="file"]').setInputFiles(selection);expect((await retry).postDataJSON().clientId).toBe(operation);const restored=panel.locator('.file-row').filter({hasText:uploadName});await expect(restored).toHaveCount(1);await expect(restored).toContainText('Scan passed',{timeout:120000});await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toBeNull();const matches=(await (await context.request.get(base)).json()).files.filter((f:{name:string})=>f.name===uploadName);expect(matches).toHaveLength(1);expect(matches[0].id).toBe(accepted);const downloading=page.waitForEvent('download');await restored.getByRole('link',{name:'Download',exact:true}).click();expect(await readFile((await (await downloading).path())!,'utf8')).toBe(selection.buffer.toString());
+      18 |   }finally{releaseRead?.();releaseWrite?.();await page.unroute(endpoint);for(const id of files)expect((await context.request.delete(`${base}/${id}`,{headers})).status()).toBe(200);}
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-mutations.spec.ts:15:423
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-mutations-file-writes-e4263-ads-with-the-same-operation-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-mutations-file-writes-e4263-ads-with-the-same-operation-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-mutations-file-writes-e4263-ads-with-the-same-operation-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-mutations-file-writes-e4263-ads-with-the-same-operation-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-mutations.spec.ts:6:1 › file writes abort old reads and recover timed-out accepted uploads with the same operation 

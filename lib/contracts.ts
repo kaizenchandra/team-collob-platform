@@ -1,4 +1,5 @@
 import { z } from "zod";
+import {messageSequence} from './message-sequence';
 export const userSchema = z.object({
   id: z.string(),
   email: z.string(),
@@ -52,7 +53,7 @@ export const messageView = z.object({
   user_id: z.string(),
   name: z.string(),
   body: z.string(),
-  seq: z.string(),
+  seq: messageSequence,
   created_at: z.string(),
   edited_at: z.string().nullable(),
   deleted: z.boolean(),

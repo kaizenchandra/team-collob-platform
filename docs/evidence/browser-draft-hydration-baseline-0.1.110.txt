@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:8064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/draft-hydration.spec.ts:4:1 › draft hydration publishes saved text before live reconnect and cancels abandoned reads (581ms)
+
+
+  1) [chrome] › tests/browser/draft-hydration.spec.ts:4:1 › draft hydration publishes saved text before live reconnect and cancels abandoned reads 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      37 |     await expect(page.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(body);
+      38 |     await expect.poll(()=>puts.length).toBeGreaterThan(0);
+    > 39 |     expect(puts.every(value=>value===body)).toBe(true);
+         |                                             ^
+      40 |     expect((await (await context.request.get(draftUrl)).json()).body).toBe(body);
+      41 |     // Hold the next real GET, leave through SPA navigation, then release it.
+      42 |     let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve;});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/draft-hydration.spec.ts:39:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/draft-hydration-draft-hydr-a4325-and-cancels-abandoned-reads-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/draft-hydration-draft-hydr-a4325-and-cancels-abandoned-reads-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/draft-hydration-draft-hydr-a4325-and-cancels-abandoned-reads-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/draft-hydration-draft-hydr-a4325-and-cancels-abandoned-reads-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/draft-hydration.spec.ts:4:1 › draft hydration publishes saved text before live reconnect and cancels abandoned reads 

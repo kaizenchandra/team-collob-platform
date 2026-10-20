@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:26694) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.7s)
+  ✓  2 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (1.1s)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (13.3s)
+  ✓  4 [chrome] › tests/browser/composer-input.spec.ts:4:1 › composition Enter preserves multilingual drafts until ordinary Enter explicitly sends; Shift Enter stays multiline (1.6s)
+  ✓  5 [chrome] › tests/browser/draft-recovery.spec.ts:5:1 › saved draft failures have read-only retry without losing text, reply or pending send identity (10.4s)
+  ✓  6 [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send (25.6s)
+
+  6 passed (57.0s)

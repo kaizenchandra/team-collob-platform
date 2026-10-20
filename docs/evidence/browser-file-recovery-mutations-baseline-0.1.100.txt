@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:67062) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure (27.2s)
+
+
+  1) [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('region', { name: 'Deleted file recovery' }).getByRole('alert')
+    Expected substring: "Recovery could not be confirmed"
+    Timeout: 25000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('region', { name: 'Deleted file recovery' }).getByRole('alert') with timeout 25000ms
+      - waiting for getByRole('region', { name: 'Deleted file recovery' }).getByRole('alert')
+
+
+      13 |     page.on('request',r=>{if(r.url()===restore&&r.method()==='POST')posts++;});await ready();expect((await context.request.delete(`${base}/${file}`,{headers})).status()).toBe(200);await select();
+      14 |     // Real commit with its acknowledgement withheld until the client deadline expires.
+    > 15 |     let started!:()=>void;const accepted=new Promise<void>(r=>{started=r;}),held=new Promise<void>(r=>{release=r;});await page.route(routePattern,async route=>{const response=await route.fetch();expect(response.status()).toBe(200);started();await held;await route.fulfill({response}).catch(()=>{});});await panel.getByRole('button',{name:'Confirm file recovery',exact:true}).click();await accepted;await expect(panel.getByRole('button',{name:'Confirm file recovery',exact:true})).toBeDisabled();await expect(panel.getByRole('alert')).toContainText('Recovery could not be confirmed',{timeout:25000});await expect(panel.getByRole('group',{name:'Confirm file recovery',exact:true})).toHaveCount(0);await expect(panel.getByRole('button',{name:`Restore ${name} version 1`,exact:true})).toHaveCount(0);expect(posts).toBe(1);release?.();await page.unroute(routePattern);await panel.getByRole('button',{name:'Refresh deleted files',exact:true}).click();await expect(panel.getByRole('button',{name:`Restore ${name} version 1`,exact:true})).toHaveCount(0);expect(posts).toBe(1);await ready();expect(await (await context.request.get(`${base}/${file}/download`)).text()).toBe(bytes);
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ^
+      16 |     // Leaving Files cancels the held client request even though the server accepted it.
+      17 |     expect((await context.request.delete(`${base}/${file}`,{headers})).status()).toBe(200);await select();let startedAgain!:()=>void;const acceptedAgain=new Promise<void>(r=>{startedAgain=r;}),heldAgain=new Promise<void>(r=>{release=r;});let aborted=false;page.on('requestfailed',r=>{if(r.url()===restore)aborted=true;});await page.route(routePattern,async route=>{const response=await route.fetch();expect(response.status()).toBe(200);startedAgain();await heldAgain;await route.fulfill({response}).catch(()=>{});});await panel.getByRole('button',{name:'Confirm file recovery',exact:true}).click();await acceptedAgain;await page.getByRole('button',{name:'Calendar',exact:true}).click();await expect.poll(()=>aborted).toBe(true);release?.();await page.unroute(routePattern);await expect(panel).toHaveCount(0);await ready();
+      18 |     // Accepted recovery is still acknowledged when the parent current-files GET fails.
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-recovery-mutations.spec.ts:15:535
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure 

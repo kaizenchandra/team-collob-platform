@@ -1,0 +1,16 @@
+
+Running 9 tests using 1 worker
+
+(node:25192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response (5.0s)
+  ✓  2 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (1.1s)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.6s)
+  ✓  4 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (1.0s)
+  ✓  5 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (13.3s)
+  ✓  6 [chrome] › tests/browser/draft-hydration.spec.ts:4:1 › draft hydration publishes saved text before live reconnect and cancels abandoned reads (819ms)
+  ✓  7 [chrome] › tests/browser/draft-recovery.spec.ts:5:1 › saved draft failures have read-only retry without losing text, reply or pending send identity (10.3s)
+  ✓  8 [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation (10.9s)
+  ✓  9 [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send (27.2s)
+
+  9 passed (1.2m)

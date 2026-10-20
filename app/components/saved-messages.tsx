@@ -5,14 +5,15 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {z} from 'zod';
 import {ApiError,api} from '@/lib/contracts';
 import {Empty} from './primitives';
+const acknowledgement=z.object({ok:z.literal(true)});
 const cursor=z.object({createdAt:z.iso.datetime(),id:z.uuid()});
 const snapshot=z.object({messages:z.array(z.object({id:z.uuid(),channel_id:z.uuid(),channel_name:z.string(),author:z.string(),created_at:z.string(),excerpt:z.string()})).max(50),hasMore:z.boolean(),nextCursor:cursor.nullable()}).refine(value=>value.hasMore===(value.nextCursor!==null),'Invalid saved-message page boundary');
 type Cursor=z.infer<typeof cursor>;
 type Mode='navigate'|'refresh'|'current'|'poll';
 export function SavedMessages({org,onOpen}:{org:string;onOpen:(channel:string,id:string)=>void}){
   const [page,setPage]=useState<{data:z.infer<typeof snapshot>;history:(Cursor|null)[]}|null>(null),[busy,setBusy]=useState(false),[mutating,setMutating]=useState(false);
-  const [error,setError]=useState<{message:string;history:(Cursor|null)[];mode:Mode}|null>(null);
-  const active=useRef(true),request=useRef<AbortController|null>(null),history=useRef<(Cursor|null)[]>([null]),mutation=useRef(false);
+  const [error,setError]=useState<{message:string;history:(Cursor|null)[];mode:Mode}|null>(null),[notice,setNotice]=useState('');
+  const active=useRef(true),request=useRef<AbortController|null>(null),history=useRef<(Cursor|null)[]>([null]),mutation=useRef(false),write=useRef<AbortController|null>(null);
   const load=useCallback(async(nextHistory:(Cursor|null)[]=history.current,mode:Mode='current')=>{
     request.current?.abort();const controller=new AbortController();request.current=controller;
     if(mode!=='poll'){setBusy(true);setError(null);}
@@ -23,24 +24,31 @@ export function SavedMessages({org,onOpen}:{org:string;onOpen:(channel:string,id
       if(active.current&&!controller.signal.aborted){history.current=nextHistory;setPage({data,history:nextHistory});setError(previous=>mode==='poll'&&previous?.mode==='navigate'?previous:null);}
     }catch(e){if(active.current&&!controller.signal.aborted){
       if(mode!=='navigate'||e instanceof ApiError&&[401,403,404].includes(e.status))setPage(null);
-      setError({message:e instanceof Error?e.message:'Saved messages unavailable',history:nextHistory,mode});
+      const message=e instanceof Error?e.message:'Saved messages unavailable';
+      // A failed background read must keep the user's pending page retry target.
+      setError(previous=>mode==='poll'&&previous?.mode==='navigate'?{...previous,message}:{message,history:nextHistory,mode});
     }}finally{if(active.current&&request.current===controller){request.current=null;setBusy(false);}}
   },[org]);
   useEffect(()=>{
     active.current=true;void load([null],'refresh');const timer=setInterval(()=>{if(!request.current&&!mutation.current)void load(history.current,'poll');},5000);
-    return()=>{active.current=false;request.current?.abort();clearInterval(timer);};
+    return()=>{active.current=false;request.current?.abort();write.current?.abort();clearInterval(timer);};
   },[load]);
   async function unsave(channel:string,id:string){
-    mutation.current=true;setMutating(true);request.current?.abort();
-    try{await api(`/channels/${channel}/messages/${id}/save`,'POST',{saved:false});if(active.current)await load();}
-    catch(e){if(active.current){setPage(null);setError({message:e instanceof Error?e.message:'Could not unsave message',history:history.current,mode:'current'});}}
-    finally{mutation.current=false;if(active.current)setMutating(false);}
+    if(mutation.current)return;
+    mutation.current=true;setMutating(true);setNotice('');request.current?.abort();const controller=new AbortController();write.current=controller;
+    try{
+      acknowledgement.parse(await api(`/channels/${channel}/messages/${id}/save`,'POST',{saved:false},AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])));
+      if(active.current&&!controller.signal.aborted){setNotice('Message removed from Saved.');await load();}
+    }
+    catch(e){if(active.current&&!controller.signal.aborted){setPage(null);setError({message:e instanceof ApiError&&e.status<500?e.message:`${e instanceof ApiError?e.message+' ':''}Unsave could not be confirmed. Retry saved messages to check its current state before trying again.`,history:history.current,mode:'current'});}}
+    finally{if(write.current===controller)write.current=null;mutation.current=false;if(active.current)setMutating(false);}
   }
   const disabled=busy||mutating;
   return <><div className="page-heading"><div><span className="eyebrow">KEEP FOR LATER</span><h1>Saved messages</h1><p>Your saved messages in this workspace.</p></div></div>
     <section className="content-pad workspace-search" aria-label="Saved messages">
       <p>Up to 50 messages per page, newest message first. Excerpts show up to 500 characters; open a message for its full content. This list can change while you browse.</p>
       <button className="secondary" disabled={disabled} onClick={()=>void load([null],'refresh')}>Refresh saved messages</button>
+      {notice&&<p role="status">{notice}</p>}
       {busy&&<p role="status">Loading saved messages…</p>}
       {error&&<div role="alert"><p>{error.message}</p><button className="secondary" disabled={disabled} onClick={()=>void load(error.history,error.mode==='poll'?'current':error.mode)}>Retry saved messages</button></div>}
       {page&&<><nav aria-label="Saved message pages"><p role="status">Saved page {page.history.length} · {page.data.messages.length} {page.data.messages.length===1?'message':'messages'}</p>

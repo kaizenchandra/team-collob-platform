@@ -1,0 +1,11 @@
+Idle file worker and actual ClamAV probe healthy
+Temporary worker container and database cleaned up.
+file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-file-worker-health.mjs:18
+  throw new Error(`Timed out: ${label}`);
+        ^
+
+Error: Timed out: Database failure makes worker unhealthy
+    at waitFor (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-file-worker-health.mjs:18:9)
+    at async file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-file-worker-health.mjs:35:3
+
+Node.js v24.19.0

@@ -1,0 +1,13 @@
+
+Running 5 tests using 1 worker
+
+(node:24559) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/collaboration.spec.ts:118:1 › workspace accessibility and responsive overflow (3.0s)
+Browser under test: 155.0.8059.85
+  ✓  2 [chrome] › tests/browser/collaboration.spec.ts:263:1 › dark theme remains accessible and persists (2.8s)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:305:1 › untrusted message markup renders as text (642ms)
+  ✓  4 [chrome] › tests/browser/message-readers.spec.ts:8:1 › message readers page beyond one hundred with scoped retry, current privacy, cancellation and no composition/read writes (35.2s)
+  ✓  5 [chrome] › tests/browser/read-status.spec.ts:7:1 › visible shared read status recovers without writes, honors privacy, cancels on exit and compares exact bigint positions (45.7s)
+
+  5 passed (1.5m)

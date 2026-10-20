@@ -1,0 +1,51 @@
+
+Running 5 tests using 1 worker
+
+(node:55169) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/meeting-protocol.spec.ts:8:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (16.6s)
+  ✘  2 [chrome] › tests/browser/meeting-protocol.spec.ts:35:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (31.4s)
+(node:55287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (18.4s)
+  ✓  4 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (18.3s)
+  ✓  5 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (505ms)
+
+
+  1) [chrome] › tests/browser/meeting-protocol.spec.ts:35:1 › two authenticated users exchange audio and decoded video through forced local TURN relay 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('status').filter({ hasText: 'Connection: connected' })
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('status').filter({ hasText: 'Connection: connected' }) with timeout 30000ms
+      - waiting for getByRole('status').filter({ hasText: 'Connection: connected' })
+
+
+       5 | const api='http://localhost:4100',org='11111111-1111-4111-8111-111111111111',bobId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',samId='dddddddd-dddd-4ddd-8ddd-dddddddddddd',headers={origin:'http://localhost:3101'},base=`${api}/v1/organizations/${org}/calls`;
+       6 | async function login(c:BrowserContext,email:string){expect((await c.request.post(`${api}/v1/session`,{headers,data:{email,password:'Development123!'}})).ok()).toBe(true);}
+    >  7 | async function connected(p:Page,n:number){await expect(p.getByRole('status').filter({hasText:'Connection: connected'})).toBeVisible({timeout:30000});await expect(p.getByLabel('Remote camera',{exact:true})).toHaveCount(n,{timeout:30000});}
+         |                                                                                                                         ^
+       8 | test('instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat',async()=>{
+       9 |  test.setTimeout(240000);const browser=await chromium.launch({channel:'chrome',args:['--host-resolver-rules=MAP localhost 127.0.0.1','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required','--enable-usermedia-screen-capturing','--auto-select-desktop-capture-source=Entire screen']}),contexts=await Promise.all([1,2,3,4].map(()=>browser.newContext({permissions:['microphone','camera']}))),[alice,bob,sam,eve]=contexts,[a,b,c,e]=await Promise.all(contexts.map(x=>x.newPage()));let call='';
+      10 |  try{
+        at connected (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-protocol.spec.ts:7:121)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-protocol.spec.ts:40:31
+
+    Error Context: test-results/meeting-protocol-two-authe-e11a3-ugh-forced-local-TURN-relay-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/meeting-protocol-two-authe-e11a3-ugh-forced-local-TURN-relay-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/meeting-protocol-two-authe-e11a3-ugh-forced-local-TURN-relay-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/meeting-protocol.spec.ts:35:1 › two authenticated users exchange audio and decoded video through forced local TURN relay 
+  4 passed (1.4m)

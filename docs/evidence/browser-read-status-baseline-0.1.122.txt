@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:7009) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/read-status.spec.ts:7:1 › visible shared read status recovers without writes, honors privacy, cancels on exit and compares exact bigint positions (5.7s)
+
+
+  1) [chrome] › tests/browser/read-status.spec.ts:7:1 › visible shared read status recovers without writes, honors privacy, cancels on exit and compares exact bigint positions 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByRole('article').filter({ hasText: 'Read status first 1792498646931' }).locator('.receipt')
+    Expected: "Read"
+    Received: "Sent"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" getByRole('article').filter({ hasText: 'Read status first 1792498646931' }).locator('.receipt') with timeout 5000ms
+      - waiting for getByRole('article').filter({ hasText: 'Read status first 1792498646931' }).locator('.receipt')
+        11 × locator resolved to <span class="receipt" title="Bob Chen">…</span>
+           - unexpected value "Sent"
+
+
+      19 |     expect((await reader.request.post(base+'/read',{headers,data:{seq:Number(first.seq)}})).ok()).toBe(true);
+      20 |     await page.goto(url);const row=(body:string)=>page.getByRole('article').filter({hasText:body}),status=(body:string)=>row(body).locator('.receipt'),input=page.getByRole('textbox',{name:'Message',exact:true}),retry=page.getByRole('button',{name:'Retry read status',exact:true}),notice=page.getByRole('region',{name:'Read status',exact:true});
+    > 21 |     await expect(status(firstBody)).toHaveText('Read');await expect(status(firstBody)).toHaveAttribute('aria-label','Read by Bob Chen');await expect(status(secondBody)).toHaveText('Sent');await expect(input).toHaveValue(text);
+         |                                     ^
+      22 |     const writes:{url:string;body:unknown}[]=[];page.on('request',r=>{if(r.method()==='POST'&&(r.url()===base+'/read'||r.url()===base+'/messages'))writes.push({url:r.url(),body:r.postDataJSON()});});
+      23 |     // Actual opt-out removes names/read indicators even without a history write/event.
+      24 |     await db.query(`UPDATE users SET preferences=jsonb_set(preferences,'{readReceipts}','false') WHERE id=$1`,[bob]);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/read-status.spec.ts:21:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/read-status-visible-shared-ef770-ares-exact-bigint-positions-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/read-status-visible-shared-ef770-ares-exact-bigint-positions-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/read-status-visible-shared-ef770-ares-exact-bigint-positions-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/read-status-visible-shared-ef770-ares-exact-bigint-positions-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/read-status.spec.ts:7:1 › visible shared read status recovers without writes, honors privacy, cancels on exit and compares exact bigint positions 

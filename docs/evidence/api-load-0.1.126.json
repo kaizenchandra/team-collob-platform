@@ -1,0 +1,14 @@
+{
+  "scope": "Current API container, final eight-workflow run",
+  "httpStatusCounts": {
+    "200": 2377,
+    "403": 9,
+    "204": 230,
+    "409": 8,
+    "404": 26,
+    "206": 1,
+    "401": 7,
+    "400": 1
+  },
+  "rateLimitResponses": 0
+}

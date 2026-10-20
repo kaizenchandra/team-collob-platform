@@ -1,0 +1,52 @@
+
+Running 1 test using 1 worker
+
+(node:87858) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh (15.9s)
+
+
+  1) [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('dialog', { name: 'Send a file', exact: true }).getByRole('status').filter({ hasText: 'Attachment files page 1 · 100 files' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('dialog', { name: 'Send a file', exact: true }).getByRole('status').filter({ hasText: 'Attachment files page 1 · 100 files' }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Send a file', exact: true }).getByRole('status').filter({ hasText: 'Attachment files page 1 · 100 files' })
+
+
+      20 |     await row.getByRole('button',{name:'Versions',exact:true}).click();const dialog=bob.getByRole('dialog',{name:`Versions: ${name}`});await expect(dialog.getByRole('link',{name:'Download version 1',exact:true})).toBeVisible();await expect(dialog.getByRole('link',{name:'Download version 2',exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();
+      21 |     // Composition can attach an older scanned original beyond the newest100 files.
+    > 22 |     await bob.locator('.tabs').getByRole('button',{name:'Posts',exact:true}).click();const caption=`Older attachment caption ${Date.now()}`;await bob.getByRole('textbox',{name:'Message',exact:true}).fill(caption);await bob.getByRole('button',{name:'Attach file',exact:true}).click();const picker=bob.getByRole('dialog',{name:'Send a file',exact:true});await expect(picker.getByRole('status').filter({hasText:'Attachment files page 1 · 100 files'})).toBeVisible();await expect(picker.getByRole('button',{name:`Send file ${name}`,exact:true})).toHaveCount(0);await expect(picker.getByRole('button',{name:/^Send file /})).toHaveCount(0);await bob.route(pattern,r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"Older attachment page unavailable"}'}));await picker.getByRole('button',{name:'Older files',exact:true}).click();await expect(picker.getByRole('alert')).toContainText('Older attachment page unavailable');await expect(picker.locator('.file-row')).toHaveCount(0);await bob.unroute(pattern);await picker.getByRole('button',{name:'Retry files',exact:true}).focus();await picker.getByRole('button',{name:'Retry files',exact:true}).press('Enter');await expect(picker.getByRole('status').filter({hasText:'Attachment files page 2 · 2 files'})).toBeVisible();await expect(picker.getByRole('button',{name:'Older files',exact:true})).toBeDisabled();const attachmentAxe=await new AxeBuilder({page:bob}).include('dialog[open]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(attachmentAxe.violations).toEqual([]);await bob.setViewportSize({width:390,height:844});expect(await picker.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);expect(await bob.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await bob.setViewportSize({width:1280,height:900});await picker.screenshot({path:'docs/evidence/attachment-file-pages.png'});const sent=bob.waitForResponse(r=>r.url()===base+'/messages'&&r.request().method()==='POST');await picker.getByRole('button',{name:`Send file ${name}`,exact:true}).click();expect((await sent).status()).toBe(201);await expect(picker).toHaveCount(0);const attachmentHistory=(await (await b.request.get(base+'/messages')).json()).messages.filter((m:{body:string})=>m.body===caption);expect(attachmentHistory).toHaveLength(1);expect(attachmentHistory[0].attachments).toEqual([{id:original,name,state:'ready'}]);await expect(bob.getByRole('textbox',{name:'Message',exact:true})).toHaveValue('');await bob.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();await expect(status).toHaveText('Files page 1 · 100 files');await panel.getByRole('button',{name:'Older files',exact:true}).click();await expect(status).toHaveText('Files page 2 · 2 files');
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ^
+      23 |     const firstPage=(await (await b.request.get(base+'/files')).json()),boundary=firstPage.nextCursor;
+      24 |     const olderPage=(await (await b.request.get(base+'/files?'+new URLSearchParams({beforeCreated:boundary.createdAt,beforeId:boundary.id}))).json());
+      25 |     const older=olderPage.files.find((f:{id:string})=>f.id!==original);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-pages.spec.ts:22:450
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh 

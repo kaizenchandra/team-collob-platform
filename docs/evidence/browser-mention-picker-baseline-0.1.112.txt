@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:24333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation (5.6s)
+
+
+  1) [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: 'Mention a person', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeDisabled" getByRole('button', { name: 'Mention a person', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Mention a person', exact: true })
+        14 × locator resolved to <button type="button" aria-label="Mention a person">…</button>
+           - unexpected value "enabled"
+
+
+      11 |     let draftStarted=false;const draftGate=new Promise<void>(resolve=>{release=resolve;});
+      12 |     await page.route(base+'/draft',async route=>{if(route.request().method()!=='GET'){await route.continue();return;}draftStarted=true;await draftGate;await route.continue().catch(()=>{});});
+    > 13 |     await page.goto(`/?org=${org}&channel=${channel}`);await expect.poll(()=>draftStarted).toBe(true);const mention=page.getByRole('button',{name:'Mention a person',exact:true}),input=page.getByRole('textbox',{name:'Message',exact:true});await expect(mention).toBeDisabled();release?.();await page.unroute(base+'/draft');await expect(input).toHaveValue(caption);await expect(mention).toBeEnabled();
+         |                                                                                                                                                                                                                                                                     ^
+      14 |     const posts:unknown[]=[];page.on('request',r=>{if(r.url()===base+'/messages'&&r.method()==='POST')posts.push(r.postDataJSON());});
+      15 |     let mode:'503'|'denied'|'invalid'|'duplicate'|'timeout'|'empty'|'real'|'held'='503',reads=0,aborted=0;
+      16 |     page.on('requestfailed',r=>{if(r.url()===base+'/members')aborted++;});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/mention-picker.spec.ts:13:261
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation 

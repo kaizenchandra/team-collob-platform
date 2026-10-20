@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:11683) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response (5.4s)
+  ✓  2 [chrome] › tests/browser/collaboration.spec.ts:13:1 › independent users exchange persisted messages, react, and recover a draft (3.0s)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (947ms)
+  ✓  4 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.5s)
+  ✓  5 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (747ms)
+  ✓  6 [chrome] › tests/browser/draft-hydration.spec.ts:4:1 › draft hydration publishes saved text before live reconnect and cancels abandoned reads (775ms)
+  ✓  7 [chrome] › tests/browser/reply-context.spec.ts:8:1 › exact replies reveal authorized older parent context with safe refresh, withdrawal and cancellation (27.6s)
+  ✓  8 [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send (26.1s)
+
+  8 passed (1.1m)

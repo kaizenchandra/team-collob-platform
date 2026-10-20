@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:47850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (19.4s)
+  ✓  2 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (18.1s)
+
+  2 passed (38.0s)

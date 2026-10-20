@@ -1,0 +1,18 @@
+api_key: local-concord-media
+api_secret: local-concord-media-secret-development-only-2026
+ws_url: ws://127.0.0.1:7880
+insecure: true
+redis:
+  address: media-redis:6379
+  password: local-concord-media-redis-only
+health_port: 9090
+prometheus_port: 9091
+enable_chrome_sandbox: true
+logging:
+  level: warn
+cpu_cost:
+  room_composite_cpu_cost: 2.0
+
+# Local recorder needs visible host ICE candidates in the shared SFU namespace.
+chrome_flags:
+  disable-features: WebRtcHideLocalIpsWithMdns

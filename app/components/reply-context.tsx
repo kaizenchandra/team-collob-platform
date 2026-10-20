@@ -6,7 +6,7 @@ import {type MessageLinkTarget} from '@/lib/message-link';
 import {MessageContent} from './message-content';
 import {MessageAttachments} from './attachments';
 const snapshot=z.object({channel:z.object({id:z.uuid(),name:z.string()}),message:messageView.omit({user_id:true,seq:true,deleted:true,reactions:true})});
-export function ReplyContext({target}:{target:MessageLinkTarget}) {
+export function ReplyContext({target,onOpen,disabled=false}:{target:MessageLinkTarget;onOpen:(id:string)=>void;disabled?:boolean}) {
   const [data,setData]=useState<z.infer<typeof snapshot>|null>(null),[error,setError]=useState(''),[attempt,setAttempt]=useState(0);
   useEffect(()=>{
     let active=true,pending=false;const controller=new AbortController();
@@ -29,6 +29,7 @@ export function ReplyContext({target}:{target:MessageLinkTarget}) {
       <p><time dateTime={data.message.created_at}>{new Date(data.message.created_at).toLocaleString()}</time>{data.message.edited_at?' · Edited':''}</p>
       <MessageContent body={data.message.body} format={data.message.format} mentions={data.message.mentions}/>
       <MessageAttachments channelId={target.channel} attachments={data.message.attachments}/>
+      <p><button className="secondary" disabled={disabled} onClick={()=>onOpen(data.message.id)}>Open replied-to message</button></p>
     </article>}
   </section>;
 }

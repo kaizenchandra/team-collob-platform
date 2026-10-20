@@ -24,7 +24,7 @@ test("independent users exchange persisted messages, react, and recover a draft"
   await alice
     .getByRole("button", { name: "Send message", exact: true })
     .click();
-  await expect(bob.getByText(text, { exact: true })).toBeVisible({
+  await expect(bob.getByLabel("Messages", {exact:true}).getByText(text, { exact: true })).toBeVisible({
     timeout: 10000,
   });
   const message = bob.locator("article").filter({ hasText: text });
@@ -55,7 +55,7 @@ test("independent users exchange persisted messages, react, and recover a draft"
   ).toHaveValue("A persistent draft");
   await bob.getByRole("textbox", { name: "Message", exact: true }).fill("");
   await alice.reload();
-  await expect(alice.getByText(text, { exact: true })).toBeVisible();
+  await expect(alice.getByLabel("Messages", {exact:true}).getByText(text, { exact: true })).toBeVisible();
   await a.close();
   await b.close();
 });
@@ -163,7 +163,7 @@ test("separate windows synchronize and logout clears both", async ({
   await popup
     .getByRole("button", { name: "Send message", exact: true })
     .click();
-  await expect(page.getByText(text, { exact: true })).toBeVisible({
+  await expect(page.getByLabel('Messages',{exact:true}).getByText(text, { exact: true })).toBeVisible({
     timeout: 10000,
   });
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
@@ -307,7 +307,7 @@ test("untrusted message markup renders as text", async ({ page }) => {
   const text = `Markup ${Date.now()} <img data-probe src=x onerror="document.body.dataset.injected=1">`;
   await page.getByRole("textbox", { name: "Message", exact: true }).fill(text);
   await page.getByRole("button", { name: "Send message", exact: true }).click();
-  await expect(page.getByText(text, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Messages',{exact:true}).getByText(text, { exact: true })).toBeVisible();
   await expect(page.locator("img[data-probe]")).toHaveCount(0);
   expect(await page.locator("body").getAttribute("data-injected")).toBeNull();
 });

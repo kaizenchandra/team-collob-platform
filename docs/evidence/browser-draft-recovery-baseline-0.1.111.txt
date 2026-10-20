@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:12715) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/draft-recovery.spec.ts:5:1 › saved draft failures have read-only retry without losing text, reply or pending send identity (5.8s)
+
+
+  1) [chrome] › tests/browser/draft-recovery.spec.ts:5:1 › saved draft failures have read-only retry without losing text, reply or pending send identity 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByRole('button', { name: 'Retry saved draft', exact: true })
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByRole('button', { name: 'Retry saved draft', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Retry saved draft', exact: true })
+
+
+      21 |       await route.fulfill({status:mode==='invalid'?200:mode==='denied'?403:503,contentType:'application/json',body:mode==='invalid'?'{"body":42}':'{"error":"Synthetic draft read failure"}'});
+      22 |     });
+    > 23 |     await page.reload();await expect(retry).toBeEnabled();await expect(input).toBeDisabled();await expect(send).toBeDisabled();await expect(page.getByRole('button',{name:'Add emoji',exact:true})).toBeDisabled();await expect(reply).toContainText('Draft recovery parent');
+         |                                             ^
+      24 |     expect(writes).toEqual([]);expect(posts).toEqual([]);expect((await (await context.request.get(draftUrl)).json()).body).toBe(caption);const connections=eventConnections;
+      25 |     for(const failure of ['invalid','denied'] as const){mode=failure;const count=gets;await retry.click();await expect.poll(()=>gets).toBe(count+1);await expect(retry).toBeEnabled();await expect(input).toBeDisabled();expect(writes).toEqual([]);expect(posts).toEqual([]);}
+      26 |     mode='timeout';await retry.click();await expect(saved.getByRole('status')).toContainText('Loading saved draft');await expect(retry).toHaveCount(0);await expect(saved.getByRole('alert')).toContainText('timed out',{timeout:12000});await expect(retry).toBeEnabled();expect(writes).toEqual([]);expect(eventConnections).toBe(connections);release?.();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/draft-recovery.spec.ts:23:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/draft-recovery-saved-draft-b3d45-ly-or-pending-send-identity-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/draft-recovery-saved-draft-b3d45-ly-or-pending-send-identity-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/draft-recovery-saved-draft-b3d45-ly-or-pending-send-identity-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/draft-recovery-saved-draft-b3d45-ly-or-pending-send-identity-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/draft-recovery.spec.ts:5:1 › saved draft failures have read-only retry without losing text, reply or pending send identity 

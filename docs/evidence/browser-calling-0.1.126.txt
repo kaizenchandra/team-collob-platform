@@ -1,0 +1,113 @@
+
+Running 4 tests using 1 worker
+
+(node:53317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/meeting-protocol.spec.ts:7:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (1.4m)
+(node:53687) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (49.0s)
+  ✘  3 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (3.0m)
+(node:54472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (1.0h)
+
+
+  1) [chrome] › tests/browser/meeting-protocol.spec.ts:7:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('status').filter({ hasText: /removed/i })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('status').filter({ hasText: /removed/i }) with timeout 5000ms
+      - waiting for getByRole('status').filter({ hasText: /removed/i })
+
+
+      22 |   const message=`Retained instant message ${Date.now()}`;await a.getByRole('textbox',{name:'Call message',exact:true}).fill(message);await a.getByRole('button',{name:'Send call message',exact:true}).click();await expect(b.getByRole('list',{name:'Call messages',exact:true})).toContainText(message);
+      23 |   // Obtain an application-issued token before removal; test replay through an independent SDK connection.
+    > 24 |   const stale=await(await sam.request.post(`${base}/${call}/join`,{headers,data:{clientId:randomUUID(),recordingConsent:false}})).json();expect(stale.token).toBeTruthy();await a.getByRole('button',{name:'Remove Sam Rivera',exact:true}).click();await expect(c.getByRole('region',{name:'Live call',exact:true})).toHaveCount(0,{timeout:15000});await expect(c.getByRole('alert').filter({hasText:/removed/i})).toBeVisible();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                       ^
+      25 |   await connected(a,1);await connected(b,1);expect((await sam.request.post(`${base}/${call}/join`,{headers,data:{clientId:randomUUID(),recordingConsent:false}})).status()).toBe(403);expect((await sam.request.get(`${base}/${call}/history`)).status()).toBe(403);
+      26 |   await c.addScriptTag({path:'node_modules/livekit-client/dist/livekit-client.umd.js'});const replay=await c.evaluate(async g=>{const r=new (window as unknown as {LivekitClient:{Room:new()=>Room}}).LivekitClient.Room();try{await r.connect(g.url,g.token,{peerConnectionTimeout:5000,websocketTimeout:5000});return 'connected';}catch{return 'rejected';}finally{await r.disconnect();}},stale);expect(replay).toBe('rejected');
+      27 |   await a.getByRole('button',{name:'Make Bob Chen host',exact:true}).click();await expect(b.getByRole('button',{name:'End call for everyone',exact:true})).toBeVisible();expect((await alice.request.post(`${base}/${call}/end`,{headers,data:{}})).status()).toBe(403);await b.getByRole('button',{name:'End call for everyone',exact:true}).click();expect((await(await alice.request.get(`${base}/${call}`)).json()).call.endedAt).toBeNull();await b.getByRole('button',{name:'Keep meeting open',exact:true}).click();await b.getByRole('button',{name:'End call for everyone',exact:true}).click();await b.getByRole('button',{name:'Confirm end meeting',exact:true}).click();for(const p of [a,b])await expect(p.getByRole('heading',{name:'Call ended',exact:true})).toBeVisible({timeout:15000});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-protocol.spec.ts:24:407
+
+    Error Context: test-results/meeting-protocol-instant-m-97eaa-y-protection-and-ended-chat-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/meeting-protocol-instant-m-97eaa-y-protection-and-ended-chat-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/meeting-protocol-instant-m-97eaa-y-protection-and-ended-chat-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization 
+
+    Test timeout of 180000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: apiRequestContext.post: Test timeout of 30000ms exceeded.
+    Call log:
+      - → POST http://localhost:4100/v1/organizations/11111111-1111-4111-8111-111111111111/calls/90384005-336a-453a-9aef-d8d3f9564c0f/end
+        - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+        - origin: http://localhost:3101
+        - content-type: application/json
+        - content-length: 2
+        - cookie: [redacted]
+
+
+      53 |
+      54 | test('unanswered direct calls become missed and expire without granting media',async({context})=>{
+    > 55 |  test.setTimeout(30000);await login(context,'alice@acme.test');const db=new pg.Pool({connectionString:'postgres://concord:local-development-only@localhost:55432/concord'});let call='';try{const made=await context.request.post(`${api}/v1/organizations/${org}/channels`,{headers,data:{name:`Missed call ${Date.now()}`,kind:'direct',teamId:null,members:[bobId]}});const channel=(await made.json()).id;call=(await(await context.request.post(`${api}/v1/organizations/${org}/channels/${channel}/calls`,{headers,data:{clientId:randomUUID(),mode:'audio'}})).json()).id;await db.query("UPDATE media_calls SET ring_until=now()-interval '1 second' WHERE id=$1",[call]);await expect.poll(async()=>(await(await context.request.get(`${base}/${call}`)).json()).call.endReason,{timeout:10000}).toBe('missed');const state=await(await context.request.get(`${base}/${call}`)).json();expect(state.participants).toHaveLength(0);expect(state.invitations.find((i:{user_id:string})=>i.user_id===bobId).response).toBe('missed');}finally{if(call)await context.request.post(`${base}/${call}/end`,{headers,data:{}});await db.end();}
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+      56 | });
+      57 |
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/team-calls.spec.ts:55:1043
+
+    Error Context: test-results/team-calls-unanswered-dire-8ec06-pire-without-granting-media-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/team-calls-unanswered-dire-8ec06-pire-without-granting-media-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/team-calls-unanswered-dire-8ec06-pire-without-granting-media-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chrome] › tests/browser/meeting-protocol.spec.ts:7:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat 
+    [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization 
+    [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media 
+  1 passed (1.1h)

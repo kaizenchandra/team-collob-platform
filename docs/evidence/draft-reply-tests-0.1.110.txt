@@ -1,0 +1,13 @@
+✔ reply drafts restore only their actor/workspace/channel message ID without storing source content (7.440667ms)
+✔ reply acknowledgement removes matching submitted target but preserves newer choices and other scopes (1.03825ms)
+✔ reply drafts bound32 scopes without overwrite and identity filtering retains only current actor (9.0735ms)
+✔ malformed and duplicate reply metadata fails closed without rewriting or trusting cached text (2.259459ms)
+✔ reply storage write failure preserves old target; reply clearing keeps attachment/text/pending metadata (0.65275ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 326.363875

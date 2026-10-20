@@ -1,0 +1,13 @@
+
+Running 6 tests using 1 worker
+
+(node:42604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/direct-replies.spec.ts:5:1 › direct replies page beyond fifty with safe source opening, exact retry, cancellation and current parent access (22.4s)
+  ✓  2 [chrome] › tests/browser/direct-replies.spec.ts:27:1 › a direct reply opened from Saved keeps the active conversation draft and copies the child source destination (945ms)
+  ✓  3 [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close (17.1s)
+  ✓  4 [chrome] › tests/browser/message-source-writes.spec.ts:5:1 › source Save bounds lost acknowledgement, checks real saved status and aborts writes on close (9.9s)
+  ✓  5 [chrome] › tests/browser/reply-context.spec.ts:8:1 › exact replies reveal authorized older parent context with safe refresh, withdrawal and cancellation (27.7s)
+  ✓  6 [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access (47.5s)
+
+  6 passed (2.1m)

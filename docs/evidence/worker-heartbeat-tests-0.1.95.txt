@@ -1,0 +1,11 @@
+✔ worker heartbeat validates freshness and exact future/expiry boundaries for each existing TTL (7.527ms)
+✔ worker heartbeat rejects malformed and nonfinite timestamps rather than masking a stalled worker (3.436083ms)
+✔ worker heartbeat fails for missing/unreadable files and invalid probe configuration (1.418541ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 138.602958

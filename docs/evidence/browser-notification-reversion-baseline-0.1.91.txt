@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:37731) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/notification-settings.spec.ts:4:1 › notification preferences bound reads, serialize saves and keep unsent choices after uncertain acknowledgement (23.5s)
+
+
+  1) [chrome] › tests/browser/notification-settings.spec.ts:4:1 › notification preferences bound reads, serialize saves and keep unsent choices after uncertain acknowledgement 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator:  getByRole('region', { name: 'Notification settings', exact: true }).getByRole('button', { name: 'Save notification settings', exact: true })
+    Expected: enabled
+    Received: disabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeEnabled" getByRole('region', { name: 'Notification settings', exact: true }).getByRole('button', { name: 'Save notification settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Notification settings', exact: true }).getByRole('button', { name: 'Save notification settings', exact: true })
+        14 × locator resolved to <button disabled class="primary">Save notification settings</button>
+           - unexpected value "disabled"
+
+
+      13 |     const initial=await quiet.isChecked();await quiet.setChecked(!initial);await page.route(endpoint,route=>route.request().method()==='PATCH'?route.fulfill({status:503,contentType:'application/json',body:'{"error":"internal private details"}'}):route.continue());await save.click();await expect(panel.getByRole('alert')).toContainText('Save could not be confirmed');await expect(quiet).toBeChecked({checked:!initial});await expect(panel.getByText('Notification settings saved.',{exact:true})).toHaveCount(0);await expect(panel).not.toContainText('internal private details');await page.unroute(endpoint);
+      14 |     let writes=0,payload:Record<string,unknown>={};waiting=new Promise<void>(r=>{started=r;});held=new Promise<void>(r=>{release=r;});await page.route(endpoint,async route=>{if(route.request().method()!=='PATCH'){await route.continue();return;}writes++;payload=route.request().postDataJSON();const response=await route.fetch();started();await held;await route.fulfill({response}).catch(()=>{});});await save.click();await waiting;await expect(save).toBeDisabled();await expect(quiet).toBeDisabled();await expect(reload).toBeDisabled();await panel.locator('form').evaluate(form=>{(form as HTMLFormElement).requestSubmit();(form as HTMLFormElement).requestSubmit();});expect(writes).toBe(1);expect(Object.keys(payload).sort()).toEqual(['quiet_enabled']);release?.();await page.unroute(endpoint);await expect(panel.getByText('Notification settings saved.',{exact:true})).toBeVisible();expect((await (await page.request.get(`${api}/v1/notification-settings`)).json()).quiet_start).toBe(remoteStart);await quiet.setChecked(initial);await expect(panel.getByText('Notification settings saved.',{exact:true})).toHaveCount(0);
+    > 15 |     waiting=new Promise<void>(r=>{started=r;});held=new Promise<void>(r=>{release=r;});await page.route(endpoint,async route=>{if(route.request().method()!=='PATCH'){await route.continue();return;}await route.fetch();started();await held;await route.fulfill({status:200,contentType:'application/json',body:'{"ok":true}'}).catch(()=>{});});await save.click();await waiting;await expect(panel.getByRole('alert')).toContainText('Save could not be confirmed',{timeout:12000});await expect(quiet).toBeChecked({checked:initial});expect((await (await page.request.get(`${api}/v1/notification-settings`)).json()).quiet_enabled).toBe(initial);release?.();await page.unroute(endpoint);await quiet.setChecked(!initial);await expect(save).toBeEnabled();await expect(panel.getByText('A previous save is unconfirmed.',{exact:false})).toBeVisible();let revertedPayload:Record<string,unknown>={};await page.route(endpoint,async route=>{if(route.request().method()==='PATCH')revertedPayload=route.request().postDataJSON();await route.continue();});await save.click();await expect(panel.getByText('Notification settings saved.',{exact:true})).toBeVisible();expect(revertedPayload).toEqual({quiet_enabled:!initial});expect((await (await page.request.get(`${api}/v1/notification-settings`)).json()).quiet_enabled).toBe(!initial);await expect(panel.getByText('A previous save is unconfirmed.',{exact:false})).toHaveCount(0);await page.unroute(endpoint);await quiet.setChecked(initial);await save.click();await expect(panel.getByText('Notification settings saved.',{exact:true})).toBeVisible();await reload.click();await expect(save).toBeVisible();await expect(quiet).toBeChecked({checked:initial});await expect(panel.getByLabel('Quiet hours start',{exact:true})).toHaveValue(remoteStart);await expect(panel.getByText('Notification settings saved.',{exact:true})).toHaveCount(0);
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ^
+      16 |     let first=true;waiting=new Promise<void>(r=>{started=r;});held=new Promise<void>(r=>{release=r;});await page.route(endpoint,async route=>{if(!first){await route.continue();return;}first=false;const response=await route.fetch();started();await held;await route.fulfill({response}).catch(()=>{});});await reload.click();await waiting;await page.getByRole('button',{name:'Calendar',exact:true}).click();release?.();await page.unroute(endpoint);await expect(page.getByRole('heading',{name:'Your calendar',exact:true})).toBeVisible();await page.getByRole('button',{name:'Settings',exact:true}).click();await expect(save).toBeVisible();await expect(quiet).toBeChecked({checked:initial});
+      17 |     const axe=await new AxeBuilder({page}).include('section[aria-label="Notification settings"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await panel.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:1600});await panel.screenshot({path:'docs/evidence/notification-preferences.png'});
+      18 |   }finally{release?.();await page.unroute(endpoint);if(previous)expect((await page.request.put(`${api}/v1/notification-settings`,{headers,data:previous})).status()).toBe(200);}
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/notification-settings.spec.ts:15:728
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/notification-settings-noti-56474-r-uncertain-acknowledgement-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/notification-settings-noti-56474-r-uncertain-acknowledgement-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/notification-settings-noti-56474-r-uncertain-acknowledgement-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/notification-settings-noti-56474-r-uncertain-acknowledgement-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/notification-settings.spec.ts:4:1 › notification preferences bound reads, serialize saves and keep unsent choices after uncertain acknowledgement 

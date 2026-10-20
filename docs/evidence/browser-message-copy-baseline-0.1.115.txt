@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:33005) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close (743ms)
+
+
+  1) [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 2
+
+      14 |     const made=await owner.request.post(`${api}/v1/organizations/${org}/channels`,{headers,data:{name:`Message clipboard ${Date.now()}`,kind:'private',teamId:team,members:[bob]}});expect(made.ok()).toBe(true);channel=(await made.json()).id;const base=`${api}/v1/channels/${channel}`,created=await owner.request.post(base+'/messages',{headers,data:{clientId:crypto.randomUUID(),body:'Current authorized clipboard message'}});expect(created.status()).toBe(201);message=(await created.json()).id;const draft=`Unsent clipboard draft ${Date.now()}`;expect((await context.request.put(base+'/draft',{headers,data:{body:draft}})).ok()).toBe(true);
+      15 |     const sourceUrl=`http://localhost:3101/?org=${org}&channel=${channel}#message-${message}`,sourcePath=`${api}/v1/organizations/${org}/channels/${channel}/messages/${message}`;await page.goto(sourceUrl);const dialog=page.getByRole('dialog',{name:'Linked message',exact:true}),copy=dialog.getByRole('button',{name:'Copy message link',exact:true}),copied=dialog.getByText('Message link copied.',{exact:true}),unavailable=dialog.getByText('Clipboard unavailable. Try copying the link again.',{exact:true});await expect(copy).toBeEnabled();const receipts=await (await context.request.get(base+'/receipts')).json();
+    > 16 |     await copy.evaluate(element=>{(element as HTMLButtonElement).click();(element as HTMLButtonElement).click();});expect(await count()).toBe(1);await expect(copy).toBeDisabled();expect(await page.evaluate(()=>(window as unknown as {messageClipboardTest:{calls:{value:string}[]}}).messageClipboardTest.calls[0].value)).toBe(sourceUrl);
+         |                                                                                                                                          ^
+      17 |     await page.route(sourcePath,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Message check temporarily unavailable"}'}));await expect(dialog.getByRole('alert')).toContainText('Message check temporarily unavailable',{timeout:10000});await expect(dialog.getByRole('article')).toHaveCount(0);await settle(0);await expect(copied).toHaveCount(0);await expect(unavailable).toHaveCount(0);expect((await (await context.request.get(base+'/draft')).json()).body).toBe(draft);expect(await (await context.request.get(base+'/receipts')).json()).toEqual(receipts);
+      18 |     await page.unroute(sourcePath);await dialog.getByRole('button',{name:'Retry message',exact:true}).click();await expect(copy).toBeEnabled();await copy.click();expect(await count()).toBe(2);await page.route(sourcePath,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Another failed source check"}'}));await expect(dialog.getByRole('alert')).toContainText('Another failed source check',{timeout:10000});await page.unroute(sourcePath);await dialog.getByRole('button',{name:'Retry message',exact:true}).click();await expect(copy).toBeVisible();await expect(copy).toBeDisabled();await settle(1,true);await expect(copy).toBeEnabled();await expect(unavailable).toHaveCount(0);
+      19 |     await copy.click();await settle(2);await expect(copied).toBeVisible();await copy.click();await expect(copied).toHaveCount(0);await settle(3,true);await expect(unavailable).toBeVisible();const axe=await new AxeBuilder({page}).include('dialog[open]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await dialog.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await dialog.screenshot({path:'docs/evidence/message-link-clipboard.png'});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/message-link-clipboard.spec.ts:16:138
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/message-link-clipboard-mes-685c6-ailure-revocation-and-close-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close 

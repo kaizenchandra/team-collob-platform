@@ -1,0 +1,102 @@
+
+Running 2 tests using 1 worker
+
+(node:2898) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/activity-sources.spec.ts:8:1 › activity exact sources recover failures and preserve filters, drafts and cancelled navigation (20.1s)
+(node:2926) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access (11.9s)
+
+
+  1) [chrome] › tests/browser/activity-sources.spec.ts:8:1 › activity exact sources recover failures and preserve filters, drafts and cancelled navigation 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('region', { name: 'Activity messages', exact: true }).locator('.result-card')
+    Expected: 4
+    Received: 50
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('region', { name: 'Activity messages', exact: true }).locator('.result-card') with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Activity messages', exact: true }).locator('.result-card')
+        - locator resolved to 0 elements
+        - unexpected value "0"
+        13 × locator resolved to 50 elements
+           - unexpected value "50"
+
+
+      32 |     await bob.route(currentRoute,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Current activity poll failed after navigation"}'}));
+      33 |     await expect(feed.getByRole('alert')).toContainText('Current activity poll failed after navigation',{timeout:10000});await expect(feed.locator('.result-card')).toHaveCount(0);
+    > 34 |     await bob.unroute(currentRoute);await bob.unroute(olderRoute);await feed.getByRole('button',{name:'Retry activity',exact:true}).click();await expect(feed.locator('.result-card')).toHaveCount(4);await expect(feed.getByRole('navigation',{name:'Activity pages'})).toContainText('Activity page 2');await expect(older).toBeDisabled();await expect(newer).toBeEnabled();
+         |                                                                                                                                                                                        ^
+      35 |     const parentCard=feed.locator('.result-card').filter({hasText:'Activity parent outside loaded history'});await parentCard.getByRole('button',{name:'View message',exact:true}).click();await expect(dialog.getByText('Activity parent outside loaded history',{exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();await newer.click();await expect(feed.locator('.result-card')).toHaveCount(50);await older.click();await expect(feed.locator('.result-card')).toHaveCount(4);await refresh.click();await expect(feed.locator('.result-card')).toHaveCount(50);await expect(newer).toBeDisabled();await filter.selectOption('mentions');await expect(feed.locator('.result-card')).toHaveCount(0);await expect(feed.getByRole('heading',{name:'No mentions found',exact:true})).toBeVisible();await expect(newer).toBeDisabled();
+      36 |   } finally {
+      37 |     release?.();await a.close();await b.close();for(const channelId of channels){await db.query('DELETE FROM saved_messages WHERE message_id IN(SELECT id FROM messages WHERE channel_id=$1)',[channelId]);for(const table of ['messages','drafts','channel_preferences','read_positions','channel_members','outbox'])await db.query(`DELETE FROM ${table} WHERE channel_id=$1`,[channelId]);await db.query('DELETE FROM channels WHERE id=$1',[channelId]);}for(const table of ['audit','team_members','teams','presence','calendar_versions','memberships'])await db.query(`DELETE FROM ${table} WHERE org_id=$1`,[org]);await db.query('DELETE FROM organizations WHERE id=$1',[org]);await db.end();
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/activity-sources.spec.ts:34:184
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/activity-sources-activity--87720-ts-and-cancelled-navigation-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/activity-sources-activity--87720-ts-and-cancelled-navigation-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/activity-sources-activity--87720-ts-and-cancelled-navigation-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/activity-sources-activity--87720-ts-and-cancelled-navigation-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/activity-sources-activity--87720-ts-and-cancelled-navigation-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status').filter({ hasText: /^Saved page / })
+    Expected: "Saved page 2 · 4 messages"
+    Received: "Saved page 1 · 50 messages"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status').filter({ hasText: /^Saved page / }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Saved messages', exact: true }).getByRole('status').filter({ hasText: /^Saved page / })
+        13 × locator resolved to <p role="status">…</p>
+           - unexpected value "Saved page 1 · 50 messages"
+
+
+      17 |     await bob.route(pollRoute,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Current saved poll failed after navigation"}'}));
+      18 |     await expect(region.getByRole('alert')).toContainText('Current saved poll failed after navigation',{timeout:10000});await expect(region.getByRole('article')).toHaveCount(0);
+    > 19 |     await bob.unroute(pollRoute);await bob.unroute(pattern);await region.getByRole('button',{name:'Retry saved messages',exact:true}).click();await expect(region.getByRole('status').filter({hasText:/^Saved page /})).toHaveText('Saved page 2 · 4 messages');
+         |                                                                                                                                                                                                                         ^
+      20 |     const card=region.getByRole('article').filter({hasText:marker}),before=(await db.query('SELECT * FROM read_positions WHERE channel_id=$1 AND user_id=$2',[beta,users.bob])).rows;await card.getByRole('button',{name:'Open saved message',exact:true}).click();const detail=bob.getByRole('dialog',{name:'Linked message',exact:true});await expect(detail.getByText(marker,{exact:true})).toBeVisible();await expect(detail.locator('img')).toHaveCount(0);expect(new URL(bob.url()).searchParams.get('channel')).toBe(alpha);expect((await db.query('SELECT * FROM read_positions WHERE channel_id=$1 AND user_id=$2',[beta,users.bob])).rows).toEqual(before);const sourceSave=`**/v1/channels/${beta}/messages/${target}/save`;await expect(detail.getByRole('button',{name:'Unsave message',exact:true})).toBeVisible();await bob.route(sourceSave,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Source save temporarily unavailable"}'}));await detail.getByRole('button',{name:'Unsave message',exact:true}).click();await expect(detail.getByRole('alert')).toContainText('Source save temporarily unavailable');await expect(detail.getByText(marker,{exact:true})).toBeVisible();expect((await db.query('SELECT count(*)::int n FROM saved_messages WHERE message_id=$1 AND user_id=$2',[target,users.bob])).rows[0].n).toBe(1);await bob.unroute(sourceSave);const sourceRead=`**/v1/organizations/${org}/channels/${beta}/messages/${target}`;let started!:()=>void,finished!:()=>void;const reading=new Promise<void>(resolve=>{started=resolve;}),readDone=new Promise<void>(resolve=>{finished=resolve;}),heldRead=new Promise<void>(resolve=>{releaseRead=resolve;});await bob.route(sourceRead,async route=>{const response=await route.fetch();started();await heldRead;await route.fulfill({response}).catch(()=>{});finished();});await reading;await detail.getByRole('button',{name:'Unsave message',exact:true}).click();await expect(detail.getByRole('button',{name:'Save message',exact:true})).toBeVisible();releaseRead?.();await readDone;await bob.unroute(sourceRead);await bob.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));await expect(detail.getByRole('button',{name:'Save message',exact:true})).toBeVisible();await expect(card).toHaveCount(0,{timeout:10000});await detail.getByRole('button',{name:'Save message',exact:true}).click();await expect(detail.getByRole('button',{name:'Unsave message',exact:true})).toBeVisible();await expect(card).toHaveCount(1,{timeout:10000});
+      21 |     expect((await b.request.post(`${api}/v1/channels/${beta}/messages/${target}/save`,{headers,data:{saved:false}})).status()).toBe(200);await expect(detail.getByRole('button',{name:'Save message',exact:true})).toBeVisible({timeout:10000});await detail.getByRole('button',{name:'Save message',exact:true}).click();await expect(detail.getByRole('button',{name:'Unsave message',exact:true})).toBeVisible();await expect(card).toHaveCount(1,{timeout:10000});await bob.screenshot({path:'docs/evidence/source-message-save.png'});
+      22 |     await detail.getByRole('button',{name:'Close dialog',exact:true}).click();await expect(detail).toHaveCount(0);await expect(region.getByRole('status').filter({hasText:/^Saved page /})).toHaveText('Saved page 2 · 4 messages');
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/saved-messages.spec.ts:19:217
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/saved-messages-saved-messa-b5771-res-deletion-current-access-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chrome] › tests/browser/activity-sources.spec.ts:8:1 › activity exact sources recover failures and preserve filters, drafts and cancelled navigation 
+    [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access 

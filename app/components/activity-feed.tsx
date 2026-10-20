@@ -24,7 +24,9 @@ export function ActivityFeed({org,filter,onFilter,onOpen,onConversation,onCancel
     try {
       const result=snapshot.parse(await api(`/organizations/${org}/activity?${query}`,'GET',undefined,AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])));
       if(mounted.current&&!controller.signal.aborted){history.current=nextHistory;setData({filter,page:result,history:nextHistory});setFailure(previous=>mode==='poll'&&previous?.mode==='navigate'?previous:null);}
-    } catch(e) {if(mounted.current&&!controller.signal.aborted){if(mode!=='navigate'||e instanceof ApiError&&[401,403,404].includes(e.status))setData(null);setFailure({filter,message:e instanceof Error?e.message:'Activity unavailable',history:nextHistory,mode});}}
+    } catch(e) {if(mounted.current&&!controller.signal.aborted){if(mode!=='navigate'||e instanceof ApiError&&[401,403,404].includes(e.status))setData(null);const message=e instanceof Error?e.message:'Activity unavailable';
+      // A failed background read must keep the user's pending page retry target.
+      setFailure(previous=>mode==='poll'&&previous?.mode==='navigate'?{...previous,message}:{filter,message,history:nextHistory,mode});}}
     finally {if(request.current===controller){request.current=null;if(mounted.current)setLoading(false);}}
   },[org,filter]);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate the scoped remote activity selection.

@@ -29,6 +29,7 @@ export async function runDigestJob(send:(mail:DigestMail)=>Promise<void>=sendDig
   const job=(await pool.query(`UPDATE digest_jobs SET state='preparing',attempts=attempts+1,lease_id=$1,lease_until=now()+interval '90 seconds'
     WHERE id=(SELECT id FROM digest_jobs WHERE ((state='queued' AND available_at<=now()) OR (state='preparing' AND lease_until<=now())) AND attempts<5 ORDER BY available_at FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING *`,[lease])).rows[0];
   if(!job)return false;
+  let sending=false;
   try{
     const pref=(await pool.query('SELECT s.*,u.email,u.timezone,u.disabled,o.name organization FROM notification_settings s JOIN users u ON u.id=s.user_id JOIN organizations o ON o.id=$2 WHERE s.user_id=$1',[job.user_id,job.org_id])).rows[0];
     if(!pref?.digest_enabled||pref.disabled){await pool.query("UPDATE digest_jobs SET state='cancelled',lease_id=NULL,lease_until=NULL WHERE id=$1 AND lease_id=$2",[job.id,lease]);return true;}
@@ -42,14 +43,15 @@ export async function runDigestJob(send:(mail:DigestMail)=>Promise<void>=sendDig
     if(!rows.length){await pool.query("UPDATE digest_jobs SET state='cancelled',lease_id=NULL,lease_until=NULL WHERE id=$1 AND lease_id=$2",[job.id,lease]);return true;}
     const intent=await pool.query("UPDATE digest_jobs SET state='sending' WHERE id=$1 AND lease_id=$2 AND state='preparing' AND lease_until>now() RETURNING id",[job.id,lease]);
     if(!intent.rowCount)return true;
+    sending=true;
     await send({id:job.id,to:pref.email,organization:pref.organization,orgId:job.org_id,count:rows.length,privateCount:rows.filter(r=>r.kind==='private').length});
     await transaction(async db=>{
       const changed=await db.query("UPDATE digest_jobs SET state='sent',accepted_at=now(),last_error=NULL,lease_id=NULL,lease_until=NULL WHERE id=$1 AND lease_id=$2 AND state='sending' RETURNING id",[job.id,lease]);
       if(changed.rowCount)await audit(db,job.user_id,job.org_id,'email.digest_accepted',job.id,{count:rows.length});
     });
   }catch(error){
-    const kind=emailFailure(error),delay=Math.min(300,2**job.attempts)+randomInt(1,6);
-    await pool.query("UPDATE digest_jobs SET state=$3,last_error=$4,available_at=now()+($5*interval '1 second'),lease_id=NULL,lease_until=NULL WHERE id=$1 AND lease_id=$2",[job.id,lease,kind==='retry'?(job.attempts>=5?'dead':'queued'):kind,kind==='uncertain'?'acceptance_unknown':'smtp_unavailable',delay]);
+    const kind=sending?emailFailure(error):'retry',delay=Math.min(300,2**job.attempts)+randomInt(1,6);
+    await pool.query("UPDATE digest_jobs SET state=$3,last_error=$4,available_at=now()+($5*interval '1 second'),lease_id=NULL,lease_until=NULL WHERE id=$1 AND lease_id=$2",[job.id,lease,kind==='retry'?(job.attempts>=5?'dead':'queued'):kind,!sending?'preparation_unavailable':kind==='uncertain'?'acceptance_unknown':'smtp_unavailable',delay]);
   }
   return true;
 }

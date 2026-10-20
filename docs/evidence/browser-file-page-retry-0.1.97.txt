@@ -1,0 +1,10 @@
+
+Running 2 tests using 1 worker
+
+(node:57490) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh (22.8s)
+  ✓  2 [chrome] › tests/browser/file-processing.spec.ts:11:1 › exhausted scans explain blocked downloads and only the uploader can retry through real scanning (7.2s)
+
+  2 passed (31.2s)

@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:25806) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/digest-history.spec.ts:7:1 › digest history separates loading, current errors and confirmed outcomes without saving settings (10.3s)
+  ✓  2 [chrome] › tests/browser/notifications.spec.ts:3:1 › saved quiet hours suppress mention alerts; native browser construction is deduplicated across tabs (11.9s)
+  ✓  3 [chrome] › tests/browser/notifications.spec.ts:37:1 › explicit reply opt-in invokes one native reply notification across two tabs (11.7s)
+
+  3 passed (34.6s)

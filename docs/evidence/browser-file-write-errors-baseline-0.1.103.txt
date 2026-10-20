@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:74484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/file-write-errors.spec.ts:7:1 › network-lost accepted upload retains identity and file server errors stay local across polling (5.8s)
+
+
+  1) [chrome] › tests/browser/file-write-errors.spec.ts:7:1 › network-lost accepted upload retains identity and file server errors stay local across polling 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: 'Conversation files', exact: true }).getByRole('alert').filter({ hasText: 'File change could not be confirmed' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: 'Conversation files', exact: true }).getByRole('alert').filter({ hasText: 'File change could not be confirmed' }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Conversation files', exact: true }).getByRole('alert').filter({ hasText: 'File change could not be confirmed' })
+
+
+       9 |   try{
+      10 |     await page.goto(`/?channel=${channel}`);await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();const panel=page.getByRole('region',{name:'Conversation files',exact:true}),input=panel.locator('input[type="file"]');await expect(input).toBeEnabled();
+    > 11 |     page.on('request',r=>{if(r.url()===base&&r.method()==='POST')posts++;if(r.url()===base&&r.method()==='GET')reads++;});await page.route(pattern,async route=>{if(route.request().method()!=='POST'){await route.continue();return;}operation=route.request().postDataJSON().clientId;const response=await route.fetch();expect(response.status()).toBe(200);file=(await response.json()).id;await route.abort('connectionclosed');});await input.setInputFiles(selection);const notice=panel.getByRole('alert').filter({hasText:'File change could not be confirmed'});await expect(notice).toBeVisible();await expect(input).toBeEnabled();expect(await page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toContain(operation);await page.unroute(pattern);const before=reads;await expect.poll(()=>reads).toBeGreaterThan(before);await expect(notice).toBeVisible();expect(posts).toBe(1);
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ^
+      12 |     await notice.scrollIntoViewIfNeeded();await page.screenshot({path:'docs/evidence/file-write-network-error.png'});const retry=page.waitForRequest(r=>r.url()===base&&r.method()==='POST');await input.setInputFiles(selection);expect((await retry).postDataJSON().clientId).toBe(operation);await expect(notice).toHaveCount(0);const row=panel.locator('.file-row').filter({hasText:name});await expect(row).toContainText('Scan passed',{timeout:120000});expect((await (await context.request.get(base)).json()).files.filter((f:{name:string})=>f.name===name)).toHaveLength(1);await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toBeNull();expect(posts).toBe(2);const download=page.waitForEvent('download');await row.getByRole('link',{name:'Download',exact:true}).click();expect(await readFile((await (await download).path())!,'utf8')).toBe(selection.buffer.toString());
+      13 |     const deletion=`**/v1/channels/${channel}/files/${file}`;let deletes=0;page.on('request',r=>{if(r.url()===`${base}/${file}`&&r.method()==='DELETE')deletes++;});await page.route(deletion,r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"File deletion temporarily unavailable"}'}));await row.getByRole('button',{name:'Delete',exact:true}).click();const rejection=panel.getByRole('alert').filter({hasText:'File deletion temporarily unavailable'});await expect(rejection).toBeVisible();await expect(row.getByRole('button',{name:'Delete',exact:true})).toBeEnabled();const lastRead=reads;await expect.poll(()=>reads).toBeGreaterThan(lastRead);await expect(rejection).toBeVisible();expect(deletes).toBe(1);expect((await context.request.get(`${base}/${file}/download`)).status()).toBe(200);const axe=await new AxeBuilder({page}).include('section[aria-label="Conversation files"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.unroute(deletion);await row.getByRole('button',{name:'Delete',exact:true}).click();await expect(row).toHaveCount(0);await expect(rejection).toHaveCount(0);expect(deletes).toBe(2);expect((await context.request.get(`${base}/${file}/download`)).status()).toBe(404);
+      14 |   }finally{await page.unrouteAll({behavior:'wait'});if(file)expect((await context.request.delete(`${base}/${file}`,{headers})).status()).toBe(200);}
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-write-errors.spec.ts:11:576
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-write-errors-network--8c455-s-stay-local-across-polling-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-write-errors-network--8c455-s-stay-local-across-polling-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-write-errors-network--8c455-s-stay-local-across-polling-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-write-errors-network--8c455-s-stay-local-across-polling-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-write-errors.spec.ts:7:1 › network-lost accepted upload retains identity and file server errors stay local across polling 

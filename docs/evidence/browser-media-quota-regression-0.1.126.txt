@@ -1,0 +1,157 @@
+
+Running 8 tests using 1 worker
+
+(node:59643) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization (28.4s)
+  ✓  2 [chrome] › tests/browser/media.spec.ts:44:1 › UI starts a fresh call after ending and acknowledged breakout names can be reused (1.1s)
+  ✓  3 [chrome] › tests/browser/meeting-protocol.spec.ts:8:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (26.3s)
+  ✘  4 [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (32.4s)
+(node:59985) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links (7.6s)
+(node:60013) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (11.1s)
+(node:60151) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  7 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (3.0m)
+(node:60786) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  8 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (2.0s)
+
+
+  1) [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByLabel('Remote camera', { exact: true })
+    Expected: 1
+    Received: 0
+    Timeout:  30000ms
+
+    Call log:
+      - Expect "toHaveCount" getByLabel('Remote camera', { exact: true }) with timeout 30000ms
+      - waiting for getByLabel('Remote camera', { exact: true })
+        63 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+       5 | const api='http://localhost:4100',org='11111111-1111-4111-8111-111111111111',bobId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',samId='dddddddd-dddd-4ddd-8ddd-dddddddddddd',headers={origin:'http://localhost:3101'},base=`${api}/v1/organizations/${org}/calls`;
+       6 | async function login(c:BrowserContext,email:string){expect((await c.request.post(`${api}/v1/session`,{headers,data:{email,password:'Development123!'}})).ok()).toBe(true);}
+    >  7 | async function connected(p:Page,n:number){await expect(p.getByRole('status').filter({hasText:'Connection: connected'})).toBeVisible({timeout:30000});await expect(p.getByLabel('Remote camera',{exact:true})).toHaveCount(n,{timeout:30000});}
+         |                                                                                                                                                                                                               ^
+       8 | test('instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat',async()=>{
+       9 |  test.setTimeout(240000);const browser=await chromium.launch({channel:'chrome',args:['--host-resolver-rules=MAP localhost 127.0.0.1','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required','--enable-usermedia-screen-capturing','--auto-select-desktop-capture-source=Entire screen']}),contexts=await Promise.all([1,2,3,4].map(()=>browser.newContext({permissions:['microphone','camera']}))),[alice,bob,sam,eve]=contexts,[a,b,c,e]=await Promise.all(contexts.map(x=>x.newPage()));let call='';
+      10 |  try{
+        at connected (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-protocol.spec.ts:7:207)
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-protocol.spec.ts:41:25
+
+    Error Context: test-results/meeting-protocol-two-authe-e11a3-ugh-forced-local-TURN-relay-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/meeting-protocol-two-authe-e11a3-ugh-forced-local-TURN-relay-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/meeting-protocol-two-authe-e11a3-ugh-forced-local-TURN-relay-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Call ended', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Call ended', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Call ended', exact: true })
+
+
+      46 |  test.setTimeout(90000);const browser=await chromium.launch({channel:'chrome',args:['--host-resolver-rules=MAP localhost 127.0.0.1','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required']}),alice=await browser.newContext({permissions:['microphone','camera','clipboard-read','clipboard-write']}),bob=await browser.newContext({permissions:['microphone','camera']}),a=await alice.newPage(),b=await bob.newPage();let call='';
+      47 |  try{
+    > 48 |   await login(alice,'alice@acme.test');await login(bob,'bob@acme.test');for(const p of [a,b])await p.goto(`http://localhost:3101/?org=${org}&channel=44444444-4444-4444-8444-444444444444`);await a.getByRole('button',{name:'Conversation details',exact:true}).click();const start=a.waitForResponse(r=>r.url().endsWith('/calls')&&r.request().method()==='POST');await a.getByRole('button',{name:'Audio call Bob Chen',exact:true}).click();call=(await(await start).json()).id;await b.getByRole('complementary',{name:'Incoming calls',exact:true}).getByRole('button',{name:'Answer with audio',exact:true}).click();for(const p of [a,b])await connected(p,0);await a.getByRole('button',{name:'End call for everyone',exact:true}).click();await a.getByRole('button',{name:'Confirm end meeting',exact:true}).click();await expect(b.getByRole('heading',{name:'Call ended',exact:true})).toBeVisible();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^
+      49 |   await a.getByRole('combobox',{name:'Call type',exact:true}).selectOption('video');const instant=a.getByRole('region',{name:'Instant meeting',exact:true});await instant.getByRole('textbox',{name:'Meeting title',exact:true}).fill(`UI instant ${Date.now()}`);await instant.getByRole('checkbox',{name:'Bob Chen',exact:true}).check();const made=a.waitForResponse(r=>r.url().endsWith('/instant-meetings')&&r.request().method()==='POST');await instant.getByRole('button',{name:'Create instant meeting',exact:true}).click();call=(await(await made).json()).id;await expect(a.getByRole('button',{name:'Join call',exact:true})).toBeVisible();await a.getByRole('button',{name:'Copy meeting link',exact:true}).click();expect(await a.evaluate(()=>navigator.clipboard.readText())).toBe(`http://localhost:3101/?org=${org}&call=${call}`);await a.getByRole('button',{name:'Join call',exact:true}).click();await b.getByRole('complementary',{name:'Incoming calls',exact:true}).getByRole('button',{name:'Answer with video',exact:true}).click();await connected(a,1);await connected(b,1);
+      50 |  }finally{if(call)await alice.request.post(`${base}/${call}/end`,{headers,data:{}});await browser.close();}
+      51 | });
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/meeting-protocol.spec.ts:48:870
+
+    Error Context: test-results/meeting-protocol-profile-a-8431d-s-and-copy-authorized-links-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/meeting-protocol-profile-a-8431d-s-and-copy-authorized-links-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/meeting-protocol-profile-a-8431d-s-and-copy-authorized-links-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('complementary', { name: 'Incoming calls', exact: true })
+    Expected substring: "Alice Morgan"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('complementary', { name: 'Incoming calls', exact: true }) with timeout 10000ms
+      - waiting for getByRole('complementary', { name: 'Incoming calls', exact: true })
+
+
+      13 |  try{
+      14 |   await login(alice,'alice@acme.test');await login(bob,'bob@acme.test');const name=`Direct video ${Date.now()}`,made=await alice.request.post(`${api}/v1/organizations/${org}/channels`,{headers,data:{name,kind:'direct',teamId:null,members:[bobId]}});expect(made.ok()).toBe(true);const channel=(await made.json()).id;await b.goto(`http://localhost:3101/?org=${org}&channel=${channel}`);
+    > 15 |   call=await start(a,channel,'Video');const incoming=b.getByRole('complementary',{name:'Incoming calls',exact:true});await expect(incoming).toContainText('Alice Morgan',{timeout:10000});await expect(b.locator('video')).toHaveCount(0);await incoming.getByRole('button',{name:'Answer with video',exact:true}).click();await connected(a,1);await connected(b,1);
+         |                                                                                                                                             ^
+      16 |   await a.getByRole('button',{name:'Raise hand',exact:true}).click();await expect(b.getByRole('region',{name:'Raised hands',exact:true})).toContainText('Alice Morgan · Hand raised');await a.getByRole('button',{name:'Lower hand',exact:true}).click();await expect(b.getByRole('region',{name:'Raised hands',exact:true})).toContainText('No hands raised');
+      17 |   const text=`Call-only ${Date.now()} <img src=x onerror=alert(1)> **literal**`;await a.getByRole('textbox',{name:'Call message',exact:true}).fill(text);await a.getByRole('button',{name:'Send call message',exact:true}).click();await expect(b.getByRole('list',{name:'Call messages',exact:true})).toContainText(text);expect(await b.getByRole('list',{name:'Call messages',exact:true}).locator('img').count()).toBe(0);
+      18 |   await b.getByRole('textbox',{name:'Call message',exact:true}).fill('Reply in direct call');await b.getByRole('button',{name:'Send call message',exact:true}).click();await expect(a.getByRole('list',{name:'Call messages',exact:true})).toContainText('Reply in direct call');
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/team-calls.spec.ts:15:141
+
+    Error Context: test-results/team-calls-one-to-one-vide-c7082-sharing-hands-and-room-chat-chrome/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/team-calls-one-to-one-vide-c7082-sharing-hands-and-room-chat-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/team-calls-one-to-one-vide-c7082-sharing-hands-and-room-chat-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization 
+
+    Test timeout of 180000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/team-calls-three-person-gr-0b8b1--with-current-authorization-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay 
+    [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links 
+    [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat 
+    [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization 
+  4 passed (4.9m)

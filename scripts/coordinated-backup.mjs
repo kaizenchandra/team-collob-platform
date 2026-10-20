@@ -20,6 +20,9 @@ const started=Date.now(),backupId=randomUUID();let scannerCapture;
 try{
   scannerCapture=await captureScanner(backupId);
   await db.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+  if((await db.query("SELECT to_regclass('media_recordings') relation")).rows[0].relation){
+    if((await db.query('SELECT 1 FROM media_recordings LIMIT 1')).rowCount||(await db.query('SELECT 1 FROM media_calls WHERE ended_at IS NULL LIMIT 1')).rowCount)throw new Error('Media-aware backup required: preserve the media-recordings volume together with the database. This legacy file-backup format does not capture recordings or active calls.');
+  }
   const snapshot=(await db.query('SELECT pg_export_snapshot() id,transaction_timestamp() at')).rows[0];
   const files=(await db.query('SELECT id,org_id,channel_id,storage_key,bytes,sha256,storage_backend,object_key,object_bucket,state,revision_root,revision_number,lifecycle_revision FROM files ORDER BY id LIMIT 10001')).rows;
   if(files.length>10000)throw new Error("Local backup file-count limit exceeded");

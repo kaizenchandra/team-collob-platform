@@ -1,0 +1,9 @@
+file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/release-health.mjs:20
+      throw new Error(`Release blocked: ${service} is not running the expected image ${image}`);
+            ^
+
+Error: Release blocked: api is not running the expected image concord-api:0.1.123-local
+    at assertReleaseHealth (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/release-health.mjs:20:13)
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/record-release.mjs:15:1
+
+Node.js v24.19.0

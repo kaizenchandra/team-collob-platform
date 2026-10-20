@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:41794) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/direct-replies.spec.ts:5:1 › direct replies page beyond fifty with safe source opening, exact retry, cancellation and current parent access (11.5s)
+
+
+  1) [chrome] › tests/browser/direct-replies.spec.ts:5:1 › direct replies page beyond fifty with safe source opening, exact retry, cancellation and current parent access 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('button', { name: 'View direct replies', exact: true })
+
+
+      12 |     const draft=`Unsent direct reply browsing draft ${token}`;expect((await context.request.put(base+'/draft',{headers,data:{body:draft}})).ok()).toBe(true);const source=`${api}/v1/organizations/${org}/channels/${channel}/messages/${parent}`,endpoint=source+'/replies';await page.goto(`/?org=${org}&channel=${channel}#message-${parent}`);const dialog=page.getByRole('dialog',{name:'Linked message',exact:true}),list=dialog.getByRole('region',{name:'Direct replies',exact:true}),show=dialog.getByRole('button',{name:'View direct replies',exact:true}),retry=list.getByRole('button',{name:'Retry direct replies',exact:true}),status=list.getByRole('status').filter({hasText:/^Reply page /});await expect(dialog.getByRole('article',{name:'Selected message',exact:true})).toContainText(parentBody);
+      13 |     const receipts=await (await context.request.get(base+'/receipts')).json(),writes:string[]=[],reads:string[]=[];page.on('request',r=>{if(r.url().startsWith(base+'/')&&r.method()!=='GET'&&/\/(messages|read)(?:\/|$)/.test(r.url()))writes.push(r.method()+' '+r.url());if(r.url().startsWith(endpoint))reads.push(r.url());});expect(reads).toEqual([]);
+    > 14 |     await show.click();await expect(status).toHaveText('Reply page 1 · 50 replies');await expect(list.getByRole('article',{name:'Direct reply',exact:true})).toHaveCount(50);await expect(list.getByText('Nested reply must stay outside root list',{exact:true})).toHaveCount(0);await expect(list.getByText('Unrelated message must stay outside root list',{exact:true})).toHaveCount(0);await expect(list.getByText('Deleted direct reply must stay hidden',{exact:true})).toHaveCount(0);
+         |                ^
+      15 |     await page.route(endpoint+'?*',route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Older direct replies unavailable"}'}));await list.getByRole('button',{name:'Older replies',exact:true}).click();await expect(list.getByRole('alert')).toContainText('Older direct replies unavailable');await expect(list.getByRole('article')).toHaveCount(0);const failedTarget=reads.at(-1);await page.unroute(endpoint+'?*');await retry.click();await expect(status).toHaveText('Reply page 2 · 3 replies');expect(reads.at(-1)).toBe(failedTarget);const oldest=list.getByRole('article',{name:'Direct reply',exact:true}).filter({hasText:`Oldest direct child ${token}`});await expect(oldest).toContainText('<img src=x onerror=alert(1)> **literal excerpt**');await expect(list.locator('img')).toHaveCount(0);
+      16 |     const axe=await new AxeBuilder({page}).include('dialog[open]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await dialog.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await list.screenshot({path:'docs/evidence/direct-replies.png'});
+      17 |     await oldest.getByRole('button',{name:'Open reply source',exact:true}).click();await expect(dialog.getByRole('article',{name:'Selected message',exact:true})).toContainText(`Oldest direct child ${token}`);expect(new URL(page.url()).hash).toBe('#message-'+children[0]);await expect(list).toHaveCount(0);await dialog.getByRole('button',{name:'View replied-to message',exact:true}).click();await expect(dialog.getByRole('region',{name:'Replied-to message',exact:true})).toContainText(parentBody);expect((await (await context.request.get(base+'/draft')).json()).body).toBe(draft);expect(await (await context.request.get(base+'/receipts')).json()).toEqual(receipts);expect(writes).toEqual([]);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/direct-replies.spec.ts:14:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/direct-replies-direct-repl-87f10-n-and-current-parent-access-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/direct-replies-direct-repl-87f10-n-and-current-parent-access-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/direct-replies-direct-repl-87f10-n-and-current-parent-access-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/direct-replies-direct-repl-87f10-n-and-current-parent-access-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/direct-replies.spec.ts:5:1 › direct replies page beyond fifty with safe source opening, exact retry, cancellation and current parent access 

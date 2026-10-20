@@ -1,0 +1,172 @@
+ Image concord-web:0.1.126-local Building 
+ Image concord-api:0.1.126-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.27kB done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 transferring dockerfile:
+#2 transferring dockerfile: 1.73kB 0.0s done
+#2 DONE 2.5s
+
+#3 [web internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 1.2s
+
+#4 [api internal] load .dockerignore
+#4 transferring context:
+#4 transferring context: 142B 0.1s done
+#4 DONE 2.2s
+
+#5 [api internal] load build context
+#5 DONE 0.0s
+
+#6 [api build 1/6] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#6 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#6 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 4.0s done
+#6 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 4.0s done
+#6 DONE 4.6s
+
+#5 [web internal] load build context
+#5 transferring context:
+#5 transferring context: 249.59kB 0.6s done
+#5 DONE 1.8s
+
+#7 [api build 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [api build 3/6] COPY package.json package-lock.json ./
+#8 CACHED
+
+#9 [api build 4/6] RUN npm ci
+#9 CACHED
+
+#10 [api build 5/6] COPY . .
+#10 ...
+
+#7 [web build 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [web build 3/6] COPY package.json package-lock.json ./
+#8 CACHED
+
+#9 [web build 4/6] RUN npm ci
+#9 CACHED
+
+#10 [web build 5/6] COPY . .
+#10 DONE 18.6s
+
+#11 [api build 6/6] RUN npm run build
+#11 2.779 
+#11 2.779 > team-collob-platform@0.1.126 build
+#11 2.779 > next build && node scripts/prepare-standalone.mjs
+#11 2.779 
+#11 5.216 ▲ Next.js 16.4.0 (Turbopack)
+#11 5.500 ✓ Running next.config.ts took 280ms
+#11 5.551 - Cache Components enabled
+#11 5.552 - Partial Prefetching enabled
+#11 5.552 
+#11 5.660   Creating an optimized production build ...
+#11 39.33 ✓ Compiled successfully in 33.6s
+#11 39.35   Running TypeScript ...
+#11 113.8   Finished TypeScript in 74s ...
+#11 113.8   Collecting page data using 5 workers ...
+#11 115.8   Generating static pages using 5 workers (0/4) ...
+#11 117.9   Generating static pages using 5 workers (1/4) 
+#11 118.4   Generating static pages using 5 workers (2/4) 
+#11 118.4   Generating static pages using 5 workers (3/4) 
+#11 118.5 ✓ Generating static pages using 5 workers (4/4) in 2.7s
+#11 118.5   Finalizing page optimization ...
+#11 119.6 
+#11 119.6 Route (app)
+#11 119.6 ┌ ○ /
+#11 119.6 └ ○ /_not-found
+#11 119.6 
+#11 119.6 
+#11 119.6 ○  (Static)  prerendered as static content
+#11 119.7 
+#11 DONE 121.4s
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 ...
+
+#7 [web build 2/6] WORKDIR /app
+#7 CACHED
+
+#7 [api build 2/6] WORKDIR /app
+#7 CACHED
+
+#13 [web web 3/3] COPY --from=build --chown=node:node /app/.next/standalone ./
+#13 DONE 2.9s
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 ...
+
+#14 [web] exporting to image
+#14 exporting layers
+#14 ...
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 23.84 
+#12 23.84 removed 339 packages, and audited 235 packages in 23s
+#12 23.84 
+#12 23.85 102 packages are looking for funding
+#12 23.85   run `npm fund` for details
+#12 23.85 
+#12 23.85 found 0 vulnerabilities
+#12 DONE 24.6s
+
+#14 [web] exporting to image
+#14 exporting layers 20.2s done
+#14 exporting manifest sha256:7fb64eabe2e79248c8c4cea44a1b2c5ceb1ec3145d2625d8a9eb213d6649614f 0.1s done
+#14 exporting config sha256:f6344f9e03ddf687937657c0d8fc6c840955f8ebf993d8d44eec7f35c9fe2bc9 0.1s done
+#14 exporting attestation manifest sha256:da4ae1bf66a462f65e0706835e9bfda27c006258941f12def8e53b1145914a26 0.1s done
+#14 exporting manifest list sha256:9ea8c3453f3ed0da28dc904b203f56005e904fe9bed56c95fcbabd44420879a3 0.1s done
+#14 naming to docker.io/library/concord-web:0.1.126-local
+#14 naming to docker.io/library/concord-web:0.1.126-local 0.1s done
+#14 unpacking to docker.io/library/concord-web:0.1.126-local
+#14 unpacking to docker.io/library/concord-web:0.1.126-local 2.3s done
+#14 DONE 23.1s
+
+#15 [web] resolving provenance for metadata file
+#15 DONE 0.3s
+
+#16 [api api 3/8] COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
+#16 CACHED
+
+#17 [api api 4/8] COPY --chown=node:node package.json ./
+#17 CACHED
+
+#18 [api api 5/8] COPY --chown=node:node services ./services
+#18 DONE 3.8s
+
+#19 [api api 6/8] COPY --chown=node:node lib/file-preview.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts lib/message-sequence.ts ./lib/
+#19 DONE 0.4s
+
+#20 [api api 7/8] COPY --chown=node:node migrations ./migrations
+#20 DONE 0.3s
+
+#21 [api api 8/8] RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
+#21 DONE 0.9s
+
+#22 [api] exporting to image
+#22 exporting layers
+#22 exporting layers 0.6s done
+#22 exporting manifest sha256:79c511e4797df021cb62366a41dbd80c8fb9492807f9e06806c087096ccb2b5b 0.0s done
+#22 exporting config sha256:b9c689cca8717e7eb2fcda45a618262fa8782826b5a0d86e266fd5a10fa2e6ff 0.0s done
+#22 exporting attestation manifest sha256:f3b9bca6fc332f256dc26f3795e9eee6b6886336214f0ec2e84a91c45e1d6b55 0.0s done
+#22 exporting manifest list sha256:67c792b0a03afe9868a25db0c00f08fc27fb395cf0e3904fccf4aa6ccc35a06a
+#22 exporting manifest list sha256:67c792b0a03afe9868a25db0c00f08fc27fb395cf0e3904fccf4aa6ccc35a06a 0.0s done
+#22 naming to docker.io/library/concord-api:0.1.126-local done
+#22 unpacking to docker.io/library/concord-api:0.1.126-local
+#22 unpacking to docker.io/library/concord-api:0.1.126-local 0.3s done
+#22 DONE 1.1s
+
+#23 [api] resolving provenance for metadata file
+#23 DONE 0.2s
+ Image concord-api:0.1.126-local Built 
+ Image concord-web:0.1.126-local Built 
+
+#23 [api] resolving provenance for metadata file
+#23 DONE 0.2s
+ Image concord-api:0.1.126-local Built 
+ Image concord-web:0.1.126-local Built 

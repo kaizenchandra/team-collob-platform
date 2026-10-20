@@ -53,7 +53,8 @@ test("scanned attachments reach another user, survive lost-response retry and di
     await page.route(pattern,async route=>{if(route.request().method()==="POST"){await route.fetch();await route.abort("failed");await page.unroute(pattern);}else await route.continue();});
     await page.getByRole("textbox",{name:"Message",exact:true}).fill(text);
     await page.getByRole("button",{name:"Attach file",exact:true}).click();
-    await page.getByRole("button",{name:`Send file ${name}`,exact:true}).click();
+    await page.getByRole("button",{name:`Add file ${name}`,exact:true}).click();
+    await expect(page.getByRole("region",{name:"Selected attachments"})).toContainText(name);await page.getByRole("button",{name:"Send message",exact:true}).click();
     await expect(page.getByRole("button",{name:"Retry safely"})).toBeVisible();
     await page.reload();await expect(page.getByRole("button",{name:"Retry safely"})).toBeEnabled();
     await page.getByRole("button",{name:"Retry safely"}).click();

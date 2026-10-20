@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:55538) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/reply-ancestry.spec.ts:5:1 › validated parent source opening traverses nested replies and siblings without replacing another draft or marking read (6.2s)
+
+
+  1) [chrome] › tests/browser/reply-ancestry.spec.ts:5:1 › validated parent source opening traverses nested replies and siblings without replacing another draft or marking read 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('region', { name: 'Replied-to message', exact: true }).getByRole('button', { name: 'Open replied-to message', exact: true })
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('region', { name: 'Replied-to message', exact: true }).getByRole('button', { name: 'Open replied-to message', exact: true }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('region', { name: 'Replied-to message', exact: true }).getByRole('button', { name: 'Open replied-to message', exact: true })
+
+
+       9 |     const make=async(body:string,parentId?:string)=>{const response=await owner.request.post(base+'/messages',{headers,data:{clientId:crypto.randomUUID(),body,parentId}});expect(response.status()).toBe(201);const id=(await response.json()).id as string;messages.push({channel:source,id});return id;};const root=await make(rootBody),middle=await make(middleBody,root),leaf=await make(leafBody,middle),sibling=await make(siblingBody,root);expect((await context.request.post(`${base}/messages/${leaf}/save`,{headers,data:{saved:true}})).ok()).toBe(true);const draft=`Keep active ancestry draft ${token}`;expect((await context.request.put(`${api}/v1/channels/${active}/draft`,{headers,data:{body:draft}})).ok()).toBe(true);
+      10 |     await page.goto(`/?org=${org}&channel=${active}`);await expect(page.getByRole('textbox',{name:'Message',exact:true})).toHaveValue(draft);const receipts=await (await context.request.get(base+'/receipts')).json();await page.getByRole('button',{name:'Saved',exact:true}).click();await page.getByRole('region',{name:'Saved messages',exact:true}).getByRole('article').filter({hasText:leafBody}).getByRole('button',{name:'Open saved message',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Linked message',exact:true}),selected=dialog.getByRole('article',{name:'Selected message',exact:true}),parent=dialog.getByRole('region',{name:'Replied-to message',exact:true}),open=parent.getByRole('button',{name:'Open replied-to message',exact:true}),show=dialog.getByRole('button',{name:'View replied-to message',exact:true}),middlePath=`${api}/v1/organizations/${org}/channels/${source}/messages/${middle}`,writes:string[]=[];page.on('request',r=>{if(r.url().startsWith(base+'/')&&r.method()!=='GET'&&/\/(messages|read)(?:\/|$)/.test(r.url()))writes.push(r.method()+' '+r.url());});
+    > 11 |     await expect(selected).toContainText(leafBody);await show.click();await expect(parent).toContainText(middleBody);await expect(open).toBeEnabled();
+         |                                                                                                                                         ^
+      12 |     await page.route(middlePath,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Parent source check unavailable"}'}));await expect(parent.getByRole('alert')).toContainText('Parent source check unavailable',{timeout:10000});await expect(open).toHaveCount(0);await expect(selected).toContainText(leafBody);await page.unroute(middlePath);await parent.getByRole('button',{name:'Retry replied-to message',exact:true}).click();await expect(open).toBeEnabled();
+      13 |     let started=false,aborted=false;page.on('requestfailed',r=>{if(r.url()===middlePath)aborted=true;});await page.route(middlePath,async route=>{const response=await route.fetch();started=true;await new Promise<void>(resolve=>{release=resolve;gates.add(resolve);});await route.fulfill({response}).catch(()=>{});});await dialog.getByRole('button',{name:'Hide replied-to message',exact:true}).click();await show.click();await expect.poll(()=>started).toBe(true);await expect(open).toHaveCount(0);await dialog.getByRole('button',{name:'Hide replied-to message',exact:true}).click();await expect.poll(()=>aborted).toBe(true);release?.();await page.unroute(middlePath);await expect(parent).toHaveCount(0);await show.click();await expect(open).toBeEnabled();
+      14 |     const axe=await new AxeBuilder({page}).include('dialog[open]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await dialog.evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await dialog.screenshot({path:'docs/evidence/reply-ancestry.png'});
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/reply-ancestry.spec.ts:11:137
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/reply-ancestry-validated-p-1cc1e-other-draft-or-marking-read-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/reply-ancestry-validated-p-1cc1e-other-draft-or-marking-read-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/reply-ancestry-validated-p-1cc1e-other-draft-or-marking-read-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/reply-ancestry-validated-p-1cc1e-other-draft-or-marking-read-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/reply-ancestry.spec.ts:5:1 › validated parent source opening traverses nested replies and siblings without replacing another draft or marking read 

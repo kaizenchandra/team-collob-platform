@@ -85,18 +85,20 @@ test("tenant isolation across bootstrap, history, search, work, activity and aud
   );
 });
 test("private-channel visibility excludes a team guest", async () => {
-  const r = await request(
-    "guest",
-    "GET",
-    `/v1/organizations/${ids.org}/bootstrap`,
-  );
-  assert.equal(r.statusCode, 200);
-  assert(!r.json().channels.some((x: { id: string }) => x.id === ids.private));
-  assert.equal(
-    (await request("guest", "GET", `/v1/channels/${ids.private}/messages`))
-      .statusCode,
-    404,
-  );
+  const query=pool.query,diagnostics:unknown[]=[];
+  pool.query=((...args:unknown[])=>{
+    const begin=Date.now();
+    return (Reflect.apply(query,pool,args) as Promise<unknown>).catch((error:Error&{code?:string})=>{
+      diagnostics.push({name:error.name,code:error.code,message:error.message,ms:Date.now()-begin,total:pool.totalCount,idle:pool.idleCount,waiting:pool.waitingCount});
+      throw error;
+    });
+  }) as typeof pool.query;
+  try{
+    const r = await request("guest", "GET", `/v1/organizations/${ids.org}/bootstrap`);
+    assert.equal(r.statusCode, 200, JSON.stringify({body:r.body,diagnostics}));
+    assert(!r.json().channels.some((x: { id: string }) => x.id === ids.private));
+    assert.equal((await request("guest", "GET", `/v1/channels/${ids.private}/messages`)).statusCode,404);
+  }finally{pool.query=query;}
 });
 test("concurrent retried writes commit one message and one ordered event", async () => {
   const clientId = randomUUID(),
@@ -1439,9 +1441,23 @@ test('digest scheduling and delivery enforce private access, quiet hours, retry 
   const queued=async()=>{const message=await fresh(),job=randomUUID();await pool.query("INSERT INTO digest_jobs(id,user_id,org_id,bucket) VALUES($1,$2,$3,date_trunc('hour',now())-($4*interval '1 hour'))",[job,ids.bob,ids.org,bucket++]);await pool.query('INSERT INTO digest_items(user_id,message_id,job_id) VALUES($1,$2,$3)',[ids.bob,message,job]);return job;};
   const revoked=await queued();await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[ids.private,ids.bob]);await runDigestJob(async()=>{throw new Error('Revoked recipient must never reach transport');});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[revoked])).rows[0].state,'cancelled');
   await pool.query('INSERT INTO channel_members(org_id,channel_id,user_id) VALUES($1,$2,$3)',[ids.org,ids.private,ids.bob]);
+  const preparing=await queued();let preparationSends=0;
+  await pool.query('ALTER TABLE digest_items RENAME TO digest_items_preparation_fault');
+  try{await runDigestJob(async()=>{preparationSends++;});}finally{await pool.query('ALTER TABLE digest_items_preparation_fault RENAME TO digest_items');}
+  const preparationState=(await pool.query('SELECT state,last_error,attempts FROM digest_jobs WHERE id=$1',[preparing])).rows[0];
+  assert.deepEqual(preparationState,{state:'queued',last_error:'preparation_unavailable',attempts:1});assert.equal(preparationSends,0);
+  await pool.query('UPDATE digest_jobs SET available_at=now() WHERE id=$1',[preparing]);await runDigestJob(async()=>{preparationSends++;});assert.equal(preparationSends,1);assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[preparing])).rows[0].state,'sent');
+  const exhaustedPreparation=await queued();await pool.query('UPDATE digest_jobs SET attempts=4 WHERE id=$1',[exhaustedPreparation]);
+  await pool.query('ALTER TABLE digest_items RENAME TO digest_items_preparation_fault');
+  try{await runDigestJob(async()=>{throw new Error('Preparation failure must not reach SMTP');});}finally{await pool.query('ALTER TABLE digest_items_preparation_fault RENAME TO digest_items');}
+  assert.deepEqual((await pool.query('SELECT state,last_error,attempts FROM digest_jobs WHERE id=$1',[exhaustedPreparation])).rows[0],{state:'dead',last_error:'preparation_unavailable',attempts:5});
   const retry=await queued();await runDigestJob(async()=>{throw {code:'ESOCKET',originalCode:'ECONNREFUSED',syscall:'connect',command:'CONN'};});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[retry])).rows[0].state,'queued');
   await pool.query('UPDATE digest_jobs SET attempts=4,available_at=now() WHERE id=$1',[retry]);await runDigestJob(async()=>{throw {code:'ESOCKET',originalCode:'ECONNREFUSED',syscall:'connect',command:'CONN'};});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[retry])).rows[0].state,'dead');
   const uncertain=await queued();await runDigestJob(async()=>{throw {code:'ETIMEDOUT'};});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[uncertain])).rows[0].state,'uncertain');
+  const acknowledgementFailure=await queued();let acknowledgedSends=0;
+  try{await runDigestJob(async()=>{acknowledgedSends++;await pool.query('ALTER TABLE audit RENAME TO audit_digest_ack_fault');});}finally{await pool.query('ALTER TABLE audit_digest_ack_fault RENAME TO audit');}
+  assert.equal(acknowledgedSends,1);assert.deepEqual((await pool.query('SELECT state,last_error,accepted_at FROM digest_jobs WHERE id=$1',[acknowledgementFailure])).rows[0],{state:'uncertain',last_error:'acceptance_unknown',accepted_at:null});
+  await runDigestJob(async()=>{acknowledgedSends++;});assert.equal(acknowledgedSends,1);
   const crashed=await queued();await pool.query("UPDATE digest_jobs SET state='sending',lease_id=$2,lease_until=now()-interval '1 second' WHERE id=$1",[crashed,randomUUID()]);await runDigestJob(async()=>{throw new Error('Uncertain sends must not retry');});assert.equal((await pool.query('SELECT state FROM digest_jobs WHERE id=$1',[crashed])).rows[0].state,'uncertain');
   await request('bob','PUT','/v1/notification-settings',{...setting,digest_enabled:false});
 });
@@ -2683,4 +2699,221 @@ test('activity pages retain exact boundaries and current access without read sid
   }finally{
     await pool.query('DELETE FROM saved_messages WHERE message_id=ANY($1::uuid[])',[idsMade]);for(const channelId of channels){for(const table of ['messages','channel_preferences','read_positions','channel_members','outbox'])await pool.query(`DELETE FROM ${table} WHERE channel_id=$1`,[channelId]);await pool.query('DELETE FROM channels WHERE id=$1',[channelId]);}for(const table of ['audit','team_members','teams','memberships'])await pool.query(`DELETE FROM ${table} WHERE org_id=$1`,[org]);await pool.query('DELETE FROM organizations WHERE id=$1',[org]);await isolated.close();
   }
+});
+
+test('notification preference patches preserve concurrent independent fields and opt-in cutoffs with strict own-state defaults',async()=>{
+  const isolated=await createApp(),request=(user:string,method:'GET'|'PUT'|'PATCH',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+  const db=await pool.connect(),path='/v1/notification-settings';
+  const patch=(payload:unknown,suffix='')=>request('bob','PATCH',path+suffix,payload);
+  const snapshot=async()=>(await pool.query('SELECT row_to_json(s) value FROM notification_settings s WHERE user_id=$1',[ids.bob])).rows[0]?.value;
+  const cutoffs=async()=>(await pool.query('SELECT enabled_at::text,replies_enabled_at::text,digest_since::text,digest_checked_at::text FROM notification_settings WHERE user_id=$1',[ids.bob])).rows[0];
+  const counts=async()=>(await pool.query('SELECT (SELECT count(*) FROM audit) audits,(SELECT count(*) FROM outbox) events')).rows;
+  await db.query('CREATE TEMP TABLE preference_patch_backup AS SELECT * FROM notification_settings WHERE user_id=$1',[ids.bob]);
+  const other=(await request('eve','GET',path)).json(),before=await counts();
+  try{
+    await db.query('DELETE FROM notification_settings WHERE user_id=$1',[ids.bob]);
+    const defaults=(await request('bob','GET',path)).json();assert.equal(defaults.browser_enabled,false);assert.equal(defaults.quiet_start,'22:00');
+    assert.equal((await patch({quiet_start:'21:37'})).statusCode,200);const first=(await request('bob','GET',path)).json();assert.deepEqual(first,{...defaults,quiet_start:'21:37'});
+    for(const payload of [{},{unknown:true},{user_id:ids.eve},{email_provider:'configured'},{enabled_at:'2000-01-01T00:00:00Z'},{digest_since:'2000-01-01T00:00:00Z'},{browser_enabled:'true'},{quiet_enabled:null},{quiet_start:'25:00'},{quiet_end:'1:00'},{digest_enabled:1},null]){
+      const previous=await snapshot();assert.equal((await patch(payload)).statusCode,400,JSON.stringify(payload));assert.deepEqual(await snapshot(),previous);
+    }
+    assert.equal((await patch({quiet_enabled:true},'?unknown=1')).statusCode,400);
+    await pool.query("UPDATE notification_settings SET browser_enabled=false,browser_replies_enabled=false,digest_enabled=false,enabled_at='2000-01-01',replies_enabled_at='2000-01-01',digest_since='2000-01-01',digest_checked_at='2001-01-01' WHERE user_id=$1",[ids.bob]);
+    const original=await cutoffs();assert.equal((await patch({quiet_enabled:true})).statusCode,200);assert.deepEqual(await cutoffs(),original);
+    assert.equal((await patch({browser_enabled:true,browser_replies_enabled:true,digest_enabled:true})).statusCode,200);const enabled=await cutoffs();for(const field of ['enabled_at','replies_enabled_at','digest_since'])assert.ok(enabled[field]>original[field]);assert.equal(enabled.digest_checked_at,'-infinity');
+    assert.equal((await patch({browser_enabled:true,browser_replies_enabled:true,digest_enabled:true})).statusCode,200);assert.deepEqual(await cutoffs(),enabled);
+    const results=await Promise.all([patch({quiet_start:'20:15'}),patch({quiet_end:'07:45'})]);assert.deepEqual(results.map(r=>r.statusCode),[200,200]);const combined=(await request('bob','GET',path)).json();assert.equal(combined.quiet_start,'20:15');assert.equal(combined.quiet_end,'07:45');assert.equal(combined.digest_enabled,true);assert.deepEqual(await cutoffs(),enabled);
+    assert.equal((await request('bob','PUT',path,{browser_enabled:false,quiet_enabled:false,quiet_start:'22:00',quiet_end:'08:00'})).statusCode,200);const compatible=(await request('bob','GET',path)).json();assert.equal(compatible.browser_replies_enabled,true);assert.equal(compatible.digest_enabled,true);assert.deepEqual(await cutoffs(),enabled);
+    assert.deepEqual((await request('eve','GET',path)).json(),other);assert.deepEqual(await counts(),before);
+  }finally{await db.query('DELETE FROM notification_settings WHERE user_id=$1',[ids.bob]);await db.query('INSERT INTO notification_settings SELECT * FROM preference_patch_backup');await db.query('DROP TABLE preference_patch_backup');db.release();await isolated.close();}
+});
+
+test('read advancement accepts exact bigint strings and legacy safe integers without rounding or unauthorized side effects',async()=>{
+  const isolated=await createApp(),request=(user:string,method:'GET'|'POST',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+  try{
+    const made=await request('alice','POST',`/v1/organizations/${ids.org}/channels`,{name:'Exact read positions',kind:'private',teamId:ids.team,members:[ids.bob]});assert.equal(made.statusCode,200,made.body);const channel=made.json().id,path=`/v1/channels/${channel}/read`;
+    await pool.query('UPDATE channels SET sequence=$2 WHERE id=$1',[channel,'9007199254740993']);
+    const position=async()=>(await pool.query('SELECT seq FROM read_positions WHERE channel_id=$1 AND user_id=$2',[channel,ids.bob])).rows[0]?.seq;
+    assert.equal((await request('bob','POST',path,{seq:2})).statusCode,200);assert.equal(await position(),'2');
+    assert.equal((await request('bob','POST',path,{seq:'9007199254740992'})).statusCode,200);assert.equal(await position(),'9007199254740992');
+    assert.equal((await request('bob','POST',path,{seq:'9007199254740993'})).statusCode,200);assert.equal(await position(),'9007199254740993');
+    assert.equal((await request('bob','POST',path,{seq:'9007199254740992'})).statusCode,200);assert.equal(await position(),'9007199254740993');
+    const events=async()=>(await pool.query('SELECT count(*)::int n FROM outbox WHERE channel_id=$1',[channel])).rows[0].n,before=await events();
+    for(const seq of ['9007199254740994','9223372036854775808','01',' 2','1e3',true,null,[],{},Number.MAX_SAFE_INTEGER+1,-1,1.5])assert.equal((await request('bob','POST',path,{seq})).statusCode,400,JSON.stringify(seq));
+    assert.equal((await request('bob','POST',path,{seq:'0',unexpected:true})).statusCode,400);
+    assert.equal((await request('eve','POST',path,{seq:'0'})).statusCode,404);
+    assert.equal(await position(),'9007199254740993');assert.equal(await events(),before);
+    const receipts=(await request('alice','GET',`/v1/channels/${channel}/receipts`)).json().receipts;assert.equal(receipts.find((r:{user_id:string})=>r.user_id===ids.bob).seq,'9007199254740993');
+    await pool.query('UPDATE channels SET sequence=$2 WHERE id=$1',[channel,'9223372036854775807']);assert.equal((await request('bob','POST',path,{seq:'9223372036854775807'})).statusCode,200);assert.equal(await position(),'9223372036854775807');
+  }finally{await isolated.close();}
+});
+
+test('message readers page beyond one hundred with exact positions, current privacy/author access and no read-side writes',async()=>{
+  const isolated=await createApp(),request=(user:string,method:'GET'|'POST',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+  try{
+    const made=await request('alice','POST',`/v1/organizations/${ids.org}/channels`,{name:'Paged message readers',kind:'private',teamId:ids.team,members:[ids.bob]});assert.equal(made.statusCode,200,made.body);const channel=made.json().id;
+    const other=await request('bob','POST',`/v1/channels/${channel}/messages`,{clientId:randomUUID(),body:'Other author source'});assert.equal(other.statusCode,201);
+    await pool.query('UPDATE channels SET sequence=$2 WHERE id=$1',[channel,'9007199254740992']);
+    const sent=await request('alice','POST',`/v1/channels/${channel}/messages`,{clientId:randomUUID(),body:'x'.repeat(600)});assert.equal(sent.statusCode,201);const source=sent.json();assert.equal(source.seq,'9007199254740993');
+    const people=Array.from({length:110},()=>randomUUID());
+    await pool.query(`INSERT INTO users(id,email,name) SELECT id,id::text||'@message-readers.test','Reader '||n FROM unnest($1::uuid[]) WITH ORDINALITY t(id,n)`,[people]);
+    await pool.query(`INSERT INTO memberships(org_id,user_id,role) SELECT $2,id,'member' FROM unnest($1::uuid[]) id`,[people,ids.org]);
+    await pool.query(`INSERT INTO channel_members SELECT $2,$3,id FROM unnest($1::uuid[]) id`,[people,ids.org,channel]);
+    await pool.query(`INSERT INTO read_positions SELECT $2,id,$3::bigint FROM unnest($1::uuid[]) id`,[[...people,ids.alice],channel,source.seq]);
+    await pool.query(`UPDATE users SET preferences='{"readReceipts":false}' WHERE id=$1`,[people[0]]);
+    await pool.query('UPDATE users SET disabled=true WHERE id=$1',[people[1]]);
+    await pool.query('UPDATE memberships SET active=false WHERE org_id=$1 AND user_id=$2',[ids.org,people[2]]);
+    await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[channel,people[3]]);
+    await pool.query('UPDATE read_positions SET seq=$3 WHERE channel_id=$1 AND user_id=$2',[channel,people[4],'9007199254740992']);
+    const path=`/v1/organizations/${ids.org}/channels/${channel}/messages/${source.id}/readers`;
+    const counts=async()=>({positions:(await pool.query('SELECT * FROM read_positions WHERE channel_id=$1 ORDER BY user_id',[channel])).rows,outbox:(await pool.query('SELECT count(*)::int n FROM outbox WHERE channel_id=$1',[channel])).rows,audit:(await pool.query('SELECT count(*)::int n FROM audit WHERE org_id=$1',[ids.org])).rows,drafts:(await pool.query('SELECT * FROM drafts WHERE channel_id=$1',[channel])).rows});
+    const before=await counts(),first=await request('alice','GET',path);assert.equal(first.statusCode,200,first.body);const a=first.json();assert.equal(a.message.id,source.id);assert.equal(a.message.excerpt.length,500);assert.equal(a.readers.length,50);assert.equal(a.hasMore,true);assert.equal(a.nextCursor,a.readers.at(-1).id);
+    const b=(await request('alice','GET',path+'?afterId='+a.nextCursor)).json(),c=(await request('alice','GET',path+'?afterId='+b.nextCursor)).json();assert.equal(b.readers.length,50);assert.equal(c.readers.length,5);assert.equal(c.hasMore,false);assert.equal(c.nextCursor,null);
+    const readers=[...a.readers,...b.readers,...c.readers];assert.deepEqual(readers.map(r=>r.id),people.slice(5).sort());assert(readers.every(r=>Object.keys(r).sort().join(',')==='id,name'));assert.deepEqual(await counts(),before);
+    assert.equal((await request('bob','GET',path)).statusCode,404);assert.equal((await request('eve','GET',path)).statusCode,404);assert.equal((await request('alice','GET',path.replace(ids.org,ids.other))).statusCode,404);assert.equal((await request('alice','GET',path.replace(source.id,other.json().id))).statusCode,404);assert.equal((await request('alice','GET',path.replace(channel,ids.channel))).statusCode,404);
+    for(const query of ['?limit=100','?afterId=bad','?afterId=','?afterId='+people[0]+'&afterId='+people[1]])assert.equal((await request('alice','GET',path+query)).statusCode,400,query);
+    await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[channel,ids.alice]);assert.equal((await request('alice','GET',path)).statusCode,404);await pool.query('INSERT INTO channel_members VALUES($1,$2,$3)',[ids.org,channel,ids.alice]);
+    await pool.query('UPDATE messages SET deleted=true,body=\'\' WHERE id=$1',[source.id]);assert.equal((await request('alice','GET',path)).statusCode,404);
+  }finally{await isolated.close();}
+});
+
+test('standard message readers require current inherited team membership and reevaluate privacy on every page',async()=>{
+  const isolated=await createApp(),request=(method:'GET'|'POST',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies.alice},payload:payload as Record<string,unknown>});
+  try{
+    const made=await request('POST',`/v1/organizations/${ids.org}/channels`,{name:'Inherited reader access',kind:'standard',teamId:ids.team,members:[]});assert.equal(made.statusCode,200);const channel=made.json().id,reader=randomUUID();
+    await pool.query('INSERT INTO users(id,email,name) VALUES($1,$2,$3)',[reader,reader+'@message-readers.test','Inherited reader']);await pool.query("INSERT INTO memberships VALUES($1,$2,'member',true)",[ids.org,reader]);
+    const sent=await request('POST',`/v1/channels/${channel}/messages`,{clientId:randomUUID(),body:'Inherited source'});assert.equal(sent.statusCode,201);const source=sent.json(),path=`/v1/organizations/${ids.org}/channels/${channel}/messages/${source.id}/readers`;
+    await pool.query('INSERT INTO read_positions VALUES($1,$2,$3)',[channel,reader,source.seq]);assert.deepEqual((await request('GET',path)).json().readers,[]);
+    await pool.query("INSERT INTO team_members VALUES($1,$2,$3,'member')",[ids.org,ids.team,reader]);assert.equal((await request('GET',path)).json().readers[0].id,reader);
+    await pool.query(`UPDATE users SET preferences='{"readReceipts":false}' WHERE id=$1`,[reader]);assert.deepEqual((await request('GET',path)).json().readers,[]);
+    await pool.query(`UPDATE users SET preferences='{"readReceipts":true}' WHERE id=$1`,[reader]);assert.equal((await request('GET',path)).json().readers.length,1);
+    await pool.query('DELETE FROM team_members WHERE team_id=$1 AND user_id=$2',[ids.team,reader]);assert.deepEqual((await request('GET',path)).json().readers,[]);
+  }finally{await isolated.close();}
+});
+
+test('direct replies enforce current parent/channel/workspace access and exclude nested, unrelated and deleted rows without read-side writes',async()=>{
+  const isolated=await createApp(),request=(user:string,method:'GET'|'POST'|'DELETE',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+  try{
+  const made=await request('alice','POST',`/v1/organizations/${ids.org}/channels`,{name:'Core direct reply access',kind:'private',teamId:ids.team,members:[ids.bob]});assert.equal(made.statusCode,200,made.body);const channel=made.json().id;
+  const make=async(body:string,parentId?:string)=>{const r=await request('alice','POST',`/v1/channels/${channel}/messages`,{clientId:randomUUID(),body,parentId});assert.equal(r.statusCode,201,r.body);return r.json().id as string;};
+  const parent=await make('Direct parent'),child=await make('Direct <img src=x> child',parent),other=await make('Unrelated parent');await make('Nested child',child);const deleted=await make('Deleted direct child',parent);assert.equal((await request('alice','DELETE',`/v1/channels/${channel}/messages/${deleted}`)).statusCode,200);
+  const path=`/v1/organizations/${ids.org}/channels/${channel}/messages/${parent}/replies`;
+  const counts=async()=>({reads:(await pool.query('SELECT * FROM read_positions WHERE channel_id=$1',[channel])).rows,drafts:(await pool.query('SELECT * FROM drafts WHERE channel_id=$1',[channel])).rows,outbox:(await pool.query('SELECT count(*)::int n FROM outbox WHERE channel_id=$1',[channel])).rows,audit:(await pool.query('SELECT count(*)::int n FROM audit WHERE org_id=$1',[ids.org])).rows,saved:(await pool.query('SELECT count(*)::int n FROM saved_messages s JOIN messages m ON m.id=s.message_id WHERE m.channel_id=$1',[channel])).rows});
+  const before=await counts(),result=await request('bob','GET',path);assert.equal(result.statusCode,200,result.body);assert.equal(result.json().parentId,parent);assert.equal(result.json().channel.id,channel);assert.deepEqual(result.json().replies.map((r:{id:string})=>r.id),[child]);assert.equal(result.json().replies[0].excerpt,'Direct <img src=x> child');assert.equal(result.json().hasMore,false);assert.equal(result.json().nextCursor,null);assert.deepEqual(await counts(),before);
+  assert.deepEqual((await request('bob','GET',path.replace(parent,other))).json().replies,[]);
+  assert.equal((await request('eve','GET',path)).statusCode,404);assert.equal((await request('guest','GET',path)).statusCode,404);assert.equal((await request('bob','GET',path.replace(channel,ids.channel))).statusCode,404);assert.equal((await request('bob','GET',path.replace(ids.org,ids.other))).statusCode,404);
+  await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[channel,ids.bob]);assert.equal((await request('bob','GET',path)).statusCode,404);await pool.query('INSERT INTO channel_members VALUES($1,$2,$3)',[ids.org,channel,ids.bob]);assert.equal((await request('bob','GET',path)).statusCode,200);
+  assert.equal((await request('alice','DELETE',`/v1/channels/${channel}/messages/${parent}`)).statusCode,200);assert.equal((await request('bob','GET',path)).statusCode,404);
+  }finally{await isolated.close();}
+});
+
+test('direct reply pages retain microsecond timestamp ties without gaps, bound excerpts and reject invalid cursor shapes',async()=>{
+  const isolated=await createApp(),request=(user:string,method:'GET'|'POST'|'DELETE',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+  try{
+  const made=await request('alice','POST',`/v1/organizations/${ids.org}/channels`,{name:'Core direct reply pages',kind:'private',teamId:ids.team,members:[]});assert.equal(made.statusCode,200,made.body);const channel=made.json().id;
+  const parentResponse=await request('alice','POST',`/v1/channels/${channel}/messages`,{clientId:randomUUID(),body:'Paged parent'});assert.equal(parentResponse.statusCode,201);const parent=parentResponse.json().id,children=Array.from({length:53},()=>randomUUID());
+  await pool.query(`INSERT INTO messages(id,org_id,channel_id,user_id,client_id,seq,body,parent_id,created_at)
+    SELECT id,$2,$3,$4,id,n+1,repeat('x',600),$5,'2026-01-01T00:00:00.123456Z'::timestamptz FROM unnest($1::uuid[]) WITH ORDINALITY t(id,n)`,[children,ids.org,channel,ids.alice,parent]);await pool.query('UPDATE channels SET sequence=54 WHERE id=$1',[channel]);
+  const path=`/v1/organizations/${ids.org}/channels/${channel}/messages/${parent}/replies`,first=await request('alice','GET',path);assert.equal(first.statusCode,200,first.body);const page=first.json();assert.equal(page.replies.length,50);assert.equal(page.hasMore,true);assert.equal(page.nextCursor.createdAt,'2026-01-01T00:00:00.123456Z');assert(page.replies.every((r:{excerpt:string})=>r.excerpt.length===500));
+  const second=await request('alice','GET',path+'?'+new URLSearchParams({beforeCreated:page.nextCursor.createdAt,beforeId:page.nextCursor.id}));assert.equal(second.statusCode,200,second.body);assert.equal(second.json().replies.length,3);assert.equal(second.json().hasMore,false);assert.equal(second.json().nextCursor,null);assert.deepEqual([...page.replies,...second.json().replies].map((r:{id:string})=>r.id),children.sort().reverse());
+  for(const q of ['?beforeId='+parent,'?beforeCreated=2026-01-01T00:00:00.123456Z','?limit=100','?beforeCreated=0000-01-01T00:00:00Z&beforeId='+parent,'?beforeCreated=invalid&beforeId='+parent,'?beforeCreated=2026-01-01T00:00:00Z&beforeId=bad'])assert.equal((await request('alice','GET',path+q)).statusCode,400,q);
+  }finally{await isolated.close();}
+});
+
+test('call invitations, raised hands and chat enforce session, room, expiry and idempotent-send boundaries',async()=>{
+  const mediaApp=await createApp();
+  const request=(user:string,method:"GET"|"POST"|"PATCH"|"DELETE"|"PUT",url:string,payload?:unknown)=>mediaApp.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+  try{
+  const made=await request('alice','POST',`/v1/organizations/${ids.org}/channels`,{name:'Call collaboration core',kind:'private',teamId:ids.team,members:[ids.bob,ids.guest]});assert.equal(made.statusCode,200,made.body);const channel=made.json().id,call=randomUUID(),room=randomUUID(),aliceGrant=randomUUID(),bobGrant=randomUUID();
+  const {hash}=await import('../services/core/security.ts');
+  await pool.query("INSERT INTO media_calls(id,org_id,channel_id,host_user_id,caller_user_id,client_id,mode,ring_until) VALUES($1,$2,$3,$4,$4,$5,'video',now()+interval '45 seconds')",[call,ids.org,channel,ids.alice,randomUUID()]);
+  await pool.query("INSERT INTO media_rooms(id,call_id,name,client_id,is_main) VALUES($1,$1,'Main room',$1,true),($2,$1,'Breakout',$2,false)",[call,room]);
+  await pool.query("INSERT INTO media_invitations(call_id,user_id,response) VALUES($1,$2,'accepted'),($1,$3,'pending')",[call,ids.alice,ids.bob]);
+  for(const [id,user,who] of [[aliceGrant,ids.alice,'alice'],[bobGrant,ids.bob,'bob']])await pool.query("INSERT INTO media_grants(id,call_id,room_id,user_id,client_id,session_hash,recording_consent,expires_at) VALUES($1,$2,$2,$3,$4,$5,false,now()+interval '25 seconds')",[id,call,user,randomUUID(),hash(cookies[who].slice('concord_session='.length))]);
+  const base=`/v1/organizations/${ids.org}/calls/${call}`,ag=`${base}/connections/${aliceGrant}`,bg=`${base}/connections/${bobGrant}`;
+  assert.ok((await request('bob','GET',`/v1/organizations/${ids.org}/calls/incoming`)).json().calls.some((c:{id:string})=>c.id===call));
+  assert.equal((await request('eve','GET',base)).statusCode,404);
+  assert.equal((await request('bob','POST',base+'/respond',{response:'accepted',extra:true})).statusCode,400);
+  assert.equal((await request('bob','POST',base+'/respond',{response:'accepted'})).statusCode,200);
+  assert.equal((await request('bob','POST',base+'/respond',{response:'accepted'})).statusCode,200);
+  assert.equal((await request('bob','POST',base+'/respond',{response:'declined'})).statusCode,409);
+  assert.equal((await request('alice','POST',ag+'/hand',{raised:true})).statusCode,200);assert.ok((await request('alice','GET',base)).json().participants.find((p:{id:string})=>p.id===aliceGrant).hand_raised_at);
+  assert.equal((await request('bob','POST',ag+'/hand',{raised:false})).statusCode,404);
+  assert.equal((await request('alice','POST',ag+'/hand',{raised:false})).statusCode,200);
+  const clientId=randomUUID(),body={clientId,roomId:call,body:'Hello <img src=x onerror=alert(1)> **literal**'};
+  const first=await request('alice','POST',ag+'/chat',body);assert.equal(first.statusCode,200,first.body);assert.equal((await request('alice','POST',ag+'/chat',body)).json().id,first.json().id);
+  assert.equal((await request('alice','POST',ag+'/chat',{...body,body:'Changed'})).statusCode,409);
+  const messages=(await request('bob','GET',bg+'/chat')).json();assert.equal(messages.messages[0].body,body.body);
+  assert.equal((await request('bob','GET',ag+'/chat')).statusCode,404);
+  assert.equal((await request('guest','GET',bg+'/chat')).statusCode,404);
+  assert.equal((await request('alice','POST',ag+'/chat',{...body,clientId:randomUUID(),roomId:room})).statusCode,409);
+  assert.equal((await request('alice','POST',ag+'/chat',{...body,clientId:randomUUID(),body:' '.repeat(3)})).statusCode,400);
+  assert.equal((await request('alice','POST',ag+'/chat',{...body,clientId:randomUUID(),body:'a'.repeat(4001)})).statusCode,400);
+  await pool.query('UPDATE media_grants SET room_id=$2 WHERE id=$1',[bobGrant,room]);assert.equal((await request('bob','GET',bg+'/chat')).json().messages.length,0);
+  const secondSession=await mediaApp.inject({method:'POST',url:'/v1/session',headers:{origin},payload:{email:'alice@acme.test',password:'Development123!'}});assert.equal(secondSession.statusCode,200);assert.equal((await mediaApp.inject({method:'GET',url:ag+'/chat',headers:{origin,cookie:String(secondSession.headers['set-cookie']).split(';')[0]}})).statusCode,404);
+  for(let i=0;i<9;i++)assert.equal((await request('alice','POST',ag+'/chat',{roomId:call,clientId:randomUUID(),body:`Bounded message ${i}`})).statusCode,200);
+  assert.equal((await request('alice','POST',ag+'/chat',{roomId:call,clientId:randomUUID(),body:'Rate exceeded'})).statusCode,429);assert.equal((await request('alice','POST',ag+'/chat',body)).json().id,first.json().id);
+  await pool.query("UPDATE media_grants SET expires_at=now()-interval '1 second' WHERE id=$1",[aliceGrant]);assert.equal((await request('alice','POST',ag+'/hand',{raised:true})).statusCode,403);assert.equal((await request('alice','GET',ag+'/chat')).statusCode,403);
+  await pool.query('DELETE FROM channel_members WHERE channel_id=$1 AND user_id=$2',[channel,ids.bob]);assert.equal((await request('bob','GET',bg+'/chat')).statusCode,404);
+  await pool.query('UPDATE media_calls SET ended_at=now() WHERE id=$1',[call]);
+  }finally{await mediaApp.close();}
+});
+
+test('meeting protocol orders hands and chat, binds invitation winners, authorizes host transfer and preserves ended history',async()=>{
+ const isolated=await createApp(),req=(user:string,method:'GET'|'POST'|'DELETE',url:string,payload?:unknown)=>isolated.inject({method,url,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});
+ try{
+ const c=await req('alice','POST',`/v1/organizations/${ids.org}/channels`,{name:'Meeting protocol coverage',kind:'group',teamId:null,members:[ids.bob]});assert.equal(c.statusCode,200,c.body);const channel=c.json().id,call=randomUUID(),ag=randomUUID(),bg=randomUUID();const {hash}=await import('../services/core/security.ts');
+ await pool.query("INSERT INTO media_calls(id,org_id,channel_id,host_user_id,caller_user_id,client_id,mode,ring_until) VALUES($1,$2,$3,$4,$4,$5,'video',now()+interval '45 seconds')",[call,ids.org,channel,ids.alice,randomUUID()]);await pool.query("INSERT INTO media_rooms(id,call_id,name,client_id,is_main) VALUES($1,$1,'Main room',$1,true)",[call]);await pool.query("INSERT INTO media_invitations(call_id,user_id,response) VALUES($1,$2,'accepted'),($1,$3,'pending')",[call,ids.alice,ids.bob]);
+ for(const [id,user,who] of [[ag,ids.alice,'alice'],[bg,ids.bob,'bob']])await pool.query("INSERT INTO media_grants(id,call_id,room_id,user_id,client_id,session_hash,recording_consent,expires_at) VALUES($1,$2,$2,$3,$4,$5,false,now()+interval '5 minutes')",[id,call,user,randomUUID(),hash(cookies[who].slice('concord_session='.length))]);
+ // A reconciler updating a grant emits an FK-backed event while an API transaction holds the call lock.
+ // NO KEY UPDATE must allow the event's KEY SHARE lock; FOR UPDATE would deadlock with grant renewal.
+ const locker=await pool.connect(),writer=await pool.connect();try{await locker.query('BEGIN');const {callAccess}=await import('../services/core/media.ts');await callAccess(locker,ids.alice,ids.org,call,true);await writer.query('BEGIN');await writer.query("SET LOCAL statement_timeout='1500ms'");await writer.query('UPDATE media_grants SET connected_at=now() WHERE id=$1',[ag]);await writer.query('COMMIT');}finally{await writer.query('ROLLBACK');await locker.query('ROLLBACK');writer.release();locker.release();}
+ const base=`/v1/organizations/${ids.org}/calls/${call}`,a=`${base}/connections/${ag}`,b=`${base}/connections/${bg}`,device=randomUUID();
+ const accepted=await Promise.all([req('bob','POST',base+'/respond',{response:'accepted',clientId:device}),req('bob','POST',base+'/respond',{response:'accepted',clientId:randomUUID()})]);assert.deepEqual(accepted.map(r=>r.statusCode).sort(),[200,409]);
+ assert.equal((await req('alice','POST',a+'/hand',{raised:true})).statusCode,200);const initial=(await req('alice','GET',base)).json().participants.find((p:{id:string})=>p.id===ag).hand_order;await req('alice','POST',a+'/hand',{raised:true});await req('bob','POST',b+'/hand',{raised:true});let state=(await req('alice','GET',base)).json();assert.equal(state.participants.find((p:{id:string})=>p.id===ag).hand_order,initial);assert(BigInt(state.participants.find((p:{id:string})=>p.id===bg).hand_order)>BigInt(initial));
+ assert.equal((await req('bob','POST',`${base}/participants/${ag}/moderate`,{action:'lower-hand'})).statusCode,403);assert.equal((await req('alice','POST',`${base}/participants/${bg}/moderate`,{action:'lower-hand'})).statusCode,200);assert.equal((await req('alice','POST',`${base}/participants/${bg}/moderate`,{action:'request-unmute'})).statusCode,200);state=(await req('bob','GET',base)).json();assert.equal(state.participants.find((p:{id:string})=>p.id===bg).hand_order,null);assert(state.participants.find((p:{id:string})=>p.id===bg).unmute_requested_at);assert.equal((await req('bob','POST',b+'/dismiss-unmute',{})).statusCode,200);
+ await pool.query("INSERT INTO media_messages(id,call_id,room_id,user_id,client_id,body,created_at) SELECT gen_random_uuid(),$1,$1,$2,gen_random_uuid(),'Page message '||n,now()-interval '1 minute' FROM generate_series(1,205) n",[call,ids.alice]);
+ let page=(await req('bob','GET',b+'/chat')).json();assert.equal(page.messages.length,100);assert.equal(page.unread,205);const all=[...page.messages];while(page.nextCursor){page=(await req('bob','GET',b+'/chat?before='+page.nextCursor)).json();all.unshift(...page.messages);}assert.equal(all.length,205);assert.equal(new Set(all.map((m:{id:string})=>m.id)).size,205);assert(all.every((m:{seq:string},i:number)=>!i||BigInt(m.seq)>BigInt(all[i-1].seq)));
+ assert.equal((await req('bob','GET',b+'/chat?before=9999999999999999999')).statusCode,400);assert.equal((await req('bob','POST',b+'/read-chat',{seq:all[204].seq})).statusCode,200);assert.equal((await req('bob','GET',b+'/chat')).json().unread,0);assert.equal((await req('bob','POST',b+'/read-chat',{seq:'9223372036854775807'})).statusCode,400);
+ const body={clientId:randomUUID(),roomId:call,body:'Persist once'};const sends=await Promise.all([req('alice','POST',a+'/chat',body),req('alice','POST',a+'/chat',body)]);assert(sends.every(r=>r.statusCode===200));assert.equal(sends[0].json().id,sends[1].json().id);
+ assert.equal((await req('bob','POST',base+'/end',{})).statusCode,403);assert.equal((await req('alice','POST',base+'/host',{userId:ids.guest})).statusCode,404);assert.equal((await req('alice','POST',base+'/host',{userId:ids.bob})).statusCode,200);assert.equal((await req('alice','POST',base+'/end',{})).statusCode,403);
+ // A provider is intentionally absent in this DB/API test. End commits despite a failed transport cleanup.
+ assert.equal((await req('bob','POST',base+'/end',{})).statusCode,200);assert.equal((await req('bob','POST',base+'/end',{})).statusCode,200);assert.equal((await req('alice','POST',a+'/hand',{raised:true})).statusCode,409);assert.equal((await req('alice','DELETE',a)).statusCode,200);assert.equal((await req('alice','DELETE',a)).statusCode,200);
+ const history=await req('bob','GET',base+'/history');assert.equal(history.statusCode,200,history.body);assert.equal(history.json().outcome,'ended');assert(history.json().seconds>=0);assert.equal((await req('bob','GET',base+'/chat')).json().messages.length,50);assert.equal((await req('eve','GET',base+'/history')).statusCode,404);assert.equal((await req('guest','GET',base+'/chat')).statusCode,404);await pool.query('INSERT INTO media_bans VALUES($1,$2)',[call,ids.bob]);assert.equal((await req('bob','GET',base+'/chat')).statusCode,403);assert.equal((await req('bob','GET',base+'/history')).statusCode,403);
+ }finally{await isolated.close();}
+});
+
+test('media callbacks require a signed body, deduplicate event IDs and never revive an ended meeting',async()=>{
+ const isolated=await createApp(),keys=['LIVEKIT_URL','LIVEKIT_API_URL','LIVEKIT_API_KEY','LIVEKIT_API_SECRET','LIVEKIT_ALLOW_INSECURE_LOCAL'],old=keys.map(k=>process.env[k]);
+ try{
+ Object.assign(process.env,{LIVEKIT_URL:'ws://localhost:9',LIVEKIT_API_URL:'http://localhost:9',LIVEKIT_API_KEY:'test-only-key',LIVEKIT_API_SECRET:'test-only-signing-secret-at-least-32-characters',LIVEKIT_ALLOW_INSECURE_LOCAL:'true'});
+ const {AccessToken}=await import('livekit-server-sdk'),{createHash}=await import('node:crypto');const id=randomUUID(),body=JSON.stringify({id,event:'room_finished',room:{name:'cc-'+randomUUID()},createdAt:String(Math.floor(Date.now()/1000))});const token=new AccessToken(process.env.LIVEKIT_API_KEY,process.env.LIVEKIT_API_SECRET,{ttl:30});token.sha256=createHash('sha256').update(body).digest('base64');const authorization=await token.toJwt();
+ const callback=(payload:string,auth=authorization)=>isolated.inject({method:'POST',url:'/v1/media/webhook',headers:{'content-type':'application/webhook+json',authorization:auth},payload});assert.equal((await callback(body,'forged')).statusCode,401);assert.equal((await callback(body+' ')).statusCode,401);assert.equal((await callback(body)).statusCode,200);assert.equal((await callback(body)).statusCode,200);assert.equal(Number((await pool.query('SELECT count(*) FROM media_provider_events WHERE id=$1',[id])).rows[0].count),1);
+ }finally{keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];});await isolated.close();}
+});
+
+test('profile calling resolves one current organization-scoped direct conversation without granting cross-tenant access',async()=>{
+ const isolated=await createApp();try{const req=(user:string,userId:string,org=ids.org)=>isolated.inject({method:'POST',url:`/v1/organizations/${org}/direct-conversation`,headers:{origin,cookie:cookies[user]},payload:{userId}});assert.equal((await req('alice',ids.alice)).statusCode,400);assert.equal((await req('alice',ids.eve)).statusCode,404);assert.equal((await req('guest',ids.alice)).statusCode,403);const first=await req('alice',ids.bob);assert.equal(first.statusCode,200,first.body);assert.equal((await req('alice',ids.bob)).json().id,first.json().id);assert.equal((await req('bob',ids.alice)).json().id,first.json().id);assert.equal((await req('bob',ids.alice,ids.other)).statusCode,404);const stream=`/v1/organizations/${ids.org}/media/events`;assert.equal((await isolated.inject({url:stream})).statusCode,401);assert.equal((await isolated.inject({url:stream,headers:{cookie:cookies.alice,origin:'https://untrusted.test'}})).statusCode,403);assert.equal((await isolated.inject({url:stream+'?after=9999999999999999999',headers:{cookie:cookies.alice,origin}})).statusCode,400);assert.equal((await isolated.inject({url:`/v1/organizations/${ids.other}/media/events`,headers:{cookie:cookies.bob,origin}})).statusCode,404);}finally{await isolated.close();}
+});
+
+test('provider provisioning outages return actionable failures and retries reuse one authorized device grant',async()=>{
+ const isolated=await createApp(),keys=['LIVEKIT_URL','LIVEKIT_API_URL','LIVEKIT_API_KEY','LIVEKIT_API_SECRET','LIVEKIT_ALLOW_INSECURE_LOCAL'],old=keys.map(k=>process.env[k]);let call='';try{
+ Object.assign(process.env,{LIVEKIT_URL:'ws://localhost:9',LIVEKIT_API_URL:'http://localhost:9',LIVEKIT_API_KEY:'test-only-key',LIVEKIT_API_SECRET:'test-only-signing-secret-at-least-32-characters',LIVEKIT_ALLOW_INSECURE_LOCAL:'true'});const req=(path:string,payload:unknown)=>isolated.inject({method:'POST',url:`/v1/organizations/${ids.org}/${path}`,headers:{origin,cookie:cookies.alice},payload:payload as Record<string,unknown>});const made=await req('instant-meetings',{clientId:randomUUID(),title:'Unavailable provider test',mode:'audio',userIds:[]});assert.equal(made.statusCode,200,made.body);call=made.json().id;const body={clientId:randomUUID(),recordingConsent:false};for(let i=0;i<2;i++){const result=await req(`calls/${call}/join`,body);assert.equal(result.statusCode,503,result.body);assert.match(result.json().error,/Service temporarily unavailable/);}assert.equal(Number((await pool.query('SELECT count(*) FROM media_grants WHERE call_id=$1',[call])).rows[0].count),1);
+ }finally{keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];});if(call){await pool.query("UPDATE media_calls SET ended_at=now(),end_reason='ended' WHERE id=$1",[call]);await pool.query('UPDATE media_grants SET revoked_at=now() WHERE call_id=$1',[call]);}await isolated.close();}
+});
+
+test('accept versus end races have one serialized invitation outcome and cannot revive a terminal call',async()=>{
+ const isolated=await createApp();try{const req=(user:string,path:string,payload:unknown)=>isolated.inject({method:'POST',url:`/v1/organizations/${ids.org}/${path}`,headers:{origin,cookie:cookies[user]},payload:payload as Record<string,unknown>});const made=await req('alice','channels',{name:'Call cancellation race',kind:'group',teamId:null,members:[ids.bob]});assert.equal(made.statusCode,200,made.body);const channel=made.json().id;
+ for(let i=0;i<4;i++){const id=randomUUID();await pool.query("INSERT INTO media_calls(id,org_id,channel_id,host_user_id,caller_user_id,client_id,mode,ring_until) VALUES($1,$2,$3,$4,$4,$1,'audio',now()+interval '45 seconds')",[id,ids.org,channel,ids.alice]);await pool.query("INSERT INTO media_rooms(id,call_id,name,client_id,is_main) VALUES($1,$1,'Main room',$1,true)",[id]);await pool.query("INSERT INTO media_invitations(call_id,user_id,response) VALUES($1,$2,'accepted'),($1,$3,'pending')",[id,ids.alice,ids.bob]);const [accepted,ended]=await Promise.all([req('bob',`calls/${id}/respond`,{response:'accepted',clientId:randomUUID()}),req('alice',`calls/${id}/end`,{})]);assert.equal(ended.statusCode,200,ended.body);assert([200,409].includes(accepted.statusCode));const state=(await pool.query('SELECT x.ended_at,i.response FROM media_calls x JOIN media_invitations i ON i.call_id=x.id WHERE x.id=$1 AND i.user_id=$2',[id,ids.bob])).rows[0];assert(state.ended_at);assert.equal(state.response,accepted.statusCode===200?'accepted':'cancelled');assert.equal((await req('bob',`calls/${id}/respond`,{response:'accepted',clientId:randomUUID()})).statusCode,409);assert.equal((await req('alice',`calls/${id}/end`,{})).statusCode,200);}
+ }finally{await isolated.close();}
+});
+
+test('a delayed provider creation is fenced before end and cannot recreate an ended room',async()=>{
+ const isolated=await createApp(),{RoomServiceClient}=await import('livekit-server-sdk'),{provisionMediaRoom}=await import('../services/core/meeting-protocol.ts'),proto=RoomServiceClient.prototype,saved={list:proto.listRooms,create:proto.createRoom,remove:proto.deleteRoom},keys=['LIVEKIT_URL','LIVEKIT_API_URL','LIVEKIT_API_KEY','LIVEKIT_API_SECRET','LIVEKIT_ALLOW_INSECURE_LOCAL'],old=keys.map(k=>process.env[k]);let release=()=>{},entered=()=>{};const gate=new Promise<void>(r=>{release=r;}),started=new Promise<void>(r=>{entered=r;}),events:string[]=[];let call='';
+ try{
+ Object.assign(process.env,{LIVEKIT_URL:'ws://localhost:9',LIVEKIT_API_URL:'http://localhost:9',LIVEKIT_API_KEY:'test-only-key',LIVEKIT_API_SECRET:'test-only-signing-secret-at-least-32-characters',LIVEKIT_ALLOW_INSECURE_LOCAL:'true'});proto.listRooms=async()=>[];proto.createRoom=async options=>{entered();await gate;events.push('create');return {name:options.name} as Awaited<ReturnType<typeof saved.create>>;};proto.deleteRoom=async()=>{events.push('delete');};
+ const req=(path:string,payload:unknown)=>isolated.inject({method:'POST',url:`/v1/organizations/${ids.org}/${path}`,headers:{origin,cookie:cookies.alice},payload:payload as Record<string,unknown>});const made=await req('instant-meetings',{clientId:randomUUID(),title:'Delayed provider test',mode:'audio',userIds:[]});assert.equal(made.statusCode,200,made.body);call=made.json().id;const joining=req(`calls/${call}/join`,{clientId:randomUUID(),recordingConsent:false});let timer:ReturnType<typeof setTimeout>|undefined;try{await Promise.race([started,new Promise<void>((_,reject)=>{timer=setTimeout(()=>reject(new Error('Provider creation did not start')),3000);})]);}finally{clearTimeout(timer);}
+ const check=await pool.connect();try{await check.query('BEGIN');await assert.rejects(check.query('SELECT id FROM media_calls WHERE id=$1 FOR NO KEY UPDATE NOWAIT',[call]),(e:unknown)=>(e as {code:string}).code==='55P03');}finally{await check.query('ROLLBACK');check.release();}
+ const ending=req(`calls/${call}/end`,{});release();assert.equal((await joining).statusCode,200);assert.equal((await ending).statusCode,200);assert.deepEqual(events,['create','delete']);const version=(await pool.query('SELECT provider_room FROM media_rooms WHERE id=$1',[call])).rows[0].provider_room;await assert.rejects(provisionMediaRoom(call,version),(e:unknown)=>(e as {statusCode:number}).statusCode===409);assert.deepEqual(events,['create','delete']);
+ }finally{release();proto.listRooms=saved.list;proto.createRoom=saved.create;proto.deleteRoom=saved.remove;keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];});if(call)await pool.query("UPDATE media_calls SET ended_at=coalesce(ended_at,now()) WHERE id=$1",[call]);await isolated.close();}
 });

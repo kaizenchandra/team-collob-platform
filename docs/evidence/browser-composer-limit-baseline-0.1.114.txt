@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:27728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/composer-limit.spec.ts:5:1 › emoji insertion respects full and exact-fit draft limits without truncation or oversized writes (5.9s)
+
+
+  1) [chrome] › tests/browser/composer-limit.spec.ts:5:1 › emoji insertion respects full and exact-fit draft limits without truncation or oversized writes 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: 'Add emoji', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeDisabled" getByRole('button', { name: 'Add emoji', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Add emoji', exact: true })
+        14 × locator resolved to <button type="button" aria-label="Add emoji">…</button>
+           - unexpected value "enabled"
+
+
+       9 |     const made=await context.request.post(`${api}/v1/organizations/${org}/channels`,{headers,data:{name:`Composer limit ${Date.now()}`,kind:'private',teamId:team,members:[]}});expect(made.ok()).toBe(true);channel=(await made.json()).id;const base=`${api}/v1/channels/${channel}`,full='x'.repeat(10000);
+      10 |     expect((await context.request.put(base+'/draft',{headers,data:{body:full}})).ok()).toBe(true);
+    > 11 |     await page.goto(`/?org=${org}&channel=${channel}`);const input=page.getByRole('textbox',{name:'Message',exact:true}),emoji=page.getByRole('button',{name:'Add emoji',exact:true}),notice=page.getByText('Not enough room to add this emoji. Shorten your message first.',{exact:true});await expect(input).toHaveValue(full);await expect(emoji).toBeDisabled();await expect(notice).toBeVisible();
+         |                                                                                                                                                                                                                                                                                                                                                      ^
+      12 |     const writes:{body:string}[]=[],posts:{body:string}[]=[],statuses:number[]=[];page.on('request',r=>{if(r.url()===base+'/draft'&&r.method()==='PUT')writes.push(r.postDataJSON());if(r.url()===base+'/messages'&&r.method()==='POST')posts.push(r.postDataJSON());});page.on('response',r=>{if(r.url()===base+'/draft'&&r.request().method()==='PUT')statuses.push(r.status());});
+      13 |     // Native textarea insertion remains constrained as before.
+      14 |     await input.focus();await input.press('ControlOrMeta+End');await input.pressSequentially('Z');await expect(input).toHaveValue(full);expect(posts).toEqual([]);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/composer-limit.spec.ts:11:342
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/composer-limit-emoji-inser-6536f-ncation-or-oversized-writes-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/composer-limit-emoji-inser-6536f-ncation-or-oversized-writes-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/composer-limit-emoji-inser-6536f-ncation-or-oversized-writes-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/composer-limit-emoji-inser-6536f-ncation-or-oversized-writes-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/composer-limit.spec.ts:5:1 › emoji insertion respects full and exact-fit draft limits without truncation or oversized writes 

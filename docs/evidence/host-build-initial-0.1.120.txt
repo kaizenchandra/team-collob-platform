@@ -1,0 +1,28 @@
+
+> team-collob-platform@0.1.119 build
+> next build && node scripts/prepare-standalone.mjs
+
+▲ Next.js 16.4.0 (Turbopack)
+✓ Running next.config.ts took 63ms
+- Cache Components enabled
+- Partial Prefetching enabled
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 877ms
+  Running TypeScript ...
+  Finished TypeScript in 2.8s ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/4) ...
+  Generating static pages using 5 workers (1/4) 
+  Generating static pages using 5 workers (2/4) 
+  Generating static pages using 5 workers (3/4) 
+✓ Generating static pages using 5 workers (4/4) in 279ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+└ ○ /_not-found
+
+
+○  (Static)  prerendered as static content
+

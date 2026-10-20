@@ -756,7 +756,7 @@ export function SettingsPanel({
             in this increment.
           </Unavailable>
         </form>
-        <NotificationSettings />
+        <NotificationSettings key={session.user.id} />
         <RecoverySettings />
         <InvitationInbox onSave={onSave} />
         <AcceptInvitation onSave={onSave} report={report} />

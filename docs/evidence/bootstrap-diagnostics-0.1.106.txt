@@ -1,0 +1,10 @@
+{"round":1,"status":0}
+{"status":200,"ms":21,"diagnostics":[{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0},{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0}]}
+{"round":2,"status":0}
+{"status":200,"ms":18,"diagnostics":[{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0},{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0}]}
+{"round":3,"status":0}
+{"status":200,"ms":21,"diagnostics":[{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0},{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0}]}
+{"round":4,"status":0}
+{"status":200,"ms":19,"diagnostics":[{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0},{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0}]}
+{"round":5,"status":0}
+{"status":200,"ms":18,"diagnostics":[{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0},{"event":"connect","phase":"guest-bootstrap","total":3,"idle":1,"waiting":0}]}

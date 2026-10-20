@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:83159) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/file-link-clipboard.spec.ts:6:1 › selected-file copy serializes native work and ignores outcomes after failed detail reads or close (476ms)
+
+
+  1) [chrome] › tests/browser/file-link-clipboard.spec.ts:6:1 › selected-file copy serializes native work and ignores outcomes after failed detail reads or close 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 401
+
+      12 |   const calls=()=>page.evaluate(()=>(window as unknown as {clipboardTest:{calls:unknown[]}}).clipboardTest.calls.length);
+      13 |   try{
+    > 14 |     await page.goto(`/?channel=${channel}`);await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();const uploaded=await context.request.post(base,{headers,data:{name,mime:'text/plain',content:Buffer.from(source).toString('base64')}});expect(uploaded.status()).toBe(200);file=(await uploaded.json()).id;await expect.poll(async()=>(await context.request.get(`${base}/${file}/download`)).status(),{timeout:120000}).toBe(200);const fileUrl=`http://localhost:3101/?org=${org}&channel=${channel}#file-${file}`;await page.goto(fileUrl);const dialog=page.getByRole('dialog',{name:'Selected file',exact:true}),copy=dialog.getByRole('button',{name:'Copy file link',exact:true}),pattern=`**/v1/organizations/${org}/channels/${channel}/files/${file}`;await expect(copy).toBeEnabled();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                       ^
+      15 |     // Two same-turn activations must start exactly one native promise.
+      16 |     await copy.evaluate(el=>{(el as HTMLButtonElement).click();(el as HTMLButtonElement).click();});expect(await calls()).toBe(1);await expect(copy).toBeDisabled();expect(await page.evaluate(()=>(window as unknown as {clipboardTest:{calls:{value:string}[]}}).clipboardTest.calls[0].value)).toBe(fileUrl);
+      17 |     await dialog.getByRole('button',{name:'Preview selected file',exact:true}).click();await expect(dialog.getByLabel('File source text')).toHaveText(source);await dialog.getByRole('button',{name:'View versions',exact:true}).click();await expect(dialog.getByRole('region',{name:'Selected file versions'})).toBeVisible();await page.route(pattern,r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"Selected file check unavailable"}'}));await expect(dialog.getByRole('alert')).toContainText('Selected file check unavailable',{timeout:10000});await expect(dialog.getByRole('article')).toHaveCount(0);await settle(0);await expect(dialog.getByText('File link copied.',{exact:true})).toHaveCount(0);await expect(dialog.getByText('Clipboard unavailable. Try copying the link again.',{exact:true})).toHaveCount(0);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-link-clipboard.spec.ts:14:407
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-link-clipboard-select-da5e9-ailed-detail-reads-or-close-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-link-clipboard-select-da5e9-ailed-detail-reads-or-close-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-link-clipboard-select-da5e9-ailed-detail-reads-or-close-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-link-clipboard-select-da5e9-ailed-detail-reads-or-close-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-link-clipboard.spec.ts:6:1 › selected-file copy serializes native work and ignores outcomes after failed detail reads or close 

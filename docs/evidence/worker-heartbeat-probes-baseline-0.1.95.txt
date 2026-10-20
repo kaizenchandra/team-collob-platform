@@ -1,0 +1,121 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: digest-worker nonfinite unexpected health
+
+0 !== 1
+
+    at run (file:///app/[eval1]:2:249)
+    at file:///app/[eval1]:3:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:223:26
+    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:220:20)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: docker run --rm --network concord-collaboration_default --memory 256m --cpus 0.5 -e CLAMAV_HOST=clamav -e CLAMAV_PORT=3310 concord-api:0.1.94-local node --input-type=module -e import fs from 'node:fs';import {spawnSync} from 'node:child_process';import assert from 'node:assert/strict';const fixture={"service":"digest-worker","filename":"/tmp/concord-digest-heartbeat","ttl":60000,"command":["node","-e","const fs=require('node:fs');process.exit(Date.now()-Number(fs.readFileSync('/tmp/concord-digest-heartbeat','utf8'))<60000?0:1)"]};
+    const run=(name,value,expected)=>{if(value===null)fs.rmSync(fixture.filename,{force:true});else fs.writeFileSync(fixture.filename,value);const result=spawnSync(fixture.command[0],fixture.command.slice(1),{encoding:'utf8',timeout:10000});assert.equal(result.status,expected,fixture.service+' '+name+' unexpected health');console.log(fixture.service+': '+name+' -> '+expected);};
+    run('nonfinite','Infinity',1);run('excessive future',String(Date.now()+86400000),1);run('stale',String(Date.now()-fixture.ttl-1000),1);run('malformed','invalid',1);run('missing',null,1);run('fresh',String(Date.now()),0);
+    console.log('PASS: disposable heartbeat files only; fresh scan probe uses actual ClamAV.');
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: digest-worker nonfinite unexpected health
+
+0 !== 1
+
+    at run (file:///app/[eval1]:2:249)
+    at file:///app/[eval1]:3:5
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:223:26
+    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:220:20)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at docker (file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-worker-heartbeat-probes.mjs:4:25)
+    at file:///Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/test-worker-heartbeat-probes.mjs:18:15
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '',
+    'node:internal/modules/run_main:107\n' +
+      '    triggerUncaughtException(\n' +
+      '    ^\n' +
+      '\n' +
+      'AssertionError [ERR_ASSERTION]: digest-worker nonfinite unexpected health\n' +
+      '\n' +
+      '0 !== 1\n' +
+      '\n' +
+      '    at run (file:///app/[eval1]:2:249)\n' +
+      '    at file:///app/[eval1]:3:5\n' +
+      '    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n' +
+      '    at async node:internal/modules/esm/loader:223:26\n' +
+      '    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:220:20)\n' +
+      '    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n' +
+      '  generatedMessage: false,\n' +
+      "  code: 'ERR_ASSERTION',\n" +
+      '  actual: 0,\n' +
+      '  expected: 1,\n' +
+      "  operator: 'strictEqual',\n" +
+      "  diff: 'simple'\n" +
+      '}\n' +
+      '\n' +
+      'Node.js v24.21.0\n'
+  ],
+  pid: 50930,
+  stdout: '',
+  stderr: 'node:internal/modules/run_main:107\n' +
+    '    triggerUncaughtException(\n' +
+    '    ^\n' +
+    '\n' +
+    'AssertionError [ERR_ASSERTION]: digest-worker nonfinite unexpected health\n' +
+    '\n' +
+    '0 !== 1\n' +
+    '\n' +
+    '    at run (file:///app/[eval1]:2:249)\n' +
+    '    at file:///app/[eval1]:3:5\n' +
+    '    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n' +
+    '    at async node:internal/modules/esm/loader:223:26\n' +
+    '    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:220:20)\n' +
+    '    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {\n' +
+    '  generatedMessage: false,\n' +
+    "  code: 'ERR_ASSERTION',\n" +
+    '  actual: 0,\n' +
+    '  expected: 1,\n' +
+    "  operator: 'strictEqual',\n" +
+    "  diff: 'simple'\n" +
+    '}\n' +
+    '\n' +
+    'Node.js v24.21.0\n'
+}
+
+Node.js v24.19.0

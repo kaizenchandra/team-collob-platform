@@ -1,0 +1,24 @@
+digest-worker: nonfinite -> 1
+digest-worker: excessive future -> 1
+digest-worker: stale -> 1
+digest-worker: malformed -> 1
+digest-worker: missing -> 1
+digest-worker: fresh -> 0
+digest-worker: invalid role/extra argument -> 1
+PASS: disposable heartbeat files only; fresh scan probe uses actual ClamAV.
+file-reconciler: nonfinite -> 1
+file-reconciler: excessive future -> 1
+file-reconciler: stale -> 1
+file-reconciler: malformed -> 1
+file-reconciler: missing -> 1
+file-reconciler: fresh -> 0
+file-reconciler: invalid role/extra argument -> 1
+PASS: disposable heartbeat files only; fresh scan probe uses actual ClamAV.
+file-worker: nonfinite -> 1
+file-worker: excessive future -> 1
+file-worker: stale -> 1
+file-worker: malformed -> 1
+file-worker: missing -> 1
+file-worker: fresh -> 0
+PASS: disposable heartbeat files only; fresh scan probe uses actual ClamAV.
+All disposable probe containers removed; no running heartbeat/source volumes/database/S3 changed.

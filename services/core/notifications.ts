@@ -24,6 +24,22 @@ export async function registerNotifications(app:FastifyInstance){
       enabled_at=CASE WHEN NOT notification_settings.browser_enabled AND $2 THEN now() ELSE notification_settings.enabled_at END`,[req.user.id,b.browser_enabled,b.quiet_enabled,b.quiet_start,b.quiet_end,b.digest_enabled??null,b.browser_replies_enabled??null]);
     return {ok:true};
   });
+  app.patch('/v1/notification-settings',async req=>{
+    z.object({}).strict().parse(req.query);
+    const b=settings.partial().strict().refine(value=>Object.keys(value).length>0,'Provide at least one preference').parse(req.body);
+    await pool.query(`INSERT INTO notification_settings(user_id,browser_enabled,quiet_enabled,quiet_start,quiet_end,digest_enabled,browser_replies_enabled)
+      VALUES($1,coalesce($2::boolean,false),coalesce($3::boolean,false),coalesce($4::text,'22:00'),coalesce($5::text,'08:00'),coalesce($6::boolean,false),coalesce($7::boolean,false))
+      ON CONFLICT(user_id) DO UPDATE SET
+      browser_enabled=coalesce($2,notification_settings.browser_enabled),quiet_enabled=coalesce($3,notification_settings.quiet_enabled),
+      quiet_start=coalesce($4,notification_settings.quiet_start),quiet_end=coalesce($5,notification_settings.quiet_end),
+      digest_enabled=coalesce($6,notification_settings.digest_enabled),browser_replies_enabled=coalesce($7,notification_settings.browser_replies_enabled),
+      enabled_at=CASE WHEN NOT notification_settings.browser_enabled AND $2 THEN now() ELSE notification_settings.enabled_at END,
+      replies_enabled_at=CASE WHEN NOT notification_settings.browser_replies_enabled AND $7 THEN now() ELSE notification_settings.replies_enabled_at END,
+      digest_since=CASE WHEN NOT notification_settings.digest_enabled AND $6 THEN now() ELSE notification_settings.digest_since END,
+      digest_checked_at=CASE WHEN NOT notification_settings.digest_enabled AND $6 THEN '-infinity'::timestamptz ELSE notification_settings.digest_checked_at END`,
+      [req.user.id,b.browser_enabled??null,b.quiet_enabled??null,b.quiet_start??null,b.quiet_end??null,b.digest_enabled??null,b.browser_replies_enabled??null]);
+    return {ok:true};
+  });
   app.get('/v1/digest-jobs',async req=>({jobs:(await pool.query('SELECT id,state,attempts,last_error,created_at,accepted_at FROM digest_jobs WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20',[req.user.id])).rows}));
   app.post('/v1/organizations/:id/notification-claims',async req=>{
     const org=idParam(req);

@@ -1,0 +1,11 @@
+✔ call invitations, raised hands and chat enforce session, room, expiry and idempotent-send boundaries (608.178209ms)
+✔ meeting protocol orders hands and chat, binds invitation winners, authorizes host transfer and preserves ended history (137.223375ms)
+✔ media callbacks require a signed body, deduplicate event IDs and never revive an ended meeting (17.715209ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1374.312834

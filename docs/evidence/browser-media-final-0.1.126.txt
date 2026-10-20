@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:61086) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization (29.3s)
+  ✓  2 [chrome] › tests/browser/media.spec.ts:44:1 › UI starts a fresh call after ending and acknowledged breakout names can be reused (1.1s)
+  ✓  3 [chrome] › tests/browser/meeting-protocol.spec.ts:8:1 › instant meeting link, preview cleanup, ordered hands, trusted moderation, removal replay protection and ended chat (29.9s)
+  ✓  4 [chrome] › tests/browser/meeting-protocol.spec.ts:36:1 › two authenticated users exchange audio and decoded video through forced local TURN relay (4.1s)
+  ✓  5 [chrome] › tests/browser/meeting-protocol.spec.ts:45:1 › profile audio calling and Meet now create real calls, invite users and copy authorized links (6.3s)
+  ✓  6 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (20.7s)
+  ✓  7 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (17.7s)
+  ✓  8 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (2.0s)
+
+  8 passed (1.9m)

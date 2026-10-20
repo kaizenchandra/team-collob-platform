@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:98827) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/upload-progress.spec.ts:8:1 › native upload byte progress waits for acknowledgement and version cancellation retains safe retry identity (6.0s)
+
+
+  1) [chrome] › tests/browser/upload-progress.spec.ts:8:1 › native upload byte progress waits for acknowledgement and version cancellation retains safe retry identity 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: 'Conversation files' }).getByRole('status').filter({ hasText: 'Waiting for upload confirmation' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: 'Conversation files' }).getByRole('status').filter({ hasText: 'Waiting for upload confirmation' }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Conversation files' }).getByRole('status').filter({ hasText: 'Waiting for upload confirmation' })
+
+
+      23 |   try{
+      24 |     await page.goto(`/?channel=${channel}`);await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();const panel=page.getByRole('region',{name:'Conversation files'}),input=panel.locator('input[type="file"]');await expect(input).toBeEnabled();
+    > 25 |     await page.route(pattern,route=>{if(route.request().method()==='POST')return route.continue({url:`http://localhost:${port}/v1/channels/${channel}/files`});if(failReads)return route.fulfill({status:503,contentType:'application/json',body:'{"error":"Upload confirmation list unavailable"}'});return route.continue();});await input.setInputFiles({name,mimeType:'text/plain',buffer:Buffer.from(content)});await expect.poll(()=>captures.length,{timeout:10000}).toBe(1);root=captures[0].id;expect(proxyErrors).toEqual([]);await expect(panel.getByRole('status').filter({hasText:'Waiting for upload confirmation'})).toBeVisible();await expect(panel.getByText('Transfer finished. The server has not confirmed acceptance yet.',{exact:true})).toBeVisible();await expect(input).toBeDisabled();expect(await page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toContain(captures[0].clientId);
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ^
+      26 |     const events=await page.evaluate(()=>(window as unknown as {uploadEvents:{loaded:number;total:number;computable:boolean}[]}).uploadEvents);expect(events.length).toBeGreaterThan(0);expect(events.at(-1)).toEqual({loaded:captures[0].bytes,total:captures[0].bytes,computable:true});const axe=await new AxeBuilder({page}).include('section[aria-label="Conversation files"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await panel.getByRole('progressbar').scrollIntoViewIfNeeded();await page.screenshot({path:'docs/evidence/upload-progress.png'});
+      27 |     failReads=true;gates[0]();await expect(panel.getByRole('status').filter({hasText:'Upload accepted.'})).toBeVisible();await expect(panel.getByRole('alert')).toContainText('Upload confirmation list unavailable');await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toBeNull();await page.unroute(pattern);await panel.getByRole('button',{name:'Retry files',exact:true}).click();const row=panel.locator('.file-row').filter({hasText:name});await expect(row).toContainText('Scan passed',{timeout:120000});expect(await (await context.request.get(`${base}/${root}/download`)).text()).toBe(content);
+      28 |     await row.getByRole('button',{name:'Versions',exact:true}).click();const dialog=page.getByRole('dialog',{name:`Versions: ${name}`,exact:true}),versionInput=dialog.getByLabel('Upload new version',{exact:true});await expect(versionInput).toBeEnabled();await page.route(pattern,route=>route.request().method()==='POST'?route.continue({url:`http://localhost:${port}/v1/channels/${channel}/files`}):route.continue());const version={name,mimeType:'text/plain',buffer:Buffer.from('actual version upload bytes\n'.repeat(8000))};await versionInput.setInputFiles(version);await expect.poll(()=>captures.length,{timeout:10000}).toBe(2);await expect(dialog.getByRole('status').filter({hasText:'Waiting for upload confirmation'})).toBeVisible();let aborted=false;page.on('requestfailed',r=>{if(r.method()==='POST'&&r.url().includes(`/v1/channels/${channel}/files`))aborted=true;});await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();await expect.poll(()=>aborted).toBe(true);expect(await page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toContain(captures[1].clientId);gates[1]();await page.unroute(pattern);await row.getByRole('button',{name:'Versions',exact:true}).click();await expect(versionInput).toBeEnabled();const retry=page.waitForRequest(r=>r.method()==='POST'&&r.url()===base);await versionInput.setInputFiles(version);expect((await retry).postDataJSON().clientId).toBe(captures[1].clientId);await expect(dialog.getByRole('link',{name:'Download version 2',exact:true})).toBeVisible({timeout:120000});expect((await (await context.request.get(`${base}/${root}/versions`)).json()).versions).toHaveLength(2);expect(await (await context.request.get(`${base}/${captures[1].id}/download`)).text()).toBe(version.buffer.toString());await expect.poll(()=>page.evaluate(()=>sessionStorage.getItem('concord.pending-uploads.v1'))).toBeNull();expect(proxyErrors).toEqual([]);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/upload-progress.spec.ts:25:613
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/upload-progress-native-upl-65a63-retains-safe-retry-identity-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/upload-progress-native-upl-65a63-retains-safe-retry-identity-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/upload-progress-native-upl-65a63-retains-safe-retry-identity-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/upload-progress-native-upl-65a63-retains-safe-retry-identity-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/upload-progress.spec.ts:8:1 › native upload byte progress waits for acknowledgement and version cancellation retains safe retry identity 

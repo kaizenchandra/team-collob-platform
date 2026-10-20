@@ -1,0 +1,13 @@
+✔ attachment drafts isolate actor/workspace/channel, deduplicate files and restore exact display metadata (2.277917ms)
+✔ attachment drafts enforce ten files and32 scopes without overwriting existing metadata (3.492ms)
+✔ acknowledged attachment IDs clear only their submitted scope and preserve newer selections (0.263208ms)
+✔ malformed, duplicate and unknown attachment draft metadata fails closed before mutation (0.398ms)
+✔ attachment write failure preserves prior selection and clearing never touches message retry journal (0.130417ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 180.442041

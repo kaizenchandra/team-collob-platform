@@ -485,3 +485,206 @@ Hide/Show in details changes only current user's list; current conversation/draf
 ## 0.1.84 — Activity cursor pages
 
 GET /v1/organizations/:id/activity retains filter=unread|mentions|replies and items; adds hasMore:boolean and nextCursor:{createdAt,id}|null. Optional beforeCreated UTC ISO timestamp (year0000 rejected) and beforeId UUID must be paired; unknown fields rejected. Descending created_at/id boundary uses exact database microseconds, LIMIT51 lookahead/50 visible rows. Cursor fields do not require the boundary message to remain present. Current membership/channel ACL, deletion, own-message exclusion and filter semantics reapply per query; no read/audit/outbox writes. Empty page returns items:[],hasMore:false,nextCursor:null. This is a changing collection, not a snapshot.
+
+
+0.1.85-local: In Activity and Saved messages, a failed Older/Newer request keeps its retry target through subsequent background failures and recovery. A current-poll failure withdraws rows; recovery restores the current page. Retry still attempts the requested destination. Explicit Refresh resets to newest. No API, migration or backup-format change.
+
+
+## 0.1.86 — Digest worker operational health
+
+No API/delivery-state contract changes. Heartbeat proves the last worker cycle completed scheduling and job-processing database work; SQL failures clear it and successful cycles restore it. Job-level SMTP dead/retry/uncertain outcomes remain durable and do not force worker unhealthy; healthy is not proof of mail delivery. Existing Compose grace/freshness unchanged.
+
+
+## 0.1.87 — Phase-aware digest failure handling
+
+No new endpoint/schema/state. last_error adds preparation_unavailable for failures before sending intent, using existing queued/dead states and five-attempt bound. After accepted sending intent, preserve SMTP retry/dead/uncertain classification; post-transport acknowledgement failure remains uncertain. Current eligibility checks still run on every attempt. Exactly-once external email delivery is not guaranteed.
+
+
+## 0.1.88 — Digest history presentation
+
+Existing authenticated GET /v1/digest-jobs unchanged. UI runtime-validates at most20 records, UUID IDs, known delivery states, integer attempts0..5 and ISO creation/nullable acceptance times. Only own existing metadata appears; no recipient/body/workspace names. Known diagnostics map to fixed explanations, unknown codes never echo raw values. Poll5s/timeout8s/manual refresh/current-error withdrawal/unmount and superseded abort. History is outside the preferences form, so refreshing cannot submit it. No job mutation/retry endpoint added.
+
+
+## 0.1.89 — Notification preference lifecycle
+
+Existing GET/PUT /v1/notification-settings unchanged. UI validates booleans,24-hour HH:mm and known provider labels; PUT strips provider metadata and sends only six editable fields. Reads and writes use8s deadlines and abort/mounted guards. Saves serialize with synchronous ref and disabled fieldset, acknowledgement must be ok:true. Failed/unconfirmed mutation keeps local choices, never claims rollback and does not auto-retry. New edit invalidates saved acknowledgement. Reload explicitly replaces unsaved state, supersedes reads and is disabled during save. Actor key/global workspace behavior unchanged; no persistence revision/CAS added.
+
+
+## 0.1.90 — Partial notification preferences
+
+PATCH /v1/notification-settings accepts a strict nonempty subset of browser_enabled, browser_replies_enabled, digest_enabled, quiet_enabled booleans and quiet_start/quiet_end HH:mm strings. No query fields, nulls, provider/actor metadata or client cutoffs. Missing row uses existing defaults for omitted fields; existing row atomically preserves omitted values. Opt-in cutoffs/reset digest check time change only on actual false-to-true transition of that category, not unrelated/repeated patches. Returns ok:true; GET and existing PUT compatibility unchanged. No audit/outbox side effects. UI PATCHes differences from loaded/acknowledged choices and disables unchanged saves. Reload explicitly discovers unedited remote changes; same-field writes remain last-write-wins, no version/CAS guarantee.
+
+
+## 0.1.91 — Unconfirmed preference fields
+
+No API changes. Client tracks names submitted in an unconfirmed PATCH separately from acknowledged baseline. Dirty-field selection includes those affected names on the next explicit save, using current local values, including baseline-equivalent reversions. Ordinary edits clear stale acknowledgement/error text but preserve the uncertainty explanation; successful acknowledgement or explicit reload resolves it. Superseded/unmounted guards,8s deadlines/serialization and minimal unrelated fields unchanged. No automated mutation retry or same-field CAS.
+
+
+## 0.1.92 — Browser permission snapshot
+
+NotificationPermission owns browser-only current state with mounted guards, permission-change subscription where supported, focus/visible refresh and request completion refresh. Native permission requests serialize with ref/disabled button; browser controls prompt lifetime. Rejected prompts report local generic errors, without changing saved preferences or making settings requests. Unmount removes event subscriptions and ignores pending query/prompt completion. Permission-change listener setup uses per-effect disposal to avoid late registration after cleanup. Existing server API/opt-in and alert claim semantics unchanged.
+
+
+## 0.1.93 — File worker operational health
+
+No API, scan-verdict or job-state changes. Heartbeat follows completed job-processing database work instead of preceding it, is removed before migration/on unhandled cycle failure, and recovers on successful processing. Existing actual scanner probe/freshness/grace retained. Handled scan failures remain durable bounded retries and do not imply worker-loop failure. No per-file readiness or production service-level guarantee added.
+
+
+## 0.1.94 — Reconciliation health
+
+No API/schema/file-lifetime change. Reconciler heartbeat reflects completed reconcileFiles work, not idle process ticks. Remove stale heartbeat at startup and on failed runs, restore after successful completion. Existing60s schedule/120s freshness retained, so recovery may take the next scheduled minute. Existing no-work/missing-root/advisory-skip return semantics unchanged; health does not imply all batches or dependencies were exercised.
+
+
+## 0.1.95 — Worker timestamp validation
+
+Shared assertWorkerHeartbeat requires positive decimal safe-integer timestamps and valid probe clock/TTL configuration, accepts at most5s future skew, and rejects age>=existing60s/120s limits. Trimmed surrounding whitespace remains acceptable. Missing/unreadable and invalid data fail closed. Fixed-role heartbeat-health CLI exposes only digest/reconciler mappings, rejects unknown role/extra arguments with generic failure; scan health still additionally probes actual ClamAV. No API/job-state/cleanup-policy contract changes.
+
+
+## 0.1.96 — File-processing presentation
+
+No API changes. Original-file UI now validates/consumes existing created_by UUID and nullable integer attempts0..5 metadata, displaying attempt count and matching uploader-only retry affordance to existing retry endpoint. FileProcessing explanations share file/scan states across original list, version history and exact sources; unknown/unavailable scan metadata never enables download/retry. Backend current ACL/uploader/quarantined/dead checks remain authoritative. Ready/rejected states and retention/scan job semantics unchanged.
+
+
+## 0.1.97 — File page retry intent
+
+No server/cursor contract changes. Files read errors retain attempted cursor history/mode separately from last accepted page history. Current polling cannot clear pending navigation error/target; newer poll failure updates diagnostics while preserving it. Explicit Retry files reissues target, successful retry clears it. Explicit refresh/navigation/action-driven reload replaces prior intent. Current/access failure continues withdrawing metadata/dialogs. No read-position or other write added.
+
+
+## 0.1.98 — File mutation lifecycle
+
+No server/upload identity contract changes. Files mutation entry aborts its pre-write GET and serializes writes; scope cleanup aborts active mutation, suppressing late callbacks. Network writes use20s timeout with explicit unconfirmed-state guidance, no automatic mutation replay. uploadFile optional signal plus20s HTTP deadline preserves pending-upload identity until accepted acknowledgement, enabling the same-file idempotent retry. Local file read/hash operations are checked for cancellation before creating recovery identity/sending. Existing8s GET deadlines, requested-page recovery and actual scan/download authorization remain unchanged.
+
+
+## 0.1.99 — File version mutation lifecycle
+
+No API/version identity changes. FileVersionsContent owns per-read/mutation controllers, serialized20s writes,3s poll pause and8s reads. Pre-write GET is aborted; cleanup aborts both, ignoring late callbacks. Shared uploadFile receives optional signal and preserves unacknowledged root-scoped operation identity. Mutation errors are separate from current-history errors; acknowledged upload/retry notice is retained when a subsequent GET fails. Retry history is read-only; current read/access failures withdraw version rows. Backend current authorization/scanner state remains authoritative; cancellation cannot revoke committed server work.
+
+
+## 0.1.100 — Deleted-file restore lifecycle
+
+Revision-conditional restore API unchanged. UI serializes restore synchronously, aborts on unmount and bounds HTTP20s. Transport/timeouts are unconfirmed: clear selection/cached recovery rows and require explicit deleted-list refresh/new confirmation before another restore. Known API errors clear confirmation; access errors also withdraw rows. Accepted restore notice survives subsequent parent file-list read failure. No automatic replay or rollback implication; server scanning can continue after cancellation. Existing manual pagination and8s recovery reads retained.
+
+
+## 0.1.101 — Recovery-list read failures
+
+Deleted-files API/cursor contract unchanged. Every failed or invalid recovery GET withdraws cached rows/page controls and confirmation; a separate read error retains the attempted cursor history. Retry deleted files repeats only that8s-bounded GET, including repeated failures; successful validation restores the requested page. Refresh explicitly replaces retry intent with newest. Manual-only reads, scope abort and revision-conditional restores remain unchanged.
+
+
+## 0.1.102 — Recovery follows observed conversation access denial
+
+No authorization API change. Files GET401/403/404 blocks and unmounts recovery, clearing cached recovery rows/selection and aborting its in-flight request. Only a validated successful Files GET clears that denial; recovery remounts empty and requires a new explicit read/selection/confirmation. Generic server/transport failures do not trigger this access-denial gate. Existing polling/read deadlines bound observation, not immediate revocation guarantees; backend remains authoritative on every operation.
+
+
+## 0.1.103 — Local file-write failure recovery
+
+Server mutation errors appear within Conversation files, with401 still triggering existing session reset. Transport/invalid-response/timeout failures use unconfirmed-change guidance; retained upload operation identity supports explicit same-file reselection. Polling success does not erase write error; next explicit mutation clears it. Observed Files access denial disables upload and mutation entry until a validated Files success. Refresh/Retry reads remain available. No API/schema/upload identity change or automatic write retry.
+
+
+## 0.1.104 — Preview visibility/request ownership
+
+Preview GET/schema unchanged. Hiding withdraws source/error, aborts and detaches the current read; returning starts a fresh GET without waiting for old request settlement. Controller identity plus abort/mount/visibility guards ignore obsolete response/error/finally. Keep5s visible polling,8s deadline and explicit read-only retry. Key inner preview state by channel/file. Invalid/transport failures show bounded retry guidance; server errors retain their message. Source remains escaped text only.
+
+
+## 0.1.105 — Selected-file clipboard lifecycle
+
+Copy file link has one synchronous pending request, disabled button and a detail-read generation token. Failed detail reads invalidate pending clipboard notices; later read recovery cannot revive them. Close/unmount ignores settlement. Clipboard work remains native and uncancellable, so recovered details stay copy-disabled until its promise settles; no synthetic timeout or rollback claim. Existing source read/preview/version authorization behavior unchanged.
+
+
+## 0.1.106 — Bootstrap diagnostic boundary
+
+No runtime API/database contract changes. New isolated diagnosis refuses database names other than concord_test before importing database/server modules, bounds child runs and records query error/pool state for the guest-bootstrap sequence. Test assertion diagnostics do not alter response status, authorization or timeouts. Successful reproduction checks are not proof the earlier intermittent500 is resolved.
+
+
+## 0.1.107 — Attachment picker file pages
+
+Attachment selection consumes the existing max100 original-file keyset API with paired beforeCreated/beforeId cursor fields. Runtime-validate row IDs/names/states and boundary consistency; page controls retain cursor history. Read failures withdraw options and retain attempted target for Retry files; Refresh starts newest. Reads abort on close/scope replacement and time out8s; selections disable while reading. A synchronous selection guard invokes the existing immediate-send callback at most once per picker. Backend still rechecks current access/file-ready state when creating immutable message references.
+
+
+## 0.1.108 — Local attachment drafts and explicit Send
+
+Picker selection adds ready IDs/display names to a strict bounded sessionStorage draft, not a message. Store at most10 distinct files per32 actor/org/channel scopes; restore local selection on navigation/reload and discard other-identity metadata on sign-in. Metadata is untrusted and grants no access. Explicit Send snapshots selected IDs with body/reply into existing immutable pending-message journal; attachment-only messages use Shared a file./Shared files. Failed/unconfirmed sends keep selection frozen; retry uses original payload even if current text differs. Accepted acknowledgement removes only submitted IDs from that scope, including when no longer selected. Invalid/unavailable local draft metadata blocks new sends and offers explicit metadata clearing, preserving stored files and pending-message operations. No server schema/API/idempotency change; current file-ready/channel authorization is rechecked on Send.
+
+
+## 0.1.109 — Native upload progress
+
+Shared uploadFile accepts an optional progress observer and sends existing credentialed JSON POST through XMLHttpRequest. Native upload progress reports transferred request-body bytes (including base64/JSON); an unavailable total is indeterminate. Body completion transitions to waiting for server confirmation, not success. Accepted response reports acceptance and only then clears existing operation identity. Preserve20s deadline/caller abort, ApiError status/server messages and unconfirmed transport/invalid-response recovery. Scope cleanup removes native listeners and suppresses late progress. File-list confirmation failure retains known upload acceptance; versions keep their existing accepted notice. Local file read/hash work is checked for cancellation before journaling/sending. No server schema/API/scanner change.
+
+
+## 0.1.110 — Reply draft selection
+
+Persist only message ID across at most32 strict actor/org/channel scopes in sessionStorage. No source text is cached. A restored/selected target gets exact authorized source GET (5s polling/8s deadline); ID/channel mismatch or failed read withdraws excerpt and disables new Send. Retry reply target is read-only; Cancel reply explicitly removes the target while keeping text/files. Source edits refresh the excerpt. Pending-message replay uses immutable original parentId independently of draft read readiness; selection changes freeze until retry is resolved/discarded. Accepted cleanup removes only matching submitted target, preserving newer/other-scope selections. Corrupt/unavailable metadata blocks new sends with explicit reply-only cache clearing. Backend still rechecks current authorization/parent existence when accepting a new message; no API/schema change.
+
+Text draft hydration publishes the server body synchronously to the reconnect buffer before enabling writes, preventing SSE open from overwriting restored text with the initial empty value. Each hydration GET has an8s deadline and is aborted/ignored on effect scope exit or revoked/session-ended stream. Last-write-wins draft semantics remain unchanged.
+
+## 0.1.111 — Saved text draft read recovery
+
+Composer editing/new Send and existing Retry safely wait for a validated saved-text snapshot with a string body of at most10000 characters. Loading has an8s deadline. Failed, invalid or timed-out GET shows a local Retry saved draft button; it repeats only the current read, preserving reply/file selection caches and immutable pending-message identity. No blank fallback or automatic write/replay. Successful hydration synchronously publishes the body to the reconnect buffer before enabling editing. Scope/identity/controller guards discard abandoned responses; navigation and live session/access loss abort the read.401 retains global session reset. Other read failures stay local; existing last-write-wins autosave semantics remain unchanged.
+
+## 0.1.112 — Mention picker read ownership
+
+Mention entry is disabled until saved text is ready; insertion checks current actor/workspace/channel readiness. Scope changes close the dialog. Member reads use8s deadline/caller abort and validate UUID/name data with distinct identities before offering options. Failed/invalid/timed-out reads show read-only Retry members, retaining search; closing aborts and discards late outcomes. Empty member sets and unmatched searches are distinct. Selection appends structured mention source to text without sending a message; current backend authorization/recipient validation still applies on Send. No server API/schema/delivery change.
+
+## 0.1.113 — Input-method Enter boundary
+
+Composer keydown leaves events with native isComposing or legacy composition keyCode229 to the browser/input method, without preventing default or invoking Send. Ordinary Enter still sends explicitly; Shift+Enter stays a newline. Draft persistence and immutable pending-message replay semantics are unchanged. Controlled browser events cover the handler boundary; native OS candidate UI and hardware/input-method coverage have not been asserted.
+
+## 0.1.114 — Emoji insertion at the message-size boundary
+
+Add emoji appends its existing space plus waving-hand glyph only if the resulting text fits10000 UTF-16 positions, matching native textarea maxLength and server string validation. A disabled action has an associated status explaining that text must be shortened. The functional update repeats the boundary check, preserving all existing text without truncating or splitting a glyph. Formatting/mention bounds and explicit Send semantics are unchanged.
+
+## 0.1.115 — Linked-message clipboard lifecycle
+
+Copy message link serializes native clipboard work per source view and disables repeated activation while pending. A failed/invalid current source read or Save/unread authorization denial invalidates earlier clipboard notices, even if a later read recovers. Close/unmount suppresses late outcomes. A recovered source remains copy-disabled until the earlier native promise settles; a new explicit attempt can then report its own result. This cannot cancel or undo an OS clipboard write. Existing exact link/current-access/source polling and Save/unread/navigation behavior remain unchanged.
+
+## 0.1.116 — Source Save acknowledgement and write lifetime
+
+Linked-source Save/Unsave now has an8s deadline and validates ok:true before reporting saved/unsaved. Unconfirmed transport, timeout, malformed acknowledgement or server failure exposes Check saved status, which performs only the current exact-source GET and rejects older read outcomes; successful checking reports current server state and clears uncertainty. Existing desired-boolean Save requests remain idempotent and are never automatically replayed. Current source polling still rechecks access. Save/unread controllers abort on view close, and unread also validates its acknowledgement. Cancellation cannot undo server changes already committed. Existing separate unread-count refresh recovery and definitive authorization withdrawal remain unchanged.
+
+## 0.1.117 — Saved-list Unsave lifecycle
+
+Saved-list Unsave serializes same-turn activation, validates ok:true and has a view-owned8s request bound/cancellation. Pre-write collection reads abort. Unconfirmed or invalid acknowledgement withdraws rows and guides the existing read-only Retry saved messages at the current page; no automatic write replay. Known acceptance reports Message removed from Saved independently of subsequent collection-read failure and remains through read-only recovery. View exit aborts pending reads/writes and suppresses late notices, without undoing committed server work. Existing page boundaries, failed navigation retry targets and current access checks are unchanged.
+
+## 0.1.118 — Direct-reply page read
+
+GET /v1/organizations/:id/channels/:channel/messages/:message/replies accepts only optional paired beforeCreated (UTC ISO datetime, nonzero year) and beforeId (UUID). Returns channel{id,name}, parentId, replies[{id,author,created_at,excerpt}], hasMore and nextCursor{createdAt,id}|null. At most50 direct nondeleted child rows, newest created_at/id first,51-row lookahead,500 database-character literal excerpts and microsecond cursor precision. A single SQL statement checks current parent/org/channel access and nondeleted state while projecting children; nested/unrelated rows are excluded. An unavailable parent/channel/scope returns404. No read position/draft/Saved/outbox/audit mutation. Migration034 adds a partial direct-reply page index without changing stored message format.
+
+Linked message optionally displays the paginated list. Explicit source opening replaces the selected source while keeping underlying conversation/draft/read state; Copy message link remains canonical for that child. List reads poll successful current pages every5s, own8s deadlines/abort and validate target/page data. Failures withdraw rows/page controls and pause polling until explicit same-target Retry direct replies or newest Refresh direct replies. Parent source failure unmounts the list. This is direct-child browsing, not complete ancestry traversal or timeline positioning.
+
+## 0.1.119 — Open current parent context as an exact source
+
+A validated replied-to context offers Open replied-to message. It uses the same scoped source selection as direct-child opening, freshly loads that exact parent and permits explicit stepwise traversal of nested reply ancestry. Pending, invalid or failed parent reads expose no navigation action; parent opening is disabled during a source mutation. Parent context retains5s polling/8s reads/retry and cancels reads on hide/selection change. Underlying conversation/draft/read state stays unchanged; matching canonical message links follow ancestor selection and Copy link always identifies the selected source. No new API/schema; ancestry breadcrumbs/history, thread composition and main-timeline positioning remain incomplete.
+
+
+## 0.1.120 — Previous selected message
+
+Parent and direct-child source navigation keeps up to32 previous message identities in memory, scoped to the signed-in actor/workspace and same conversation. Back to previous message freshly fetches the prior exact source under current authorization; it never restores cached text or access. Back remains usable during a source read or error, and is disabled during a source mutation. Leaving a pending source aborts its reads. Independent source selection, close, account/workspace reset and reload clear the trail. Matching canonical fragments follow Back; browsing from Saved preserves another underlying conversation/draft. This does not integrate browser Back, persist history or provide full thread/timeline navigation. No API/schema change.
+
+
+## 0.1.121 — Prepare a reply from an exact source
+
+Reply to this message revalidates the selected exact source before switching to its conversation/Posts and selecting that message as the reply draft. The action is serialized with source mutations, owns8s read/flush cancellation and exposes no action without validated source data. Failed/invalid source validation withdraws content/actions; explicit Retry message rechecks it. Before switching conversations, existing outgoing text is flushed; a failed flush keeps the source open and preserves navigation/target. Closing aborts pending browser work and prevents late selection, but cannot undo an already committed draft PUT. The reply ID commit checks current actor/workspace, cancellation and pending immutable sends. Restricted/archived/unavailable destinations and invalid storage metadata are rejected. Current pending sends disable the action; destination pending sends reject replacement. Destination text/file drafts are preserved, and the existing reply hook independently revalidates source data before a new Send. No message POST occurs until explicit Send; existing accepted-operation retry retains its immutable payload. No new API/schema. Full thread/timeline navigation remains incomplete.
+
+
+## 0.1.122 — Exact read positions and shared status
+
+POST /v1/channels/:id/read accepts only {seq}, where seq is a canonical nonnegative decimal string through9223372036854775807 or a legacy safe integer JSON number. Leading zeros (except0), whitespace/sign/exponent/fraction strings, boolean/null/coerced values, unsafe numbers, overflow and extra fields return400. The transaction checks current channel access, compares the channel sequence exactly and advances the personal position monotonically; it preserves existing read.changed event semantics. Existing read history response seq strings are validated within the same range, and Mark as read sends exact strings. No schema change.
+
+Shared receipt GET semantics remain at most100 currently authorized opted-in positions. The active conversation's Posts/details view owns independent5s successful polling/8s abortable reads with actor/workspace/channel/view fencing. Invalid/failed/timed-out snapshots remove reader names and Read indications, expose read-only Retry read status and pause polling until retry. History reads/sends do not wait for shared receipt GETs. Own-message Sent means persisted on the server; Read means at least one returned nonauthor shared position reaches that exact message. Absence of a returned position does not prove unread, and no device-delivery/reading guarantee or timestamp is claimed. Scope/view exit cancels reads; re-entry validates a fresh snapshot.
+
+
+## 0.1.123 — Author message-reader pages
+
+GET /v1/organizations/:id/channels/:channel/messages/:message/readers accepts only optional afterId (UUID). Current authorship, exact nondeleted message/org/channel and current channel/workspace access are checked within the same SQL snapshot as recipient projection. Unavailable/nonowned sources return404. Return channel{id,name}, message{id,created_at,excerpt}, readers[{id,name}], hasMore and nextCursor (last emitted UUID when more rows exist; otherwise null). At most50 readers per page/51-row lookahead, ascending UUID order; every page checks enabled identity, active workspace membership, current inherited/explicit channel access, receipt opt-in and exact shared position at or above the source. The author is excluded. Source excerpt is at most500 database characters/code points; the client accepts up to1000 UTF-16 positions while enforcing that code-point bound. No reader email, reader seq, read timestamp or total is returned. No read/draft/Saved/audit/outbox mutation, schema or index change.
+
+Own timeline View message readers opens a scoped dialog. Successful current-page reads poll5s with8s owned cancellation; failed/invalid reads withdraw source/rows/controls, pause polling and retain the failed cursor history for explicit read-only Retry message readers. Refresh message readers starts at the first page. Close/account/workspace/channel/view exit cancels and clears selection. Source context defaults to120 code points with native keyboard-expandable full excerpt. Pages are current reads rather than a stable snapshot: new positions/privacy/membership changes may require Refresh. Missing names do not prove unread, and positions do not certify device delivery or when someone read. Existing channel-level100-row projection and visible Sent/Read semantics remain unchanged.
+
+
+## 0.1.124 — Authorized LiveKit media
+
+GET /v1/organizations/:id/media returns ready/unconfigured/unavailable, recording availability and independentDevicesVerified=false. GET /organizations/:id/calls lists the latest50 accessible calls. POST /organizations/:id/channels/:channel/calls accepts clientId and starts/replays one active call per channel. The following paths are beneath /v1/organizations/:id/calls/:call: GET current state; POST /join {clientId,recordingConsent}; POST /connections/:grant/heartbeat {roomId,roomVersion}; DELETE /connections/:grant; POST /end {}; POST /rooms {clientId,name}; POST /rooms/:room/close {}; POST /participants/:grant/room {roomId}; POST /participants/:grant/moderate {action:mute|remove}; POST /host {userId}; POST /rooms/:room/recordings {clientId}; POST /recordings/:recording/stop {}; GET /recordings/:recording/download with optional bounded byte Range. Join and assignment recheck current channel access, recording consent and active call. Mutations use strict bounded schemas and host checks; grants bind actor and current session hash. Host close atomically returns room assignments to main, rejects missing main-room recording consent, closes the room and removes old provider connections; heartbeat issues scoped reconnect JWTs. Main closes only when the call ends. Up to8 breakouts per call,32 connections/call,32 active calls/deployment. GET state returns up to9 rooms,64 live grants and50 recording rows. Completed recording downloads require current channel ACL; no public recording URL or provider credential is returned. See MEDIA.md for lease/revocation/recording/backup constraints.
+
+## 0.1.125 — Incoming calls, raised hands and room chat
+
+Call creation also accepts optional mode (audio|video, default video) and snapshots up to100 currently authorized, active, enabled conversation members into media_invitations. Caller is recorded independently of transferable host. GET /v1/organizations/:id/calls/incoming returns at most10 pending invitations, caller name, conversation, initial mode and45-second deadline, rechecking current channel access. POST /calls/:call/respond {response:accepted|declined} is serialized with call lifecycle and rejects expired/conflicting answers. Same accepted response is retry-safe. Joining explicitly records acceptance. Direct decline/missed answer ends that call; group responses are independent. Media reconciliation serializes invitation expiry with join/answer. Leaving the final live connection for either direct participant ends the call and revokes its remaining grants; group leave remains connection-local. Existing end action records ended/cancelled outcome. Call state includes invitations and grant hand_raised_at; call directory includes initial mode, personal response and end reason.
+
+Beneath /v1/organizations/:id/calls/:call/connections/:grant, POST /hand {raised:boolean} updates the actor's session-bound, unexpired connection only. Moving/closing a breakout clears its hand. GET /chat returns {roomId,messages:[{id,user_id,name,body,created_at}]}: latest100 in ascending presentation order for the current assigned room only. POST /chat {roomId,clientId,body} requires exact current assignment, literal nonblank body at most4000 UTF-16 positions, current ACL/session/active-call/lease and no ban. Accept at most10 new messages/user/call per10 seconds and10000/call. A repeated clientId with identical room/content returns the same persisted message ID before quota checks; changed content or room returns409. Collaboration requests never renew media leases. Messages are separate from channel posts, contain no provider credentials and are not published through unrestricted LiveKit data channels. Read failures withdraw snapshots; drafts/retry identities survive a metadata read failure while the same chat component remains active. Leaving/moving/unmounting clears local chat state.

@@ -20,3 +20,9 @@ export function assertReleaseHealth(containers, images, version) {
       throw new Error(`Release blocked: ${service} is not running the expected image ${image}`);
   }
 }
+
+export const mediaReleaseServices=['media-redis','livekit','livekit-egress','media-worker'];
+export function assertMediaReleaseHealth(containers,images,version){
+  for(const service of mediaReleaseServices){const state=containers[service];if(!state||state.status!=='running'||state.health!=='healthy'||!state.imageId)throw new Error(`Release blocked: ${service} must be running and healthy`);}
+  const expected=images[`concord-api:${version}-local`]?.imageId;if(!expected||containers['media-worker'].imageId!==expected)throw new Error('Release blocked: media-worker image does not match API');
+}

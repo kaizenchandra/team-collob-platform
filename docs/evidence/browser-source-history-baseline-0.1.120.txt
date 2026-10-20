@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:3425) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/source-history.spec.ts:11:1 › previous sources are freshly read, cancellable and cleared by independent selection, close and reload (11.8s)
+
+
+  1) [chrome] › tests/browser/source-history.spec.ts:11:1 › previous sources are freshly read, cancellable and cleared by independent selection, close and reload 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('button', { name: 'Back to previous message', exact: true })
+
+
+      54 |     await dialog.getByRole('region',{name:'Direct replies',exact:true}).getByRole('article').filter({hasText:siblingBody}).getByRole('button',{name:'Open reply source',exact:true}).click();
+      55 |     await expect(selected).toContainText(siblingBody);
+    > 56 |     await back.click();await expect(selected).toContainText(rootBody);
+         |                ^
+      57 |
+      58 |     // History holds identities only: edits are read again when revisiting.
+      59 |     const edited=`Updated middle ${token}`;
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/source-history.spec.ts:56:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/source-history-previous-so-1ec0b--selection-close-and-reload-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/source-history-previous-so-1ec0b--selection-close-and-reload-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/source-history-previous-so-1ec0b--selection-close-and-reload-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/source-history-previous-so-1ec0b--selection-close-and-reload-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/source-history.spec.ts:11:1 › previous sources are freshly read, cancellable and cleared by independent selection, close and reload 

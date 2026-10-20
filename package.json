@@ -1,6 +1,6 @@
 {
   "name": "team-collob-platform",
-  "version": "0.1.84",
+  "version": "0.1.126",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3100",
@@ -24,14 +24,18 @@
     "backup:refresh-scanner": "node scripts/refresh-backup-scanner.mjs",
     "test:scanner-refresh": "node scripts/test-scanner-refresh.mjs",
     "backup:verify": "node scripts/verify-backup.mjs",
-    "test:backup-preflight": "node scripts/test-backup-preflight.mjs"
+    "test:backup-preflight": "node scripts/test-backup-preflight.mjs",
+    "diagnose:bootstrap": "node scripts/diagnose-bootstrap.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1150.0",
     "@fastify/cors": "11.3.1",
     "@js-temporal/polyfill": "0.5.1",
+    "@livekit/track-processors": "0.8.2",
     "fastify": "5.12.5",
     "jose": "6.2.12",
+    "livekit-client": "2.23.0",
+    "livekit-server-sdk": "2.19.1",
     "lucide-react": "1.55.0",
     "next": "16.4.0",
     "nodemailer": "10.1.0",

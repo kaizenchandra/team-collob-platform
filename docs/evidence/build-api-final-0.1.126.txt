@@ -1,0 +1,71 @@
+ Image concord-api:0.1.126-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 639B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.77kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 142B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [dependencies 1/4] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#6 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.0s done
+#6 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 45.58kB 0.0s done
+#5 DONE 0.0s
+
+#7 [dependencies 4/4] RUN npm ci
+#7 CACHED
+
+#8 [api-build 1/1] RUN npm prune --omit=dev
+#8 CACHED
+
+#9 [dependencies 3/4] COPY package.json package-lock.json ./
+#9 CACHED
+
+#10 [api 3/8] COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
+#10 CACHED
+
+#11 [dependencies 2/4] WORKDIR /app
+#11 CACHED
+
+#12 [api 4/8] COPY --chown=node:node package.json ./
+#12 CACHED
+
+#13 [api 5/8] COPY --chown=node:node services ./services
+#13 DONE 0.1s
+
+#14 [api 6/8] COPY --chown=node:node lib/file-preview.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts lib/message-sequence.ts ./lib/
+#14 DONE 0.1s
+
+#15 [api 7/8] COPY --chown=node:node migrations ./migrations
+#15 DONE 0.1s
+
+#16 [api 8/8] RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
+#16 DONE 0.2s
+
+#17 exporting to image
+#17 exporting layers 0.1s done
+#17 exporting manifest sha256:74a1d77c8d4b63a5db1d9d1d9b7f37e96ad0b60165d5952cf113cc8213d3fb86
+#17 exporting manifest sha256:74a1d77c8d4b63a5db1d9d1d9b7f37e96ad0b60165d5952cf113cc8213d3fb86 done
+#17 exporting config sha256:1bf540fbbedcb9190a3672221723094a51e0017741b5bed55df123fe7d6dd868 done
+#17 exporting attestation manifest sha256:e3fba8cffa69f0bd576f16b23b873c4bb2e857d977a8678fb47508515fd564d0 done
+#17 exporting manifest list sha256:760a6ea658aef7d35243cc74acc108fd639e6d1b25f23dd0789d966e91617a8f done
+#17 naming to docker.io/library/concord-api:0.1.126-local done
+#17 unpacking to docker.io/library/concord-api:0.1.126-local 0.1s done
+#17 DONE 0.3s
+
+#18 resolving provenance for metadata file
+#18 DONE 0.0s
+ Image concord-api:0.1.126-local Built 

@@ -1,3 +1,7 @@
+import {registerMessageReplies} from './message-replies.ts';
+import {registerMessageReaders} from './message-readers.ts';
+import {registerMedia} from './media.ts';
+import {mediaConfiguration} from './media-config.ts';
 import {registerPresence} from './presence.ts';
 import {registerFileRetention} from './file-retention.ts';
 import {registerMessageRetention} from './message-retention.ts';
@@ -20,6 +24,7 @@ import {authenticationFailure, authenticationRoute, identityAudit} from "./ident
 import Fastify, {type FastifyRequest} from "fastify";
 import cors from "@fastify/cors";
 import {z} from "zod";
+import {readSequence} from '../../lib/message-sequence.ts';
 import {randomBytes, randomUUID} from "node:crypto";
 import {migrate, pool, transaction} from "./db.ts";
 import {accessSQL, audit, channel, event, hash, HttpError, member, passwordMatches,} from "./security.ts";
@@ -114,10 +119,11 @@ export async function createApp() {
         if (
             !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
             !origins.includes(String(req.headers.origin)) &&
-            !(req.method === "POST" && req.url === "/v1/auth/backchannel-logout")
+            !(req.method === "POST" && ["/v1/auth/backchannel-logout","/v1/media/webhook"].includes(req.url))
         )
             throw new HttpError(403, "Untrusted request origin");
         if (
+            (req.method === "POST" && req.url === "/v1/media/webhook") ||
             req.url === "/health" ||
             req.url === "/ready" ||
             req.url === "/v1/capabilities" ||
@@ -183,9 +189,9 @@ export async function createApp() {
         oidc: !!process.env.OIDC_ISSUER,
         recoveryCodes: !!process.env.OIDC_ISSUER && !!process.env.OIDC_CLIENT_ID && process.env.OIDC_PROVIDER === "keycloak",
         media: {
-            state: "unconfigured",
+            state: mediaConfiguration()?"configured":"unconfigured",
             reason:
-                "LiveKit endpoint, credentials, and verified media integration required",
+                mediaConfiguration()?"LiveKit media integration enabled; independent-device acceptance remains separate":"Configure LiveKit endpoint and server-side credentials",
         },
         encryption: {
             state: "unavailable",
@@ -644,11 +650,11 @@ export async function createApp() {
     app.post("/v1/channels/:id/read", async (req) => {
         const id = idParam(req);
         const b = z
-            .object({seq: z.coerce.number().int().nonnegative()})
+            .object({seq: readSequence}).strict()
             .parse(req.body);
         return transaction(async (db) => {
             const c = await channel(db, req.user.id, id, true);
-            if (b.seq > Number(c.sequence))
+            if (BigInt(b.seq) > BigInt(c.sequence))
                 throw new HttpError(400, "Read position exceeds history");
             await db.query(
                 "INSERT INTO read_positions VALUES($1,$2,$3) ON CONFLICT(channel_id,user_id) DO UPDATE SET seq=GREATEST(read_positions.seq,$3)",
@@ -846,6 +852,9 @@ export async function createApp() {
         );
         return {id};
     });
+    await registerMessageReplies(app);
+    await registerMessageReaders(app);
+    await registerMedia(app,token=>readSession(token));
     await registerMembership(app);
     await registerWork(app);
     await registerFiles(app);

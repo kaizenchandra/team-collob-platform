@@ -1,0 +1,40 @@
+✖ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (17958.964208ms)
+✔ meeting protocol orders hands and chat, binds invitation winners, authorizes host transfer and preserves ended history (1669.994917ms)
+✔ media callbacks require a signed body, deduplicate event IDs and never revive an ended meeting (324.068667ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24281.065292
+
+✖ failing tests:
+
+test at tests/core.test.ts:12:148047
+✖ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (17958.964208ms)
+  error: canceling statement due to statement timeout
+      at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/core.test.ts:2165:321)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    length: 228,
+    severity: 'ERROR',
+    code: '57014',
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: 'SQL statement "SELECT 1 FROM ONLY "public"."files" x WHERE $1 OPERATOR(pg_catalog.=) "created_by" FOR KEY SHARE OF x"',
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'postgres.c',
+    line: '3405',
+    routine: 'ProcessInterrupts'
+  }

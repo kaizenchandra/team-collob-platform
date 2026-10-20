@@ -1,0 +1,5 @@
+
+> team-collob-platform@0.1.125 requirements
+> node scripts/requirements.mjs
+
+Validated 146 unique baseline requirements. { Blocked: 15, Verified: 4, 'In progress': 100, 'Not started': 27 }

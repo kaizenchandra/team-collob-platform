@@ -1,0 +1,51 @@
+
+Running 9 tests using 1 worker
+
+(node:24843) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response (4.6s)
+  ✓  2 [chrome] › tests/browser/collaboration.spec.ts:197:1 › lost acceptance response survives navigation and reload, then retries without duplication (1.2s)
+  ✓  3 [chrome] › tests/browser/collaboration.spec.ts:233:1 › offline draft is retained and syncs after reconnection (1.5s)
+  ✓  4 [chrome] › tests/browser/collaboration.spec.ts:315:1 › logout clears pending text; another identity cannot inherit it (861ms)
+  ✓  5 [chrome] › tests/browser/collaboration.spec.ts:445:1 › channel mention picker creates authorized activity that updates when the mention is removed (13.2s)
+  ✓  6 [chrome] › tests/browser/draft-hydration.spec.ts:4:1 › draft hydration publishes saved text before live reconnect and cancels abandoned reads (702ms)
+  ✓  7 [chrome] › tests/browser/draft-recovery.spec.ts:5:1 › saved draft failures have read-only retry without losing text, reply or pending send identity (10.2s)
+  ✘  8 [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation (11.0s)
+(node:25062) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  9 [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send (26.6s)
+
+
+  1) [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Preserved mention draft 1792440723012 [@Bob Chen](concord-mention:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb) "
+    Received: "Preserved mention draft 1792440723012 [@Bob Chen](concord-mention:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb)"
+
+      29 |     await dialog.getByRole('button',{name:'Bob Chen',exact:true}).click();const composed=caption+`[@Bob Chen](concord-mention:${bob}) `;await expect(input).toHaveValue(composed);expect(posts).toEqual([]);await expect.poll(async()=>(await (await context.request.get(base+'/draft')).json()).body).toBe(composed);
+      30 |     mode='held';const before=reads,aborts=aborted;await mention.click();await expect.poll(()=>reads).toBe(before+1);await dialog.getByRole('button',{name:'Close dialog'}).click();await expect.poll(()=>aborted).toBeGreaterThan(aborts);release?.();await page.unroute(base+'/members');await expect(dialog).toHaveCount(0);await expect(input).toHaveValue(composed);expect(posts).toEqual([]);
+    > 31 |     await page.getByRole('button',{name:'Send message',exact:true}).click();await expect(input).toHaveValue('');expect(posts).toHaveLength(1);const messages=(await (await context.request.get(base+'/messages')).json()).messages;expect(messages).toHaveLength(1);expect(messages[0].body).toBe(composed);expect(messages[0].mentions.map((m:{id:string})=>m.id)).toContain(bob);
+         |                                                                                                                                                                                                                                                                                              ^
+      32 |   }finally{release?.();await page.unrouteAll({behavior:'wait'});if(channel){const base=`${api}/v1/channels/${channel}`;for(const message of (await (await context.request.get(base+'/messages')).json()).messages??[])if(!message.deleted)await context.request.delete(`${base}/messages/${message.id}`,{headers});const response=await context.request.get(base+'/settings');if(response.ok()){const settings=await response.json();await context.request.patch(base+'/details',{headers,data:{name:settings.name,description:settings.description,archived:true,revision:settings.revision}});}}}
+      33 | });
+      34 |
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/mention-picker.spec.ts:31:286
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/mention-picker-mention-pic-4df85-etry-and-close-cancellation-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/mention-picker.spec.ts:5:1 › mention picker waits for saved text and bounds member reads with validation, retry and close cancellation 
+  8 passed (1.2m)

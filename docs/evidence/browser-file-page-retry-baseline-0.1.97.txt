@@ -1,0 +1,52 @@
+
+Running 1 test using 1 worker
+
+(node:57117) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh (14.9s)
+
+
+  1) [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('region', { name: 'Conversation files' }).getByRole('alert')
+    Expected substring: "Current file snapshot failed after navigation"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('region', { name: 'Conversation files' }).getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Conversation files' }).getByRole('alert')
+
+
+      16 |     const synthetic=Array.from({length:101},()=>randomUUID());files.push(...synthetic);await db.query("INSERT INTO files(id,org_id,channel_id,name,mime,bytes,storage_key,sha256,state,created_by,created_at) SELECT x,$2,$3,'pending-page-'||n::text||'.txt','text/plain',1,x::text,'no-stored-bytes','quarantined',$4,now()-interval '1 day' FROM unnest($1::uuid[]) WITH ORDINALITY t(x,n)",[synthetic,org,channel,users.bob]);
+      17 |     await bob.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();const panel=bob.getByRole('region',{name:'Conversation files'}),status=panel.getByRole('status').filter({hasText:/Files page/});await expect(status).toHaveText('Files page 1 · 100 files');await expect(panel.getByRole('button',{name:'Newer files',exact:true})).toBeDisabled();await expect(panel.getByText(name,{exact:true})).toHaveCount(0);
+    > 18 |     const pattern=`**/v1/channels/${channel}/files?*`;await bob.route(pattern,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Older files temporarily unavailable"}'}));await panel.getByRole('button',{name:'Older files',exact:true}).click();await expect(panel.getByRole('alert')).toContainText('Older files temporarily unavailable');await expect(status).toHaveText('Files page 1 · 100 files');const currentPattern=`**/v1/channels/${channel}/files`;await bob.route(currentPattern,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Current file snapshot failed after navigation"}'}));await expect(panel.getByRole('alert')).toContainText('Current file snapshot failed after navigation',{timeout:10000});await expect(panel.locator('.file-row')).toHaveCount(0);await bob.unroute(currentPattern);await expect(status).toHaveText('Files page 1 · 100 files',{timeout:10000});await expect(panel.getByRole('alert')).toContainText('Current file snapshot failed after navigation');await bob.unroute(pattern);await panel.getByRole('button',{name:'Retry files',exact:true}).click();await expect(status).toHaveText('Files page 2 · 2 files');await expect(panel.getByRole('button',{name:'Older files',exact:true})).toBeDisabled();
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^
+      19 |     const row=panel.locator('.file-row').filter({hasText:name});await expect(row).toHaveCount(1);const downloaded=bob.waitForEvent('download');await row.getByRole('link',{name:'Download',exact:true}).click();expect(await (await downloaded).suggestedFilename()).toBe(name);expect(await (await b.request.get(`${base}/files/${original}/download`)).text()).toBe(content);
+      20 |     await row.getByRole('button',{name:'Versions',exact:true}).click();const dialog=bob.getByRole('dialog',{name:`Versions: ${name}`});await expect(dialog.getByRole('link',{name:'Download version 1',exact:true})).toBeVisible();await expect(dialog.getByRole('link',{name:'Download version 2',exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Close dialog',exact:true}).click();
+      21 |     const firstPage=(await (await b.request.get(base+'/files')).json()),boundary=firstPage.nextCursor;
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-pages.spec.ts:18:966
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-pages-older-original--81611-and-reset-on-upload-refresh-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-pages.spec.ts:8:1 › older original files retain live status, download/version access, recover navigation and reset on upload/refresh 

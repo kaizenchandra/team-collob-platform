@@ -1,0 +1,46 @@
+
+Running 3 tests using 1 worker
+
+(node:67416) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure (32.9s)
+(node:67609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  2 [chrome] › tests/browser/file-recovery-pages.spec.ts:9:1 › uploader pages beyond100 to recover original before version, retries navigation and retains cursor after boundary recovery (6.4s)
+  ✓  3 [chrome] › tests/browser/file-recovery.spec.ts:6:1 › uploader confirms deleted-file recovery, sees stale/error recovery and restores an existing attachment through a real fresh scan (3.4s)
+
+
+  1) [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('.tabs').getByRole('button', { name: 'Files', exact: true })
+
+
+      17 |     expect((await context.request.delete(`${base}/${file}`,{headers})).status()).toBe(200);await select();let startedAgain!:()=>void;const acceptedAgain=new Promise<void>(r=>{startedAgain=r;}),heldAgain=new Promise<void>(r=>{release=r;});let aborted=false;page.on('requestfailed',r=>{if(r.url()===restore)aborted=true;});await page.route(routePattern,async route=>{const response=await route.fetch();expect(response.status()).toBe(200);startedAgain();await heldAgain;await route.fulfill({response}).catch(()=>{});});await panel.getByRole('button',{name:'Confirm file recovery',exact:true}).click();await acceptedAgain;await page.getByRole('button',{name:'Calendar',exact:true}).click();await expect.poll(()=>aborted).toBe(true);release?.();await page.unroute(routePattern);await expect(panel).toHaveCount(0);await ready();
+      18 |     // Accepted recovery is still acknowledged when the parent current-files GET fails.
+    > 19 |     expect((await context.request.delete(`${base}/${file}`,{headers})).status()).toBe(200);await page.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();await select();await page.route(`**/v1/channels/${channel}/files`,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Restore confirmation read unavailable"}'}));await panel.getByRole('button',{name:'Confirm file recovery',exact:true}).click();await expect(panel.getByRole('status').filter({hasText:'Recovery requested.'})).toBeVisible();await expect(page.getByRole('alert').filter({hasText:'Restore confirmation read unavailable'})).toBeVisible();await expect(panel.getByRole('group',{name:'Confirm file recovery',exact:true})).toHaveCount(0);expect(posts).toBe(3);const axe=await new AxeBuilder({page}).include('section[aria-label="Deleted file recovery"]').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await panel.screenshot({path:'docs/evidence/file-recovery-confirmation.png'});await page.unroute(`**/v1/channels/${channel}/files`);await page.getByRole('button',{name:'Retry files',exact:true}).click();await ready();await expect(page.locator('.file-row').filter({hasText:name})).toContainText('Scan passed',{timeout:120000});expect(posts).toBe(3);
+         |                                                                                                                                                                      ^
+      20 |   }finally{release?.();await page.unrouteAll({behavior:'wait'});if(file)expect((await context.request.delete(`${base}/${file}`,{headers})).status()).toBe(200);}
+      21 | });
+      22 |
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-recovery-mutations.spec.ts:19:166
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-recovery-mutations-re-434fc-nce-after-file-list-failure-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure 
+  2 passed (44.4s)

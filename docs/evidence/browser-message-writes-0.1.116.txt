@@ -1,0 +1,13 @@
+
+Running 5 tests using 1 worker
+
+(node:35495) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [chrome] › tests/browser/linked-message.spec.ts:10:1 › old search matches and copied links show exact current messages while protecting drafts, attachments and revoked content (30.2s)
+  ✓  2 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (2.9s)
+  ✓  3 [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close (17.0s)
+  ✓  4 [chrome] › tests/browser/message-source-writes.spec.ts:5:1 › source Save bounds lost acknowledgement, checks real saved status and aborts writes on close (10.0s)
+  ✓  5 [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access (47.9s)
+
+  5 passed (1.8m)

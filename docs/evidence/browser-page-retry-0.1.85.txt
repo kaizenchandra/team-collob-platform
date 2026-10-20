@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:3461) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/activity-sources.spec.ts:8:1 › activity exact sources recover failures and preserve filters, drafts and cancelled navigation (20.5s)
+  ✓  2 [chrome] › tests/browser/mark-unread.spec.ts:8:1 › source mark unread preserves drafts, recovers write/badge failures and persists until explicit mark read (3.1s)
+  ✓  3 [chrome] › tests/browser/saved-messages.spec.ts:8:1 › saved messages page personal older sources, retain drafts, unsave and withdraw failures/deletion/current access (47.8s)
+
+  3 passed (1.2m)

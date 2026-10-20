@@ -1,4 +1,9 @@
 "use client";
+import {clearMeetingPending} from '@/lib/pending-call-chat';
+import {MediaWorkspace,type MediaCallIntent} from "./media-workspace";
+import {MessageReaders} from "./message-readers";
+import {MessageReadStatus,useReadReceipts} from "./read-status";
+import {sequenceBefore} from "@/lib/message-sequence";
 import {ActivityFeed} from "./activity-feed";
 import {PresenceProvider,ProfilePresence} from "./presence-provider";
 import {ConversationVisibility,HiddenConversations} from "./conversation-visibility";
@@ -6,7 +11,7 @@ import {SavedMessages} from "./saved-messages";
 import {readFileLink,type FileLinkTarget} from "@/lib/file-link";
 import {LinkedFile} from "./linked-file";
 import {LinkedMessage} from "./linked-message";
-import {readMessageLink,type MessageLinkTarget} from "@/lib/message-link";
+import {messageLink,readMessageLink,type MessageLinkTarget} from "@/lib/message-link";
 import {WorkspaceSearch} from "./workspace-search";
 import {FileRetention} from "./file-retention";
 import {MessageRetention} from "./message-retention";
@@ -21,6 +26,10 @@ import {PostingPolicy} from "./posting-policy";
 import {MeetingReminders} from "./meeting-reminders";
 import { InvitationInbox, InvitationNotice } from "./invitation-inbox";
 import { BrowserMentionAlerts } from "./notifications";
+import {ReplyDraft,useReplyDraft} from "./reply-draft";
+import {acknowledgeDraftReply,retainReplyIdentity,setDraftReply} from "@/lib/draft-replies";
+import {AttachmentDraft,useAttachmentDraft} from "./attachment-draft";
+import {acknowledgeDraftAttachments,retainAttachmentIdentity} from "@/lib/draft-attachments";
 import { AttachmentPicker, MessageAttachments } from "./attachments";
 import { MentionPicker } from "./mention-picker";
 import { MessageContent, FormattingTools } from "./message-content";
@@ -34,6 +43,7 @@ import {
   useCallback,
   useRef,
   type FormEvent,
+  type SetStateAction,
 } from "react";
 import {
   MessageSquare,
@@ -56,7 +66,6 @@ import {
   Video,
   PanelRight,
   ExternalLink,
-  Check,
   CheckCheck,
   Reply,
   Trash2,
@@ -135,14 +144,12 @@ export default function Workspace() {
     [hasMore, setHasMore] = useState(false),
     [draft, setDraft] = useState(""),
     [draftReady, setDraftReady] = useState(false),
-    [reply, setReply] = useState<Message | null>(null),
+    [draftLoadError, setDraftLoadError] = useState(""),
+    [draftLoadAttempt, setDraftLoadAttempt] = useState(0),
     [connection, setConnection] = useState("Connecting"),
     [sending, setSending] = useState(false),
     [failed, setFailed] = useState<PendingMessage | null>(null),
     [typing, setTyping] = useState<string[]>([]),
-    [receipts, setReceipts] = useState<
-      { user_id: string; name: string; seq: string }[]
-    >([]),
     [filter, setFilter] = useState(""),
     [listFilter,setListFilter]=useState<"all"|"unread"|"pinned"|"muted">("all"),
     [search, setSearch] = useState(""),
@@ -151,7 +158,17 @@ export default function Workspace() {
     [details, setDetails] = useState(false),
     [mobileNav, setMobileNav] = useState(false),
     [activityFilter, setActivityFilter] = useState<"unread" | "mentions" | "replies">("unread");
-  const [linkedMessage,setLinkedMessage]=useState<MessageLinkTarget|null>(null);
+  const attachmentDraft=useAttachmentDraft(session?.user.id??"",org,stream);
+  const replyDraft=useReplyDraft(session?.user.id??"",org,stream);
+  useEffect(()=>{setModal(value=>value==="mention"?"":value);},[org,stream,session?.user.id]);
+  const [mediaIntent,setMediaIntent]=useState<MediaCallIntent|null>(null);
+  const [readerTarget,setReaderTarget]=useState<{key:string;id:string}|null>(null);
+  useEffect(()=>setReaderTarget(null),[session?.user.id,org,stream,view,tab]);
+  const [linkedMessage,setLinkedMessageTarget]=useState<MessageLinkTarget|null>(null);
+  const [sourceTrail,setSourceTrail]=useState<{key:string;items:MessageLinkTarget[]}>({key:'',items:[]});
+  const setLinkedMessage=useCallback((value:SetStateAction<MessageLinkTarget|null>)=>{
+    setSourceTrail({key:'',items:[]});setLinkedMessageTarget(value);
+  },[]);
   const [linkedFile,setLinkedFile]=useState<FileLinkTarget|null>(null);
   const [hiddenOpen,setHiddenOpen]=useState(false);
   const [previewsUnavailable,setPreviewsUnavailable]=useState(false);
@@ -168,11 +185,15 @@ export default function Workspace() {
     orgRef.current = org;
   }, [org]);
   const draftLoaded = useRef(false);
+  const draftRead = useRef<AbortController | null>(null);
   const latestDraft = useRef(draft);
   useEffect(() => {
     latestDraft.current = draft;
   }, [draft]);
   const composerInput = useRef<HTMLTextAreaElement>(null);
+  const emojiLimitId = useId();
+  const emojiText = " 👋";
+  const emojiFits = draft.length + emojiText.length <= 10000;
   const typingAt = useRef(0);
   const listEnd = useRef<HTMLDivElement>(null);
   const [reporting,setReporting]=useState<{channel:string;id:string;deleted:boolean}|null>(null);
@@ -199,10 +220,8 @@ export default function Workspace() {
     setFailed(null);
     setResults(null);
     setActivityFilter("unread");
-    setReceipts([]);
     setTyping([]);
-    setReply(null);
-  }, []);
+  }, [setLinkedMessage]);
   const report = useCallback(
     (e: unknown) => {
       if (e instanceof ApiError && e.status === 401) {
@@ -216,11 +235,14 @@ export default function Workspace() {
     },
     [resetSession],
   );
+  const readStatus=useReadReceipts(session?.user.id??"",org,stream,view==="Chat"&&(tab==="Posts"||details),report);
   const refreshSession = useCallback(async () => {
     try {
       const s = sessionSchema.parse(await api("/session"));
       try {
         retainIdentity(window.sessionStorage, s.user.id);
+        retainAttachmentIdentity(window.sessionStorage,s.user.id);
+        retainReplyIdentity(window.sessionStorage,s.user.id);
       } catch (e) {
         report(e);
       }
@@ -271,16 +293,12 @@ export default function Workspace() {
       const fresh = new Map(data.messages.map((m) => [m.id, m]));
       return [
         ...previous.filter(
-          (m) => Number(m.seq) < Number(data.messages[0]?.seq ?? 0),
+          (m) => sequenceBefore(m.seq,data.messages[0]?.seq ?? "0"),
         ),
         ...fresh.values(),
       ];
     });
     setHasMore(data.hasMore);
-    const r = await api<{ receipts: typeof receipts }>(
-      `/channels/${stream}/receipts`,
-    );
-    if (streamRef.current === stream) setReceipts(r.receipts);
   }, [stream]);
   useEffect(() => {
     void refreshSession();
@@ -306,11 +324,10 @@ export default function Workspace() {
   useEffect(() => {
     if (!stream || !session) return;
     draftLoaded.current = false;
+    latestDraft.current = "";
     setDraftReady(false);
     setDraft("");
     setMessages([]);
-    setReply(null);
-    setReceipts([]);
     setFailed(null);
     try {
       setFailed(
@@ -320,24 +337,16 @@ export default function Workspace() {
       report(e);
     }
     void history().catch(report);
-    void api<{ body: string }>(`/channels/${stream}/draft`)
-      .then((d) => {
-        if (streamRef.current === stream) {
-          setDraft(d.body);
-          draftLoaded.current = true;
-          setDraftReady(true);
-        }
-      })
-      .catch(report);
+    let stopped = false;
     setConnection("Connecting");
     let source: EventSource;
     let cursor = "0";
     let hydrateTimer: ReturnType<typeof setTimeout> | undefined;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
     let attempts = 0;
-    let stopped = false;
     const stop = () => {
       stopped = true;
+      draftRead.current?.abort();
       clearTimeout(reconnectTimer);
       source?.close();
     };
@@ -386,6 +395,7 @@ export default function Workspace() {
         stop();
         try {
           clearPending(window.sessionStorage);
+          clearMeetingPending(window.sessionStorage);
         } catch {
           /* storage may be disabled */
         }
@@ -443,6 +453,36 @@ export default function Workspace() {
     };
   }, [stream, org, session, history, refresh, report]);
   useEffect(() => {
+    if (!stream || !session || !org) return;
+    const controller = new AbortController();
+    draftRead.current = controller;
+    let active = true;
+    const current = () => active && draftRead.current === controller && streamRef.current === stream && orgRef.current === org && identityRef.current === session.user.id;
+    draftLoaded.current = false;
+    latestDraft.current = "";
+    setDraft("");
+    setDraftReady(false);
+    setDraftLoadError("");
+    const deadline = setTimeout(() => controller.abort(new DOMException("Saved draft loading timed out. Retry loading it.", "TimeoutError")), 8000);
+    void api<unknown>(`/channels/${stream}/draft`, "GET", undefined, controller.signal)
+      .then((result) => {
+        if (!current() || controller.signal.aborted) return;
+        if (!result || typeof result !== "object" || !("body" in result) || typeof result.body !== "string" || result.body.length > 10000) throw new Error("Saved draft response was invalid. Retry loading it.");
+        // A live-open callback may run before React's passive ref update.
+        latestDraft.current = result.body;
+        setDraft(result.body);
+        draftLoaded.current = true;
+        setDraftReady(true);
+      })
+      .catch((e) => {
+        if (!current() || (controller.signal.aborted && controller.signal.reason?.name !== "TimeoutError")) return;
+        if (e instanceof ApiError && e.status === 401) { report(e); return; }
+        setDraftLoadError(controller.signal.reason?.name === "TimeoutError" ? "Saved draft loading timed out. Retry loading it." : "Saved draft could not be loaded. Retry loading it to continue.");
+      })
+      .finally(() => clearTimeout(deadline));
+    return () => { active = false; clearTimeout(deadline); controller.abort(); if (draftRead.current === controller) draftRead.current = null; };
+  }, [stream, org, session, report, draftLoadAttempt]);
+  useEffect(() => {
     if (!draftLoaded.current || !stream) return;
     const timer = setTimeout(() => {
       void api(`/channels/${stream}/draft`, "PUT", { body: draft }).catch(() =>
@@ -457,6 +497,7 @@ export default function Workspace() {
       if (e.data === "logout") {
         try {
           clearPending(window.sessionStorage);
+          clearMeetingPending(window.sessionStorage);
         } catch {
           /* storage may be disabled */
         }
@@ -470,6 +511,7 @@ export default function Workspace() {
       await api("/session", "DELETE");
       try {
         clearPending(window.sessionStorage);
+          clearMeetingPending(window.sessionStorage);
       } catch (e) {
         report(e);
       }
@@ -481,10 +523,11 @@ export default function Workspace() {
       report(e);
     }
   }
-  async function send(retry = false, attachmentIds: string[] = []) {
-    if (!session || !stream || !org || sending || !draftReady || (postingBlocked&&!retry) || channel?.archived) return;
+  async function send(retry = false) {
+    if (!session || !stream || !org || sending || !draftReady || (!retry&&(!attachmentDraft.ready||!replyDraft.ready)) || (postingBlocked&&!retry) || channel?.archived) return;
     const destination = stream;
     const tenant = org;
+    const attachmentIds=attachmentDraft.files.map(file=>file.id);
     let item: PendingMessage;
     try {
       const pending = pendingFor(
@@ -509,10 +552,10 @@ export default function Workspace() {
         userId: session.user.id,
         orgId: tenant,
         channelId: destination,
-        body: draft.trim() || (attachmentIds.length ? "Shared a file." : ""),
+        body: draft.trim() || (attachmentIds.length ? attachmentIds.length===1?"Shared a file.":"Shared files." : ""),
         attachmentIds,
         format: "markdown-v1",
-        parentId: reply?.id ?? null,
+        parentId: replyDraft.id,
       };
       if (!item.body) return;
       savePending(window.sessionStorage, item);
@@ -544,13 +587,20 @@ export default function Workspace() {
     // Accepted/persisted is final even if draft saving or rendering later fails.
     try {
       removePending(window.sessionStorage, item.id);
+      let attachmentCleanupError:unknown;
+      try{acknowledgeDraftAttachments(window.sessionStorage,{userId:item.userId,orgId:item.orgId,channelId:item.channelId},item.attachmentIds??[]);}
+      catch(e){attachmentCleanupError=e;}
+      let replyCleanupError:unknown;
+      try{acknowledgeDraftReply(window.sessionStorage,{userId:item.userId,orgId:item.orgId,channelId:item.channelId},item.parentId);}
+      catch(e){replyCleanupError=e;}
       if (current()) {
+        if(replyCleanupError)replyDraft.invalidate(replyCleanupError);else replyDraft.reload();
+        if(attachmentCleanupError)attachmentDraft.invalidate(attachmentCleanupError);else attachmentDraft.reload();
         setFailed(null);
         setError("");
-        if (latestDraft.current.trim() === item.body || (!latestDraft.current.trim() && item.attachmentIds?.length && item.body === "Shared a file.")) {
+        if (latestDraft.current.trim() === item.body || (!latestDraft.current.trim() && item.attachmentIds?.length && ["Shared a file.","Shared files."].includes(item.body))) {
           latestDraft.current = "";
           setDraft("");
-          setReply(null);
           await api(`/channels/${destination}/draft`, "PUT", { body: "" });
         }
         await history();
@@ -584,17 +634,18 @@ export default function Workspace() {
       report(e);
     }
   }
-  async function select(c: string, nextTab: "Posts" | "Files" = "Posts") {
+  async function select(c: string, nextTab: "Posts" | "Files" = "Posts", preparation?:{signal:AbortSignal;commit:()=>void}) {
     const request=++selectionRequest.current,user=session?.user.id;
     if (stream && c !== stream && draftLoaded.current) {
       try {
-        await api(`/channels/${stream}/draft`, "PUT", { body: draft });
+        await api(`/channels/${stream}/draft`, "PUT", { body: draft },preparation?.signal);
       } catch (e) {
-        report(e);
+        if(!preparation?.signal.aborted)report(e);
         return false;
       }
     }
-    if(selectionRequest.current!==request||orgRef.current!==org||identityRef.current!==user)return false;
+    if(selectionRequest.current!==request||orgRef.current!==org||identityRef.current!==user||preparation?.signal.aborted)return false;
+    preparation?.commit();
     streamRef.current = c;
     setStream(c);
     setView("Chat");
@@ -603,6 +654,19 @@ export default function Workspace() {
     setMobileNav(false);
     window.history.replaceState(null, "", `/?org=${org}&channel=${c}`);
     return true;
+  }
+  async function replyToSource(target:MessageLinkTarget,signal:AbortSignal){
+    const user=session?.user.id,destination=boot?.channels.find(c=>c.id===target.channel);
+    if(!user||target.org!==org||identityRef.current!==user||orgRef.current!==org||signal.aborted)return false;
+    if(!destination||destination.archived)throw new Error('This conversation is unavailable for replies.');
+    if(destination.posting_restricted&&!["owner","admin"].includes(boot?.role??""))throw new Error('Posting is restricted in this conversation.');
+    if(sending||failed)throw new Error('Resolve the unconfirmed message before changing reply targets.');
+    const commit=()=>{
+      if(pendingFor(window.sessionStorage,user,org,target.channel)||stream&&pendingFor(window.sessionStorage,user,org,stream))throw new Error('Resolve the unconfirmed message before changing reply targets.');
+      if(target.channel===stream)replyDraft.select(target.id);
+      else setDraftReply(window.sessionStorage,{userId:user,orgId:org,channelId:target.channel},target.id);
+    };
+    return select(target.channel,"Posts",{signal,commit});
   }
   useEffect(() => {
     if (boot) {
@@ -625,7 +689,7 @@ export default function Workspace() {
       setLinkedMessage(message&&message.org===org?message:null);setLinkedFile(file&&file.org===org?file:null);
     };
     sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);
-  },[org,session?.user.id]);
+  },[org,session?.user.id,setLinkedMessage]);
   function closeLinkedFile(target:FileLinkTarget){
     setLinkedFile(current=>current?.org===target.org&&current.channel===target.channel&&current.id===target.id?null:current);
     const link=readFileLink(window.location.href);
@@ -636,6 +700,25 @@ export default function Workspace() {
     setLinkedMessage(current=>current?.org===target.org&&current.channel===target.channel&&current.id===target.id?null:current);
     const link=readMessageLink(window.location.href);
     if(link?.org===target.org&&link.channel===target.channel&&link.id===target.id)window.history.replaceState(null,'',window.location.pathname+window.location.search);
+  }
+  function navigateMessageSource(next:MessageLinkTarget){
+    const current=readMessageLink(window.location.href);
+    setLinkedMessageTarget(next);
+    if(current?.org===next.org&&current.channel===next.channel)window.history.replaceState(null,"",messageLink(window.location.origin,next));
+  }
+  function visitMessageSource(id:string){
+    if(!linkedMessage||linkedMessage.id===id)return;
+    const previous=linkedMessage,key=`${identityRef.current}:${orgRef.current}`;
+    setSourceTrail(trail=>{
+      const items=trail.key===key?trail.items:[],last=items.at(-1);
+      return {key,items:last?.org===previous.org&&last.channel===previous.channel&&last.id===previous.id?items:[...items.slice(-31),{org:previous.org,channel:previous.channel,id:previous.id}]};
+    });
+    navigateMessageSource({...previous,id});
+  }
+  function previousMessageSource(){
+    const previous=sourceTrail.items.at(-1),key=`${identityRef.current}:${orgRef.current}`;
+    if(sourceTrail.key!==key||!linkedMessage||!previous||previous.org!==orgRef.current||previous.channel!==linkedMessage.channel)return;
+    setSourceTrail({key,items:sourceTrail.items.slice(0,-1)});navigateMessageSource(previous);
   }
   function searchAll(e: FormEvent) {
     e.preventDefault();
@@ -892,6 +975,7 @@ export default function Workspace() {
         </div>
       </aside>
       <main id="main" className="main">
+        <MediaWorkspace key={`${session.user.id}:${org}`} org={org} userId={session.user.id} channels={boot?.channels??[]} people={boot?.people??[]} visible={view==="Calls"} onShow={()=>setView("Calls")} intent={mediaIntent}/>
         <MeetingReminders key={org} org={org}/>
         <div className="mobile-toolbar">
           <button
@@ -949,11 +1033,13 @@ export default function Workspace() {
                 <div className="conversation-actions">
                   <button
                     className="secondary"
-                    onClick={() => setModal("meeting")}
+                    onClick={() => {setMediaIntent({channelId:stream,key:crypto.randomUUID()});setView("Calls");}}
                   >
                     <Video size={17} />
                     Meet
                   </button>
+                  <button className="secondary media-launch" aria-label="Audio call" onClick={()=>{setMediaIntent({channelId:stream,key:crypto.randomUUID(),mode:"audio",start:true});setView("Calls");}}><Phone size={17}/><span>Audio call</span></button>
+                  <button className="secondary media-launch" aria-label="Video call" onClick={()=>{setMediaIntent({channelId:stream,key:crypto.randomUUID(),mode:"video",start:true});setView("Calls");}}><Video size={17}/><span>Video call</span></button>
                   <button
                     className="icon-button"
                     aria-label="Open conversation in separate window"
@@ -1017,6 +1103,7 @@ export default function Workspace() {
                             Server-processable messages · E2EE unavailable
                           </span>
                         </div>
+                        {readStatus.error&&<section aria-label="Read status"><p role="alert">{readStatus.error}</p><button className="secondary" onClick={readStatus.retry}>Retry read status</button></section>}
                         {hasMore && (
                           <button
                             className="load-more"
@@ -1102,30 +1189,7 @@ export default function Workspace() {
                                     </button>
                                   ))}
                                   {m.user_id === session.user.id && (
-                                    <span
-                                      className="receipt"
-                                      title={
-                                        receipts
-                                          .filter(
-                                            (r) =>
-                                              Number(r.seq) >= Number(m.seq) &&
-                                              r.user_id !== m.user_id,
-                                          )
-                                          .map((r) => r.name)
-                                          .join(", ") || "Persisted on server"
-                                      }
-                                    >
-                                      {receipts.some(
-                                        (r) =>
-                                          Number(r.seq) >= Number(m.seq) &&
-                                          r.user_id !== m.user_id,
-                                      ) ? (
-                                        <CheckCheck size={14} />
-                                      ) : (
-                                        <Check size={14} />
-                                      )}
-                                      Sent
-                                    </span>
+                                    <><MessageReadStatus sequence={m.seq} authorId={m.user_id} receipts={readStatus.receipts} error={readStatus.error}/><button className="reply-source" onClick={()=>setReaderTarget({key:`${session.user.id}:${org}:${stream}`,id:m.id})}>View message readers</button></>
                                   )}
                                 </div>
                               )}
@@ -1157,8 +1221,8 @@ export default function Workspace() {
                                 </button>
                                 <button
                                   aria-label="Reply to message"
-                                  disabled={postingBlocked || channel.archived}
-                                  onClick={() => setReply(m)}
+                                  disabled={postingBlocked || channel.archived || sending || !!failed || !replyDraft.cacheReady}
+                                  onClick={() => {try{replyDraft.select(m.id);}catch(e){report(e);}}}
                                 >
                                   <Reply size={15} />
                                 </button>
@@ -1229,7 +1293,7 @@ export default function Workspace() {
                             onClick={() =>
                               perform(() =>
                                 api(`/channels/${stream}/read`, "POST", {
-                                  seq: Number(messages.at(-1)?.seq ?? 0),
+                                  seq: messages.at(-1)?.seq ?? "0",
                                 }),
                               )
                             }
@@ -1238,21 +1302,10 @@ export default function Workspace() {
                             Mark as read
                           </button>
                         )}
-                        {reply && (
-                          <div className="replying">
-                            <Reply size={14} />
-                            <span>
-                              Replying to {reply.name}:{" "}
-                              {reply.body.slice(0, 65)}
-                            </span>
-                            <button
-                              aria-label="Cancel reply"
-                              onClick={() => setReply(null)}
-                            >
-                              <X size={15} />
-                            </button>
-                          </div>
-                        )}
+                        {!draftReady && <section aria-label="Saved text draft">
+                          {draftLoadError ? <div role="alert"><p>{draftLoadError}</p><button type="button" className="secondary" onClick={() => setDraftLoadAttempt(value => value + 1)}>Retry saved draft</button></div> : <p role="status">Loading saved draft…</p>}
+                        </section>}
+                        <ReplyDraft draft={replyDraft} disabled={sending||!!failed} cancel={()=>{try{replyDraft.select(null);}catch(e){report(e);}}} clear={()=>{try{replyDraft.clear();}catch(e){report(e);}}}/>
                         {failed && (
                           <div className="failed" role="status">
                             Message not confirmed: {failed.body.slice(0, 80)}.
@@ -1272,6 +1325,7 @@ export default function Workspace() {
                             </span>
                           </div>
                         )}
+                        <AttachmentDraft files={attachmentDraft.files} error={attachmentDraft.error} disabled={sending||!!failed} remove={id=>{try{attachmentDraft.remove(id);}catch(e){report(e);}}} clear={()=>{try{attachmentDraft.clear();}catch(e){report(e);}}}/>
                         <form
                           className="composer"
                           onSubmit={(e) => {
@@ -1299,6 +1353,8 @@ export default function Workspace() {
                               }
                             }}
                             onKeyDown={(e) => {
+                              // Enter may confirm an input-method candidate rather than send.
+                              if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
                                 void send();
@@ -1309,7 +1365,7 @@ export default function Workspace() {
                             <button
                               type="button"
                               aria-label="Attach file"
-                              disabled={!draftReady || sending || !!failed || postingBlocked || channel.archived}
+                              disabled={!draftReady || !attachmentDraft.ready || attachmentDraft.files.length>=10 || sending || !!failed || postingBlocked || channel.archived}
                               onClick={() => setModal("attachment")}
                             >
                               <Paperclip size={18} />
@@ -1317,13 +1373,16 @@ export default function Workspace() {
                             <button
                               type="button"
                               aria-label="Add emoji"
-                              onClick={() => setDraft((d) => d + " 👋")}
+                              aria-describedby={draftReady && !emojiFits ? emojiLimitId : undefined}
+                              disabled={!draftReady || !emojiFits}
+                              onClick={() => setDraft((value) => value.length + emojiText.length <= 10000 ? value + emojiText : value)}
                             >
                               <Smile size={18} />
                             </button>
                             <button
                               type="button"
                               aria-label="Mention a person"
+                              disabled={!draftReady}
                               onClick={() => setModal("mention")}
                             >
                               <AtSign size={18} />
@@ -1336,7 +1395,8 @@ export default function Workspace() {
                               disabled={
                                 postingBlocked || channel.archived ||
                                 !draftReady ||
-                                !draft.trim() ||
+                                !attachmentDraft.ready || !replyDraft.ready ||
+                                (!draft.trim()&&!attachmentDraft.files.length) ||
                                 sending ||
                                 !!failed
                               }
@@ -1349,6 +1409,7 @@ export default function Workspace() {
                             </button>
                           </div>
                         </form>
+                        {draftReady && !emojiFits && <p id={emojiLimitId} role="status">Not enough room to add this emoji. Shorten your message first.</p>}
                         <div className="typing" role="status">
                           {typing.length
                             ? `${typing.join(", ")} typing…`
@@ -1418,6 +1479,7 @@ export default function Workspace() {
                         <Avatar name={p.name} small />
                         <div>
                           <strong>{p.name}</strong>
+                          {p.id!==session.user.id&&<><button className="secondary" onClick={()=>void (async()=>{try{const c=await api<{id:string}>(`/organizations/${org}/direct-conversation`,'POST',{userId:p.id});setMediaIntent({channelId:c.id,key:crypto.randomUUID(),mode:'audio',start:true});setView('Calls');}catch(e){report(e);}})()}>Audio call {p.name}</button><button className="secondary" onClick={()=>void (async()=>{try{const c=await api<{id:string}>(`/organizations/${org}/direct-conversation`,'POST',{userId:p.id});setMediaIntent({channelId:c.id,key:crypto.randomUUID(),mode:'video',start:true});setView('Calls');}catch(e){report(e);}})()}>Video call {p.name}</button></>}
                           <small>
                             {p.presence} · {p.role}
                           </small>
@@ -1444,7 +1506,9 @@ export default function Workspace() {
                       </>
                     )}
                     <h3>Read receipts</h3>
-                    {receipts.map((r) => (
+                    {readStatus.error?<p>{readStatus.error}</p>:readStatus.receipts===null?<p>Checking shared read positions…</p>:!readStatus.receipts.length&&<p>No shared read positions returned.</p>}
+                    {readStatus.error&&tab!=="Posts"&&<button className="secondary" onClick={readStatus.retry}>Retry read status</button>}
+                    {readStatus.receipts?.map((r) => (
                       <p key={r.user_id}>
                         {r.name} · through message {r.seq}
                       </p>
@@ -1497,27 +1561,7 @@ export default function Workspace() {
         ) : view === "Activity" ? (
           <ActivityFeed key={`${session.user.id}:${org}`} org={org} filter={activityFilter} onFilter={setActivityFilter} onOpen={(channel,id)=>{setLinkedFile(null);setLinkedMessage({org,channel,id});}} onConversation={channel=>select(channel)} onCancel={cancelActivityNavigation}/>
         ) : view === "Calls" ? (
-          <>
-            <div className="page-heading">
-              <div>
-                <span className="eyebrow">BETTER FACE TO FACE</span>
-                <h1>Calls</h1>
-                <p>Browser calling and meetings</p>
-              </div>
-            </div>
-            <div className="content-pad">
-              <Unavailable title="Media service not configured">
-                Calling, screen sharing, breakout rooms, recording, advanced
-                audio/video, and diagnostics require the LiveKit integration and
-                independent-device verification. These capabilities are not
-                implemented in this release.
-              </Unavailable>
-              <Unavailable title="Telephony not configured">
-                Queues and PSTN merging require a supported SIP/PSTN provider,
-                phone numbers, and billing authorization.
-              </Unavailable>
-            </div>
-          </>
+          <div className="content-pad"><Unavailable title="Telephony not configured">Queues and PSTN merging require a supported SIP/PSTN provider, phone numbers, and billing authorization.</Unavailable></div>
         ) : view === "Admin" ? (
           <>
             <div className="page-heading">
@@ -1546,6 +1590,7 @@ export default function Workspace() {
             report={report}
             clearRetries={() => {
               clearPending(window.sessionStorage);
+          clearMeetingPending(window.sessionStorage);
               setFailed(null);
               setError("");
             }}
@@ -1554,7 +1599,8 @@ export default function Workspace() {
       </main>
       {hiddenOpen&&<HiddenConversations key={`${session.user.id}:${org}`} org={org} onChanged={()=>refresh(AbortSignal.timeout(8000))} onClose={()=>{selectionRequest.current++;setHiddenOpen(false);}} onOpen={async id=>{const opened=await select(id);if(opened)setHiddenOpen(false);return opened;}}/>}
       {linkedFile?.org===org&&<LinkedFile key={`${session.user.id}:${org}:${linkedFile.channel}:${linkedFile.id}`} target={linkedFile} userId={session.user.id} onClose={()=>closeLinkedFile(linkedFile)}/>}
-      {linkedMessage?.org===org&&<LinkedMessage key={`${session.user.id}:${org}:${linkedMessage.channel}:${linkedMessage.id}`} target={linkedMessage} onClose={()=>closeLinkedMessage(linkedMessage)} onConversation={()=>select(linkedMessage.channel)} onMarkedUnread={()=>refresh(AbortSignal.timeout(8000))}/>}
+      {view==="Chat"&&tab==="Posts"&&readerTarget?.key===`${session.user.id}:${org}:${stream}`&&<MessageReaders key={`${readerTarget.key}:${readerTarget.id}`} target={{org,channel:stream,id:readerTarget.id}} onClose={()=>setReaderTarget(null)}/>}
+      {linkedMessage?.org===org&&<LinkedMessage key={`${session.user.id}:${org}:${linkedMessage.channel}:${linkedMessage.id}`} target={linkedMessage} onClose={()=>closeLinkedMessage(linkedMessage)} onConversation={()=>select(linkedMessage.channel)} onReply={signal=>replyToSource(linkedMessage,signal)} replyDisabled={sending||!!failed} onMarkedUnread={()=>refresh(AbortSignal.timeout(8000))} onOpenSource={visitMessageSource} onBack={sourceTrail.key===`${session.user.id}:${org}`&&sourceTrail.items.at(-1)?.channel===linkedMessage.channel?previousMessageSource:undefined}/>}
       {reporting&&<MessageReportDialog key={reporting.id} channel={reporting.channel} id={reporting.id} deleted={reporting.deleted} onClose={()=>setReporting(null)}/>}
       {modal && (
         <Modal
@@ -1564,7 +1610,7 @@ export default function Workspace() {
               : modal === "migration"
                 ? "Review channel access"
                 : modal === "attachment"
-                  ? "Send a file"
+                  ? "Attach files"
                 : modal === "mention"
                   ? "Mention someone"
                   : modal === "meeting"
@@ -1578,14 +1624,12 @@ export default function Workspace() {
           onClose={() => setModal("")}
         >
           {modal === "meeting" ? (
-            <Unavailable title="Meetings are unavailable">
-              A real media provider must be configured and verified before you
-              can join. You can schedule local meetings in Calendar.
-            </Unavailable>
+            <p>Open Calls to start or join a LiveKit call. Calendar scheduling remains available separately.</p>
           ) : modal === "attachment" ? (
-            <AttachmentPicker key={stream} channelId={stream} select={(id)=>{setModal("");void send(false,[id]);}} openFiles={()=>{setModal("");setTab("Files");}} />
+            <AttachmentPicker key={stream} channelId={stream} selectedIds={attachmentDraft.files.map(file=>file.id)} select={file=>{try{attachmentDraft.add(file);setModal("");}catch(e){report(e);}}} openFiles={()=>{setModal("");setTab("Files");}} />
           ) : modal === "mention" ? (
-            <MentionPicker key={stream} channelId={stream} select={(person)=>{
+            <MentionPicker key={`${session.user.id}:${org}:${stream}`} channelId={stream} select={(person)=>{
+              if(!draftReady||streamRef.current!==stream||orgRef.current!==org||identityRef.current!==session.user.id)return;
               const label = person.name.replace(/[\\`*_[\]<>]/g, "\\$&");
               const next = draft + `[@${label}](concord-mention:${person.id}) `;
               if (next.length > 10000) { report(new Error("Mention would exceed the message character limit.")); return; }

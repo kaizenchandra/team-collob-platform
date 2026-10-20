@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:34099) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/message-link-clipboard.spec.ts:5:1 › message-source copy serializes native work and ignores outcomes after read failure, revocation and close (16.9s)
+
+  1 passed (17.5s)

@@ -1,0 +1,11 @@
+
+Running 3 tests using 1 worker
+
+(node:82298) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-preview-lifecycle.spec.ts:6:1 › preview visibility return replaces a pending read and ignores its late response (34.1s)
+  ✓  2 [chrome] › tests/browser/file-scanning.spec.ts:104:1 › real scanned text previews escape markup, recover failures and withdraw deleted content (10.4s)
+
+  ✓  3 [chrome] › tests/browser/file-search.spec.ts:10:1 › filename search filters current scope, downloads real scanned files, handles failures/races and opens Files with drafts intact (52.4s)
+
+  3 passed (1.6m)

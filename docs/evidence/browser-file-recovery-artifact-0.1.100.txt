@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:68223) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/file-recovery-mutations.spec.ts:6:1 › recovery bounds unconfirmed restores, cancels on scope exit and preserves acceptance after file-list failure (25.1s)
+
+  1 passed (25.8s)

@@ -1,0 +1,12 @@
+
+Running 5 tests using 1 worker
+
+(node:45083) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/media.spec.ts:6:1 › real LiveKit transport, breakout isolation, consented recording and current authorization (29.1s)
+  ✓  2 [chrome] › tests/browser/media.spec.ts:44:1 › UI starts a fresh call after ending and acknowledged breakout names can be reused (944ms)
+  ✓  3 [chrome] › tests/browser/team-calls.spec.ts:11:1 › one-to-one video/audio calls answer and decline with real media, mic/camera, sharing, hands and room chat (17.9s)
+  ✓  4 [chrome] › tests/browser/team-calls.spec.ts:35:1 › three-person group video, hands and breakout-isolated chat with current authorization (18.0s)
+  ✓  5 [chrome] › tests/browser/team-calls.spec.ts:54:1 › unanswered direct calls become missed and expire without granting media (451ms)
+
+  5 passed (1.1m)

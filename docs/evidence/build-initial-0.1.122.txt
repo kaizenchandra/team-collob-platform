@@ -1,0 +1,165 @@
+ Image concord-api:0.1.122-local Building 
+ Image concord-web:0.1.122-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.27kB done
+#1 DONE 0.0s
+
+#2 [api internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.70kB 0.0s done
+#2 DONE 0.1s
+
+#3 [web internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 ...
+
+#4 [api internal] load .dockerignore
+#4 DONE 0.0s
+
+#3 [api internal] load metadata for docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#3 DONE 1.7s
+
+#4 [api internal] load .dockerignore
+#4 transferring context: 142B done
+#4 DONE 0.0s
+
+#5 [web build 1/6] FROM docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+#5 resolve docker.io/library/node:24-bookworm-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 0.0s done
+#5 DONE 0.0s
+
+#6 [web internal] load build context
+#6 transferring context: 3.58MB 0.1s done
+#6 DONE 0.1s
+
+#7 [api build 2/6] WORKDIR /app
+#7 CACHED
+
+#8 [api build 3/6] COPY package.json package-lock.json ./
+#8 DONE 0.2s
+
+#9 [api build 4/6] RUN npm ci
+#9 4.950 npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+#9 20.72 
+#9 20.72 added 553 packages, and audited 554 packages in 20s
+#9 20.72 
+#9 20.72 243 packages are looking for funding
+#9 20.72   run `npm fund` for details
+#9 20.75 
+#9 20.75 5 high severity vulnerabilities
+#9 20.75 
+#9 20.75 To address all issues (including breaking changes), run:
+#9 20.75   npm audit fix --force
+#9 20.75 
+#9 20.75 Run `npm audit` for details.
+#9 20.75 npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+#9 20.75 npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+#9 20.75 npm warn install-scripts   unrs-resolver@1.12.2 (postinstall: node postinstall.js)
+#9 20.75 npm warn install-scripts
+#9 20.75 npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+#9 20.76 npm notice
+#9 20.76 npm notice New major version of npm available! 11.19.0 -> 12.2.0
+#9 20.76 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+#9 20.76 npm notice To update run: npm install -g npm@12.2.0
+#9 20.76 npm notice
+#9 DONE 21.6s
+
+#10 [api build 5/6] COPY . .
+#10 DONE 1.0s
+
+#11 [api build 6/6] RUN npm run build
+#11 0.341 
+#11 0.341 > team-collob-platform@0.1.122 build
+#11 0.341 > next build && node scripts/prepare-standalone.mjs
+#11 0.341 
+#11 0.600 ▲ Next.js 16.4.0 (Turbopack)
+#11 0.631 ✓ Running next.config.ts took 30ms
+#11 0.645 - Cache Components enabled
+#11 0.645 - Partial Prefetching enabled
+#11 0.645 
+#11 0.663   Creating an optimized production build ...
+#11 4.228 ✓ Compiled successfully in 3.6s
+#11 4.230   Running TypeScript ...
+#11 12.30   Finished TypeScript in 8.1s ...
+#11 12.30   Collecting page data using 5 workers ...
+#11 12.62   Generating static pages using 5 workers (0/4) ...
+#11 12.83   Generating static pages using 5 workers (1/4) 
+#11 12.99   Generating static pages using 5 workers (2/4) 
+#11 12.99   Generating static pages using 5 workers (3/4) 
+#11 12.99 ✓ Generating static pages using 5 workers (4/4) in 376ms
+#11 12.99   Finalizing page optimization ...
+#11 13.08 
+#11 13.08 Route (app)
+#11 13.08 ┌ ○ /
+#11 13.08 └ ○ /_not-found
+#11 13.08 
+#11 13.08 
+#11 13.08 ○  (Static)  prerendered as static content
+#11 13.08 
+#11 DONE 13.6s
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 ...
+
+#13 [web web 3/3] COPY --from=build --chown=node:node /app/.next/standalone ./
+#13 DONE 0.2s
+
+#14 [web] exporting to image
+#14 exporting layers
+#14 exporting layers 1.8s done
+#14 exporting manifest sha256:0ee33bbd4781045fee7c53c3fd6ab960b2352ee266904a328be29e48506e9c27 0.0s done
+#14 exporting config sha256:4da74b511e7fc22b34668a7618a1d62f19b6f64eca6c2e86643b98fcd8d00796
+#14 ...
+
+#12 [api api-build 1/1] RUN npm prune --omit=dev
+#12 2.175 
+#12 2.175 removed 339 packages, and audited 215 packages in 2s
+#12 2.175 
+#12 2.175 100 packages are looking for funding
+#12 2.175   run `npm fund` for details
+#12 2.175 
+#12 2.175 found 0 vulnerabilities
+#12 DONE 2.3s
+
+#14 [web] exporting to image
+#14 exporting config sha256:4da74b511e7fc22b34668a7618a1d62f19b6f64eca6c2e86643b98fcd8d00796 0.0s done
+#14 exporting attestation manifest sha256:9fe702d81998a661e3d3ef47028d828d4891456f69be87c8e0ea1b4b079c7bef 0.0s done
+#14 exporting manifest list sha256:9eb7e31c05c99137dd23d374f77b9f370d35251f0b78a2c10527579c8a925e63 0.0s done
+#14 naming to docker.io/library/concord-web:0.1.122-local done
+#14 unpacking to docker.io/library/concord-web:0.1.122-local
+#14 unpacking to docker.io/library/concord-web:0.1.122-local 0.3s done
+#14 DONE 2.2s
+
+#15 [web] resolving provenance for metadata file
+#15 DONE 0.1s
+
+#16 [api api 3/8] COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
+#16 DONE 1.6s
+
+#17 [api api 4/8] COPY --chown=node:node package.json ./
+#17 DONE 0.2s
+
+#18 [api api 5/8] COPY --chown=node:node services ./services
+#18 DONE 0.1s
+
+#19 [api api 6/8] COPY --chown=node:node lib/file-preview.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts ./lib/
+#19 DONE 0.2s
+
+#20 [api api 7/8] COPY --chown=node:node migrations ./migrations
+#20 DONE 0.1s
+
+#21 [api api 8/8] RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
+#21 DONE 0.3s
+
+#22 [api] exporting to image
+#22 exporting layers 13.5s done
+#22 exporting manifest sha256:b42d9d739fcdec01edc34d386d8d5ebac2360cafe9c8e719ed3d80a71087c60d 0.0s done
+#22 exporting config sha256:f836a0ea3a97b9dd38f4b3bf04ba89af4d3a2017db6d2dd7fb14fd32a6a9ecb1 0.0s done
+#22 exporting attestation manifest sha256:d2b0be106091bc4606b0eded50e1d2890d136feb61402b34307323347d4d6ce6 0.0s done
+#22 exporting manifest list sha256:2f3099b4ff7f7d4567034fb5398414c741953c4487263d74459e991fda44c155 0.0s done
+#22 naming to docker.io/library/concord-api:0.1.122-local done
+#22 unpacking to docker.io/library/concord-api:0.1.122-local
+#22 unpacking to docker.io/library/concord-api:0.1.122-local 2.9s done
+#22 DONE 16.5s
+
+#23 [api] resolving provenance for metadata file
+#23 DONE 0.0s
+ Image concord-api:0.1.122-local Built 
+ Image concord-web:0.1.122-local Built 

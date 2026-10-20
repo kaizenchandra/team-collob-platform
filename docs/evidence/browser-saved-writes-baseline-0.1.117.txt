@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:40333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/saved-message-writes.spec.ts:5:1 › Saved-list Unsave serializes, bounds acknowledgement, preserves acceptance through failed reads and cancels on exit (6.8s)
+
+
+  1) [chrome] › tests/browser/saved-message-writes.spec.ts:5:1 › Saved-list Unsave serializes, bounds acknowledgement, preserves acceptance through failed reads and cancels on exit 
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 2
+    Received array:  [{"saved": false}, {"saved": false}]
+
+      13 |     await page.route(collection+'*',async route=>{if(readFailure){await route.fulfill({status:503,contentType:'application/json',body:'{"error":"Saved list confirmation unavailable"}'});return;}if(heldOnce){await route.continue();return;}heldOnce=true;const response=await route.fetch();readStarted=true;await hold('read');await route.fulfill({response}).catch(()=>{});});await expect.poll(()=>readStarted,{timeout:10000}).toBe(true);
+      14 |     const savePath=(index:number)=>`${base}/messages/${messages[index]}/save`,source=async(index:number)=>(await (await context.request.get(`${api}/v1/organizations/${org}/channels/${channel}/messages/${messages[index]}`)).json()).message;
+    > 15 |     await page.route(savePath(0),async route=>{const response=await route.fetch();expect(response.status()).toBe(200);committed=true;await hold('write');await route.fulfill({response}).catch(()=>{});});await card(0).getByRole('button',{name:'Unsave',exact:true}).evaluate(element=>{(element as HTMLButtonElement).click();(element as HTMLButtonElement).click();});await expect.poll(()=>committed).toBe(true);expect(writes).toHaveLength(1);await expect.poll(()=>abortedReads).toBe(1);expect((await source(0)).saved).toBe(false);readFailure=true;
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                       ^
+      16 |     await expect(region.getByRole('alert')).toContainText('Unsave could not be confirmed',{timeout:12000});await expect(retry).toBeEnabled();await expect.poll(()=>abortedWrites).toBe(1);await expect(region.getByRole('article')).toHaveCount(0);await expect(accepted).toHaveCount(0);releaseRead?.();releaseWrite?.();await page.unroute(savePath(0));await retry.click();await expect(region.getByRole('alert')).toContainText('Saved list confirmation unavailable');expect(writes).toHaveLength(1);readFailure=false;await retry.click();await expect(card(1)).toBeVisible();await expect(card(0)).toHaveCount(0);await expect(accepted).toHaveCount(0);await page.unroute(collection+'*');
+      17 |     await page.route(savePath(1),async route=>{expect((await route.fetch()).status()).toBe(200);await route.fulfill({status:200,contentType:'application/json',body:'{"ok":false}'});});await card(1).getByRole('button',{name:'Unsave',exact:true}).click();await expect(region.getByRole('alert')).toContainText('Unsave could not be confirmed');await expect(accepted).toHaveCount(0);expect((await source(1)).saved).toBe(false);await page.unroute(savePath(1));await retry.click();await expect(card(2)).toBeVisible();await expect(card(1)).toHaveCount(0);expect(writes).toHaveLength(2);
+      18 |     await page.route(collection+'*',route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Accepted Unsave confirmation read failed"}'}));await card(2).getByRole('button',{name:'Unsave',exact:true}).click();await expect(accepted).toBeVisible();await expect(region.getByRole('alert')).toContainText('Accepted Unsave confirmation read failed');await expect(retry).toBeEnabled();expect((await source(2)).saved).toBe(false);expect(writes).toHaveLength(3);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/saved-message-writes.spec.ts:15:423
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/saved-message-writes-Saved-20930-d-reads-and-cancels-on-exit-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/saved-message-writes-Saved-20930-d-reads-and-cancels-on-exit-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/saved-message-writes-Saved-20930-d-reads-and-cancels-on-exit-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/saved-message-writes-Saved-20930-d-reads-and-cancels-on-exit-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/saved-message-writes.spec.ts:5:1 › Saved-list Unsave serializes, bounds acknowledgement, preserves acceptance through failed reads and cancels on exit 

@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+(node:71041) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [chrome] › tests/browser/file-recovery-pages.spec.ts:9:1 › uploader pages beyond100 to recover original before version, retries navigation and retains cursor after boundary recovery (7.7s)
+
+
+  1) [chrome] › tests/browser/file-recovery-pages.spec.ts:9:1 › uploader pages beyond100 to recover original before version, retries navigation and retains cursor after boundary recovery 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('region', { name: 'Deleted file recovery' }).getByRole('navigation', { name: 'Deleted file pages' })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('region', { name: 'Deleted file recovery' }).getByRole('navigation', { name: 'Deleted file pages' }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Deleted file recovery' }).getByRole('navigation', { name: 'Deleted file pages' })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      23 |     await bob.route(pattern,r=>r.fulfill({status:503,contentType:'application/json',body:'{"error":"Older recovery page temporarily unavailable"}'}));
+      24 |     await panel.getByRole('button',{name:'Older deleted files',exact:true}).click();await expect(panel.getByRole('alert')).toContainText('Older recovery page temporarily unavailable');
+    > 25 |     await expect(panel.getByRole('navigation',{name:'Deleted file pages'})).toHaveCount(0);await expect(panel.locator('.file-row')).toHaveCount(0);await expect(panel.getByRole('group',{name:'Confirm file recovery',exact:true})).toHaveCount(0);
+         |                                                                             ^
+      26 |     await panel.getByRole('button',{name:'Retry deleted files',exact:true}).click();await expect(panel.getByRole('alert')).toContainText('Older recovery page temporarily unavailable');await bob.unroute(pattern);
+      27 |     await bob.route(pattern,r=>r.fulfill({status:200,contentType:'application/json',body:'{"files":[],"hasMore":true,"nextCursor":null}'}));await panel.getByRole('button',{name:'Retry deleted files',exact:true}).click();await expect(panel.getByRole('alert')).toContainText('Deleted files could not be loaded');await expect(panel.getByText('No deleted files to recover.',{exact:true})).toHaveCount(0);await bob.unroute(pattern);
+      28 |     const held=new Promise<void>(r=>{releaseRead=r;});await bob.route(pattern,async r=>{await held;await r.fulfill({status:503,contentType:'application/json',body:'{"error":"Late obsolete recovery read"}'}).catch(()=>{});});await panel.getByRole('button',{name:'Retry deleted files',exact:true}).click();await expect(panel.getByRole('alert')).toContainText('Deleted files could not be loaded',{timeout:12000});await expect(panel.getByRole('button',{name:'Retry deleted files',exact:true})).toBeEnabled();releaseRead?.();await bob.unroute(pattern);
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/file-recovery-pages.spec.ts:25:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-recovery-pages-upload-3584c-sor-after-boundary-recovery-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/file-recovery-pages-upload-3584c-sor-after-boundary-recovery-chrome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/file-recovery-pages-upload-3584c-sor-after-boundary-recovery-chrome/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/file-recovery-pages-upload-3584c-sor-after-boundary-recovery-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/file-recovery-pages-upload-3584c-sor-after-boundary-recovery-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/file-recovery-pages.spec.ts:9:1 › uploader pages beyond100 to recover original before version, retries navigation and retains cursor after boundary recovery 

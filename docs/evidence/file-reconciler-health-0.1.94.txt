@@ -1,0 +1,5 @@
+Actual reconciliation SQL failure observed
+Failed reconciliation unhealthy despite seeded fresh heartbeat
+Restored database recovers health at normal 60-second reconciliation cadence
+PASS: recovery 61182ms; young bytes preserved, aged synthetic orphan removed. Zero file rows/uploads; no source volumes or S3 touched. Probe interval/retries accelerated only; normal worker cadence retained.
+Temporary reconciler container, bytes and database cleaned up.

@@ -1,0 +1,12 @@
+{"round":1,"status":1}
+/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/diagnose-bootstrap.mjs:11
+  if(new URL(process.env.DATABASE_URL??'').pathname!=='/concord_test')throw new Error('Diagnostic requires the isolated concord_test database');
+                                                                            ^
+
+Error: Diagnostic requires the isolated concord_test database
+    at <anonymous> (/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/scripts/diagnose-bootstrap.mjs:11:77)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.19.0

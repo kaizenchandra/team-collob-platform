@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:97689) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response (3.1s)
+
+
+  1) [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response 
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 0
+    Received length: 1
+    Received array:  [{"attachmentIds": ["a03b3523-68c2-4b04-bd6c-15e9e749ce1d"], "body": "Reviewed multi-file message 1792430253375", "clientId": "7cb5ea2d-120b-4920-a75d-6be8a9aa34fc", "format": "markdown-v1", "parentId": null}]
+
+      11 |     await page.goto(url);const input=page.getByRole('textbox',{name:'Message',exact:true}),selected=page.getByRole('region',{name:'Selected attachments'}),send=page.getByRole('button',{name:'Send message',exact:true});await expect(input).toBeEnabled();await input.fill(caption);page.on('request',r=>{if(r.url()===base+'/messages'&&r.method()==='POST')posts.push(r.postDataJSON());});
+      12 |     const add=async(name:string)=>{await page.getByRole('button',{name:'Attach file',exact:true}).click();const picker=page.getByRole('dialog').filter({hasText:'Only people with access to this conversation can download it.'});await picker.getByRole('button',{name:`Add file ${name}`,exact:true}).or(picker.getByRole('button',{name:`Send file ${name}`,exact:true})).click();};
+    > 13 |     await add(names[0]);expect(posts).toHaveLength(0);await expect(selected).toContainText(names[0]);await selected.getByRole('button',{name:`Remove attachment ${names[0]}`,exact:true}).click();await expect(selected).toHaveCount(0);await add(names[0]);await add(names[1]);await expect(selected.getByRole('listitem')).toHaveCount(2);expect(posts).toHaveLength(0);
+         |                                       ^
+      14 |     await page.getByRole('button',{name:'Attach file',exact:true}).click();const picker=page.getByRole('dialog',{name:'Attach files',exact:true});await expect(picker.getByRole('button',{name:`Already added ${names[0]}`,exact:true})).toBeDisabled();await picker.getByRole('button',{name:'Close dialog',exact:true}).click();await page.locator('.tabs').getByRole('button',{name:'Files',exact:true}).click();await page.locator('.tabs').getByRole('button',{name:'Posts',exact:true}).click();await expect(selected.getByRole('listitem')).toHaveCount(2);await expect.poll(async()=>(await (await context.request.get(base+'/draft')).json()).body).toBe(caption);await page.goto(`/?org=${org}&channel=${general}`);await expect(page.getByRole('textbox',{name:'Message',exact:true})).toBeEnabled();await expect(selected).toHaveCount(0);await page.goto(url);await expect(selected.getByRole('listitem')).toHaveCount(2);await expect(input).toHaveValue(caption);await page.reload();await expect(selected.getByRole('listitem')).toHaveCount(2);await expect(input).toHaveValue(caption);expect(posts).toHaveLength(0);
+      15 |     const axe=await new AxeBuilder({page}).include('.composer-wrap').withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']).analyze();expect(axe.violations).toEqual([]);await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.setViewportSize({width:1280,height:900});await selected.scrollIntoViewIfNeeded();await page.screenshot({path:'docs/evidence/attachment-drafts.png'});
+      16 |     const messageRoute=`**/v1/channels/${channel}/messages`;await page.route(messageRoute,async route=>{if(route.request().method()!=='POST'){await route.continue();return;}const response=await route.fetch();expect(response.status()).toBe(201);await route.abort('connectionclosed');});await send.click();await expect(page.getByRole('button',{name:'Retry safely',exact:true})).toBeEnabled();await expect(selected.getByRole('button').first()).toBeDisabled();expect(posts).toHaveLength(1);expect(new Set(posts[0].attachmentIds)).toEqual(new Set(files));const operation=posts[0].clientId;await page.unroute(messageRoute);await page.reload();await expect(selected.getByRole('listitem')).toHaveCount(2);await expect(selected.getByRole('button').first()).toBeDisabled();await page.getByRole('button',{name:'Retry safely',exact:true}).click();await expect(page.getByRole('button',{name:'Retry safely',exact:true})).toHaveCount(0);await expect(selected).toHaveCount(0);await expect(input).toHaveValue('');expect(posts).toHaveLength(2);expect(posts[1]).toEqual(posts[0]);expect(posts[1].clientId).toBe(operation);const history=(await (await context.request.get(base+'/messages')).json()).messages.filter((m:{body:string})=>m.body===caption);expect(history).toHaveLength(1);expect(new Set(history[0].attachments.map((f:{id:string})=>f.id))).toEqual(new Set(files));
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/attachment-drafts.spec.ts:13:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/attachment-drafts-attachme-d137c-payload-after-lost-response-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/attachment-drafts-attachme-d137c-payload-after-lost-response-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/attachment-drafts-attachme-d137c-payload-after-lost-response-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/attachment-drafts-attachme-d137c-payload-after-lost-response-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/attachment-drafts.spec.ts:6:1 › attachment drafts wait for Send, survive scoped navigation/reload and replay exact multi-file payload after lost response 

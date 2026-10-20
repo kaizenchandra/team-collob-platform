@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:34839) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chrome] › tests/browser/message-source-writes.spec.ts:5:1 › source Save bounds lost acknowledgement, checks real saved status and aborts writes on close (12.9s)
+
+
+  1) [chrome] › tests/browser/message-source-writes.spec.ts:5:1 › source Save bounds lost acknowledgement, checks real saved status and aborts writes on close 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('alert')
+    Expected substring: "Save could not be confirmed"
+    Timeout: 12000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('alert') with timeout 12000ms
+      - waiting for getByRole('dialog', { name: 'Linked message', exact: true }).getByRole('alert')
+
+
+      12 |     await page.route(savePath,async route=>{const response=await route.fetch();expect(response.status()).toBe(200);committed=true;await new Promise<void>(resolve=>{release=resolve;});await route.fulfill({response}).catch(()=>{});});
+      13 |     await save.evaluate(element=>{(element as HTMLButtonElement).click();(element as HTMLButtonElement).click();});await expect.poll(()=>committed).toBe(true);expect(writes).toEqual([{saved:true}]);await expect(save).toBeDisabled();expect((await (await context.request.get(sourcePath)).json()).message.saved).toBe(true);
+    > 14 |     await expect(dialog.getByRole('alert')).toContainText('Save could not be confirmed',{timeout:12000});await expect(check).toBeEnabled();await expect.poll(()=>aborted).toBe(1);expect(writes).toHaveLength(1);release?.();await page.unroute(savePath);
+         |                                             ^
+      15 |     // The uncertain write is reconciled with an exact GET, including failed checks.
+      16 |     await page.route(sourcePath,route=>route.fulfill({status:503,contentType:'application/json',body:'{"error":"Saved status check unavailable"}'}));await check.click();await expect(dialog.getByRole('alert').filter({hasText:'Saved status check unavailable'})).toBeVisible();await expect(dialog.getByRole('article')).toHaveCount(0);expect(writes).toHaveLength(1);await page.unroute(sourcePath);await check.click();await expect(unsave).toBeEnabled();await expect(dialog.getByRole('status')).toHaveText('Saved status refreshed.');await expect(check).toHaveCount(0);expect(writes).toHaveLength(1);expect((await (await context.request.get(base+'/draft')).json()).body).toBe(draft);
+      17 |     // A committed change with malformed acknowledgement must not be called saved.
+        at /Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/tests/browser/message-source-writes.spec.ts:14:45
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/message-source-writes-sour-414ab--and-aborts-writes-on-close-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/message-source-writes-sour-414ab--and-aborts-writes-on-close-chrome/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/message-source-writes-sour-414ab--and-aborts-writes-on-close-chrome/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/message-source-writes-sour-414ab--and-aborts-writes-on-close-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chrome] › tests/browser/message-source-writes.spec.ts:5:1 › source Save bounds lost acknowledgement, checks real saved status and aborts writes on close 

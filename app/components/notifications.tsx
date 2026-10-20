@@ -1,47 +1,58 @@
 "use client";
-import {useEffect,useState} from 'react';
+import {useCallback,useEffect,useRef,useState} from 'react';
 import {z} from 'zod';
 import {messageLink} from '@/lib/message-link';
+import {NotificationPermission} from './notification-permission';
+import {DigestHistory} from './digest-history';
 import {api} from '@/lib/contracts';
-type Preferences={browser_replies_enabled:boolean;browser_enabled:boolean;quiet_enabled:boolean;quiet_start:string;quiet_end:string;digest_enabled:boolean;email_provider:string};
+const preferenceFields=z.object({browser_replies_enabled:z.boolean(),browser_enabled:z.boolean(),quiet_enabled:z.boolean(),quiet_start:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),quiet_end:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),digest_enabled:z.boolean()});
+const preferencesSnapshot=preferenceFields.extend({email_provider:z.enum(['unconfigured','local-capture','configured'])});
+type Preferences=z.infer<typeof preferencesSnapshot>;
+const editable=['browser_enabled','browser_replies_enabled','digest_enabled','quiet_enabled','quiet_start','quiet_end'] as const;
 export function NotificationSettings(){
-  const [historyError,setHistoryError]=useState(false);
-  const [jobs,setJobs]=useState<{id:string;state:string;attempts:number}[]>([]);
-  const [preferences,setPreferences]=useState<Preferences|null>(null),[error,setError]=useState(''),[saved,setSaved]=useState(false),[permission,setPermission]=useState('Checking browser support'),[attempt,setAttempt]=useState(0);
-  useEffect(()=>{
-    let active=true;
-    void api<Preferences>('/notification-settings').then(p=>{if(active){setPreferences(p);setError('');setPermission(typeof Notification==='undefined'||!window.isSecureContext?'unsupported':Notification.permission);}}).catch(e=>{if(active)setError(e.message);});
-    return()=>{active=false;};
-  },[attempt]);
-  useEffect(()=>{
-    let active=true,pending=false;
-    const refresh=async()=>{if(pending)return;pending=true;try{const r=await api<{jobs:typeof jobs}>('/digest-jobs');if(active){setJobs(r.jobs);setHistoryError(false); }}catch{if(active){setJobs([]);setHistoryError(true);}}finally{pending=false;}};
-    void refresh();const timer=setInterval(()=>void refresh(),5000);return()=>{active=false;clearInterval(timer);};
+  const [preferences,setPreferences]=useState<Preferences|null>(null),[baseline,setBaseline]=useState<Preferences|null>(null),[unconfirmed,setUnconfirmed]=useState<string[]>([]),[error,setError]=useState(''),[saved,setSaved]=useState(false),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
+  const active=useRef(true),read=useRef<AbortController|null>(null),write=useRef<AbortController|null>(null),writing=useRef(false);
+  const reload=useCallback(async()=>{
+    if(writing.current)return;
+    read.current?.abort();const controller=new AbortController();read.current=controller;setLoading(true);setPreferences(null);setSaved(false);setError('');
+    try{const p=preferencesSnapshot.parse(await api('/notification-settings','GET',undefined,AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])));if(active.current&&!controller.signal.aborted){setPreferences(p);setBaseline(p);setUnconfirmed([]);}}
+    catch{if(active.current&&!controller.signal.aborted)setError('Notification settings are unavailable. Reload to retry.');}
+    finally{if(read.current===controller){read.current=null;if(active.current)setLoading(false);}}
   },[]);
-  return <section className="card settings-form"><h2>Browser message alerts</h2>
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate the actor-keyed remote preferences.
+  useEffect(()=>{active.current=true;void reload();return()=>{active.current=false;read.current?.abort();write.current?.abort();};},[reload]);
+  const change=(patch:Partial<Preferences>)=>{if(writing.current)return;setPreferences(p=>p?{...p,...patch}:p);setSaved(false);setError('');};
+  const changes=preferences&&baseline?Object.fromEntries(editable.filter(key=>preferences[key]!==baseline[key]||unconfirmed.includes(key)).map(key=>[key,preferences[key]])):{};
+  const changed=Object.keys(changes).length>0;
+  const save=async()=>{
+    if(writing.current||!preferences||!changed)return;
+    writing.current=true;setSaving(true);setSaved(false);setError('');read.current?.abort();const controller=new AbortController();write.current=controller;
+    try{z.object({ok:z.literal(true)}).parse(await api('/notification-settings','PATCH',preferenceFields.partial().parse(changes),AbortSignal.any([controller.signal,AbortSignal.timeout(8000)])));if(active.current&&!controller.signal.aborted){setBaseline(preferences);setUnconfirmed([]);setSaved(true);}}
+    catch{if(active.current&&!controller.signal.aborted){setUnconfirmed(previous=>[...new Set([...previous,...Object.keys(changes)])]);setError('Save could not be confirmed. Your choices were kept. Reload notification settings to check the server before trying again.');}}
+    finally{if(write.current===controller){write.current=null;writing.current=false;if(active.current)setSaving(false);}}
+  };
+  return <section className="card settings-form" aria-label="Notification settings"><h2>Browser message alerts</h2>
     <p>Alerts identify the workspace and channel, without message text. Clicking an alert opens its exact current message source. Keep this workspace open. Delivery while closed, mobile push and invitation/call alerts are not available.</p>
-    <p>Browser permission: {permission}. Permission and saved preferences are both required.</p>
-    <button type="button" className="secondary" disabled={permission==='unsupported'} onClick={async()=>{try{setPermission(await Notification.requestPermission());}catch{setError('Permission is unavailable. Check browser settings or use Activity.');}}}>Allow browser notifications</button>
-    {error && <div role="alert"><p>{error}</p><button type="button" className="secondary" onClick={()=>setAttempt(n=>n+1)}>Reload notification settings</button></div>}
-    {!preferences && !error && <p role="status">Loading notification settings…</p>}
-    {preferences && <form onSubmit={async e=>{e.preventDefault();setSaved(false);try{await api('/notification-settings','PUT',preferences);setSaved(true);setError('');}catch(e){setError(e instanceof Error?e.message:'Settings could not be saved');}}}>
-      <label className="check-label"><input type="checkbox" checked={preferences.browser_enabled} onChange={e=>setPreferences({...preferences,browser_enabled:e.target.checked})}/>Enable browser mention alerts</label>
-      <label className="check-label"><input type="checkbox" checked={preferences.browser_replies_enabled} onChange={e=>setPreferences({...preferences,browser_replies_enabled:e.target.checked})}/>Enable browser reply alerts</label>
+    <NotificationPermission/>
+    <p>Only edited fields are saved. Reload replaces unsaved choices and shows changes from other sessions.</p><button type="button" className="secondary" disabled={saving} onClick={()=>void reload()}>Reload notification settings</button>
+    {error&&<p role="alert">{error}</p>}
+    {loading&&<p role="status">Loading notification settings…</p>}
+    {preferences&&unconfirmed.length>0&&<p role="status">A previous save is unconfirmed. Saving again sends your current choices for the affected fields, including reversions. Reload checks server settings.</p>}
+    {preferences&&<form onSubmit={e=>{e.preventDefault();void save();}}><fieldset disabled={saving} className="notification-fields">
+      <label className="check-label"><input type="checkbox" checked={preferences.browser_enabled} onChange={e=>change({browser_enabled:e.target.checked})}/>Enable browser mention alerts</label>
+      <label className="check-label"><input type="checkbox" checked={preferences.browser_replies_enabled} onChange={e=>change({browser_replies_enabled:e.target.checked})}/>Enable browser reply alerts</label>
       <p>Reply alerts cover other people replying directly to your messages. Each category starts with new messages after you enable it.</p>
       <h3>Missed-activity email digests</h3>
       <p>Email provider: {preferences.email_provider}. {preferences.email_provider==='local-capture'?'Local capture is viewable at localhost:5185. No external delivery.':'Ask your administrator about SMTP delivery configuration.'}</p>
-      <label className="check-label"><input type="checkbox" checked={preferences.digest_enabled} onChange={e=>setPreferences({...preferences,digest_enabled:e.target.checked})}/>Enable hourly email digests</label>
+      <label className="check-label"><input type="checkbox" checked={preferences.digest_enabled} onChange={e=>change({digest_enabled:e.target.checked})}/>Enable hourly email digests</label>
       <p>Sent to your account email. Includes authorized private activity counts without message text or private channel names. Each workspace sends at most once per UTC hour; quiet hours delay sending.</p>
-      <label className="check-label"><input type="checkbox" checked={preferences.quiet_enabled} onChange={e=>setPreferences({...preferences,quiet_enabled:e.target.checked})}/>Enable quiet hours</label>
-      <label>Quiet hours start<input type="time" required value={preferences.quiet_start} onChange={e=>setPreferences({...preferences,quiet_start:e.target.value})}/></label>
-      <label>Quiet hours end<input type="time" required value={preferences.quiet_end} onChange={e=>setPreferences({...preferences,quiet_end:e.target.value})}/></label>
+      <label className="check-label"><input type="checkbox" checked={preferences.quiet_enabled} onChange={e=>change({quiet_enabled:e.target.checked})}/>Enable quiet hours</label>
+      <label>Quiet hours start<input type="time" required value={preferences.quiet_start} onChange={e=>change({quiet_start:e.target.value})}/></label>
+      <label>Quiet hours end<input type="time" required value={preferences.quiet_end} onChange={e=>change({quiet_end:e.target.value})}/></label>
       <p>Uses your saved profile timezone. Equal start and end means quiet all day. Quiet hours and muted conversations suppress alerts; Activity remains available. Unread mentions and replies from the last 24 hours can appear after quiet hours.</p>
-      <button className="primary">Save notification settings</button>{saved&&<p role="status">Notification settings saved.</p>}
-      <h3>Recent digest delivery</h3>
-      {historyError && <p role="alert">Digest history is unavailable. Retrying automatically.</p>}
-      {!historyError && (jobs.length?jobs.map(j=><p key={j.id}>Digest {j.id.slice(0,8)}: {j.state} · attempts {j.attempts}</p>):<p>No digest jobs yet.</p>)}
-      <p>Sent means SMTP accepted the email, not confirmed mailbox delivery. Uncertain sends are held for administrator investigation to avoid duplicates.</p>
+      <button className="primary" disabled={!changed}>Save notification settings</button></fieldset>{saving&&<p role="status">Saving notification settings…</p>}{saved&&<p role="status">Notification settings saved.</p>}
     </form>}
+    <DigestHistory/>
   </section>;
 }
 const claims=z.object({items:z.array(z.object({id:z.uuid(),channel_id:z.uuid(),channel_name:z.string(),organization_name:z.string(),kind:z.enum(['mention','reply']).default('mention')})).max(10)});

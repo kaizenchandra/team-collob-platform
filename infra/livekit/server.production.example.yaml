@@ -1,0 +1,37 @@
+# TEMPLATE ONLY. Replace every REPLACE value, supply trusted certificates and restrict firewalls.
+# Place API/signaling behind your verified HTTPS/WSS reverse proxy. Never expose Redis.
+port: 7880
+bind_addresses: ['0.0.0.0']
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  use_external_ip: true
+redis:
+  address: REPLACE_PRIVATE_REDIS_HOST:6379
+  password: REPLACE_REDIS_SECRET
+keys:
+  REPLACE_API_KEY: REPLACE_WITH_A_SERVER_ONLY_RANDOM_SECRET_AT_LEAST_32_CHARACTERS
+room:
+  auto_create: false
+  enable_remote_unmute: false
+  max_participants: 34
+  empty_timeout: 120
+  departure_timeout: 30
+turn:
+  enabled: true
+  udp_port: 3478
+  tls_port: 443
+  domain: turn.example.invalid
+  cert_file: /run/secrets/turn-fullchain.pem
+  key_file: /run/secrets/turn-private-key.pem
+  relay_range_start: 40000
+  relay_range_end: 40100
+  per_user_relay_allocation_limit: 4
+  ttl_seconds: 300
+  # If the SFU media candidates are private, explicitly allow ONLY the SFU subnet.
+  # allow_restricted_peer_cidrs: ['REPLACE_EXACT_SFU_SUBNET']
+webhook:
+  api_key: REPLACE_API_KEY
+  urls: ['https://api.example.invalid/v1/media/webhook']
+logging:
+  level: warn
