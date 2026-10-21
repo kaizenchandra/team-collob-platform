@@ -1,117 +1,12 @@
 "use client";
+import {ProfileTrigger} from "./profile-popovers";
 /* eslint-disable react-hooks/set-state-in-effect -- Hydrate authoritative remote membership snapshots. */
 import { useState, useEffect, useCallback } from "react";
-import { Users, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { api, type Person } from "@/lib/contracts";
-import {TeamMembers} from "./team-members";
-import {TeamOwnership} from "./team-ownership";
-import { Avatar, Empty, Unavailable } from "./primitives";
+import { Avatar, Unavailable } from "./primitives";
 type Report = (e: unknown) => void;
-export function TeamsPanel({
-  org,
-  role,
-  refresh,
-  report,
-  people,
-  userId,
-}: {
-  people: Person[];
-  userId: string;
-  org: string;
-  role: string;
-  refresh: () => Promise<void>;
-  report: Report;
-}) {
-  const [ownership,setOwnership]=useState<string|null>(null),[membersTeam,setMembersTeam]=useState<string|null>(null);
-  const [teams, setTeams] = useState<
-    { id: string; name: string; joined: boolean; archived: boolean }[]
-  >([]);
-  const load = useCallback(
-    async () =>
-      setTeams(
-        (await api<{ teams: typeof teams }>(`/organizations/${org}/teams`))
-          .teams,
-      ),
-    [org],
-  );
-  useEffect(() => {
-    void load().catch(report);
-  }, [load, report]);
-  return (
-    <>
-      <div className="page-heading">
-        <div>
-          <span className="eyebrow">A SPACE FOR EVERY TEAM</span>
-          <h1>Discover your teams</h1>
-          <p>
-            Join a team to access its standard channels. Private channels
-            require explicit membership.
-          </p>
-        </div>
-        <Users size={30} />
-      </div>
-      <div className="content-pad form-grid">
-        {teams.map((t) => (
-          <div className="card" key={t.id}>
-            <h2>{t.name}</h2>
-            <p>
-              {t.archived
-                ? "Archived"
-                : t.joined
-                  ? "You are a member"
-                  : "Open to workspace members"}
-            </p>
-            <button
-              className="secondary"
-              disabled={t.archived || role === "guest"}
-              onClick={async () => {
-                try {
-                  await api(
-                    `/organizations/${org}/teams/${t.id}/${t.joined ? "leave" : "join"}`,
-                    "POST",
-                    {},
-                  );
-                  await load();
-                  await refresh();
-                } catch (e) {
-                  report(e);
-                }
-              }}
-            >
-              {t.joined ? "Leave team" : "Join team"}
-            </button>
-            {t.joined&&["owner","admin"].includes(role)&&<><button className="secondary" onClick={()=>setMembersTeam(membersTeam===t.id?null:t.id)}>{membersTeam===t.id?'Hide team members':'Manage team members'}</button>{membersTeam===t.id&&<TeamMembers key={`${org}:${t.id}`} org={org} team={t.id} people={people} userId={userId} onChanged={async()=>{await load();await refresh();}}/>}</>}
-            {t.joined&&<><button className="secondary" onClick={()=>setOwnership(ownership===t.id?null:t.id)}>{ownership===t.id?'Hide ownership':'Manage team ownership'}</button>{ownership===t.id&&<TeamOwnership key={`${org}:${t.id}`} org={org} team={t.id} onChanged={async()=>{await load();await refresh();}}/>}</>}
-            {["owner", "admin"].includes(role) && (
-              <button
-                className="secondary"
-                onClick={async () => {
-                  try {
-                    await api(`/organizations/${org}/teams/${t.id}`, "PATCH", {
-                      name: t.name,
-                      archived: !t.archived,
-                    });
-                    await load();
-                    await refresh();
-                  } catch (e) {
-                    report(e);
-                  }
-                }}
-              >
-                {t.archived ? "Restore" : "Archive"}
-              </button>
-            )}
-          </div>
-        ))}
-        {!teams.length && (
-          <Empty title="Build your first team">
-            Use the + beside Your Teams to create a space.
-          </Empty>
-        )}
-      </div>
-    </>
-  );
-}
+export {TeamsPanel} from "./teams-discovery";
 export function MembershipPanel({
   org,
   people,
@@ -160,9 +55,9 @@ export function MembershipPanel({
         </p>
         {people.map((p) => (
           <div className="member-row" key={p.id}>
-            <Avatar name={p.name} small />
+            <ProfileTrigger userId={p.id} name={p.name}><Avatar name={p.name} small /></ProfileTrigger>
             <div>
-              <strong>{p.name}</strong>
+              <ProfileTrigger userId={p.id} name={p.name}><strong>{p.name}</strong></ProfileTrigger>
               <small>{p.email}</small>
             </div>
             <label className="sr-only" htmlFor={`role-${p.id}`}>

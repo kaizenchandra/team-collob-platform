@@ -1,4 +1,5 @@
 "use client";
+import {ProfileTrigger} from "./profile-popovers";
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {z} from 'zod';
 import {api,type Person} from '@/lib/contracts';
@@ -20,7 +21,7 @@ export function ChatManagement({id,onSaved,onLeft,people,userId}:{id:string;onSa
   return <section aria-label="Chat participants"><h3>Chat participants</h3>
     <button className="secondary" disabled={loading||busy} onClick={()=>void load()}>Refresh participants</button>
     {loading&&<p role="status">Loading participants…</p>}{error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
-    {chat&&<><ul>{chat.participants.map(p=><li key={p.id}>{p.name}</li>)}</ul><p>Current active participants can read the retained conversation history.</p>
+    {chat&&<><ul>{chat.participants.map(p=><li key={p.id}><ProfileTrigger userId={p.id} name={p.name}/></li>)}</ul><p>Current active participants can read the retained conversation history.</p>
       {chat.kind==='group'&&<><form onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');setNotice('');try{await api(`/channels/${id}/group-name`,'PATCH',{name,revision:chat.revision});if(mounted.current){await load();await onSaved();if(mounted.current)setNotice('Group name saved.');}}catch(e){if(mounted.current)setError(e instanceof Error?e.message:'Group name could not be saved');}finally{if(mounted.current)setBusy(false);}}}>
         <label>Group name<input required maxLength={160} value={name} disabled={busy||chat.archived} onChange={e=>setName(e.target.value)}/></label><button className="secondary" disabled={busy||chat.archived}>Save group name</button>
       </form>{chat.archived&&<p>Archived groups cannot be renamed.</p>}

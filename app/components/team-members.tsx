@@ -1,4 +1,5 @@
 "use client";
+import {ProfileTrigger} from "./profile-popovers";
 import {useCallback,useEffect,useRef,useState,useId} from 'react';
 import {z} from 'zod';
 import {api,type Person} from '@/lib/contracts';
@@ -22,7 +23,7 @@ export function TeamMembers({org,team,people,userId,onChanged}:{org:string;team:
   }
   return <section aria-label="Team members"><h3>Team members</h3><p>Workspace admins who belong to this team can admit or remove members. Team ownership and workspace roles are separate.</p><button className="secondary" disabled={loading||busy} onClick={()=>void load()}>Refresh team members</button>
     {loading&&<p role="status">Loading team members…</p>}{error&&<p role="alert">{error}</p>}
-    {data&&<><ul>{[...data.members].sort((a,b)=>a.name.localeCompare(b.name)).map(p=><li key={p.id}>{p.name}{p.role==='owner'?' (owner)':''}{p.active?'':' (inactive)'}</li>)}</ul>
+    {data&&<><ul>{[...data.members].sort((a,b)=>a.name.localeCompare(b.name)).map(p=><li key={p.id}><ProfileTrigger userId={p.id} name={p.name}/>{p.role==='owner'?' (owner)':''}{p.active?'':' (inactive)'}</li>)}</ul>
       {data.archived&&<p>Restore the team before changing membership.</p>}
       <form onSubmit={e=>{e.preventDefault();if(target&&grant)void change('PUT',target);}}>
         <label htmlFor={selectId}>Add team member</label><select id={selectId} value={target} disabled={busy||data.archived} onChange={e=>{setTarget(e.target.value);setGrant(false);}}><option value="">Choose a workspace member</option>{people.filter(p=>!data.members.some(m=>m.id===p.id)).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>

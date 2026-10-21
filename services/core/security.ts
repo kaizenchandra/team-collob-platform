@@ -23,7 +23,7 @@ export function passwordMatches(password: string, encoded: string) {
     return timingSafeEqual(actual, Buffer.from(key, "hex"));
 }
 
-export const accessSQL = `(EXISTS(SELECT 1 FROM memberships om WHERE om.org_id=c.org_id AND om.user_id=$1 AND om.active) AND (c.kind='standard' AND EXISTS(SELECT 1 FROM team_members tm WHERE tm.team_id=c.team_id AND tm.user_id=$1) OR c.kind<>'standard' AND EXISTS(SELECT 1 FROM channel_members cm WHERE cm.channel_id=c.id AND cm.user_id=$1)))`;
+export const accessSQL = `(NOT EXISTS(SELECT 1 FROM calendar_media cal JOIN media_calls mc ON mc.id=cal.call_id JOIN meetings mt ON mt.id=cal.meeting_id WHERE mc.channel_id=c.id AND (mt.cancelled OR (mt.organizer_id IS DISTINCT FROM $1 AND NOT EXISTS(SELECT 1 FROM meeting_attendees ca WHERE ca.meeting_id=mt.id AND ca.user_id=$1)))) AND EXISTS(SELECT 1 FROM memberships om WHERE om.org_id=c.org_id AND om.user_id=$1 AND om.active) AND (c.kind='standard' AND EXISTS(SELECT 1 FROM team_members tm WHERE tm.team_id=c.team_id AND tm.user_id=$1) OR c.kind<>'standard' AND EXISTS(SELECT 1 FROM channel_members cm WHERE cm.channel_id=c.id AND cm.user_id=$1)))`;
 
 export async function member(db: DB, user: string, org: string, admin = false) {
     const r = await db.query(

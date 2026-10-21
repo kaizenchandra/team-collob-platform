@@ -1,3 +1,6 @@
+import {registerAttendeeOptions} from './attendee-options.ts';
+import {registerOrganization} from './organization.ts';
+import {employeeVisibilitySQL} from './organization-access.ts';
 import {registerMessageReplies} from './message-replies.ts';
 import {registerMessageReaders} from './message-readers.ts';
 import {registerMedia} from './media.ts';
@@ -28,6 +31,7 @@ import {readSequence} from '../../lib/message-sequence.ts';
 import {randomBytes, randomUUID} from "node:crypto";
 import {migrate, pool, transaction} from "./db.ts";
 import {accessSQL, audit, channel, event, hash, HttpError, member, passwordMatches,} from "./security.ts";
+import {registerCalendar} from './calendar.ts';
 import {registerWork} from "./work.ts";
 import {registerMembership} from "./membership.ts";
 import {registerFiles} from "./files.ts";
@@ -310,8 +314,8 @@ export async function createApp() {
                 [req.user.id, org],
             ),
             pool.query(
-                "SELECT u.id,u.name,u.email,u.title,m.role,CASE WHEN p.last_seen < now()-interval '60 seconds' OR p.last_seen IS NULL THEN 'offline' WHEN p.override_until>now() THEN p.state ELSE 'available' END presence FROM memberships m JOIN users u ON u.id=m.user_id LEFT JOIN presence p ON p.org_id=m.org_id AND p.user_id=u.id WHERE m.org_id=$1 AND m.active AND NOT u.disabled ORDER BY u.name",
-                [org],
+                `SELECT u.id,u.name,u.email,u.title,m.role,CASE WHEN p.last_seen < now()-interval '60 seconds' OR p.last_seen IS NULL THEN 'offline' WHEN p.override_until>now() THEN p.state ELSE 'available' END presence FROM memberships m JOIN users u ON u.id=m.user_id LEFT JOIN presence p ON p.org_id=m.org_id AND p.user_id=u.id LEFT JOIN organization_people e ON e.org_id=m.org_id AND e.user_id=m.user_id WHERE m.org_id=$1 AND m.active AND NOT u.disabled AND ${employeeVisibilitySQL} ORDER BY u.name`,
+                [org,req.user.id,["owner","admin"].includes(membership.role)],
             ),
         ]);
         return {
@@ -858,6 +862,9 @@ export async function createApp() {
     await registerMedia(app,token=>readSession(token));
     await registerMembership(app);
     await registerWork(app);
+    await registerCalendar(app);
+    await registerOrganization(app);
+    await registerAttendeeOptions(app);
     await registerFiles(app);
   await registerNotifications(app);
   await registerPresence(app);

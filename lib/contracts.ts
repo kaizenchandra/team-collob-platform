@@ -83,6 +83,7 @@ export type FormRecord = {
   created_by: string;
 };
 export type Meeting = {
+  location?:string;meeting_type?:"video"|"audio"|"in_person";team_id?:string|null;team_name?:string|null;
   reminder_minutes: number;
   series_revision: number | null;
   series_id: string | null;

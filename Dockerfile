@@ -31,7 +31,7 @@ ENV NODE_ENV=production API_HOST=0.0.0.0 PORT=4100
 COPY --from=api-build --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node package.json ./
 COPY --chown=node:node services ./services
-COPY --chown=node:node lib/file-preview.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts lib/message-sequence.ts ./lib/
+COPY --chown=node:node lib/file-preview.ts lib/calendar.ts lib/meeting-time.ts lib/meeting-recurrence.ts lib/usage-contract.ts lib/message-sequence.ts ./lib/
 COPY --chown=node:node migrations ./migrations
 RUN mkdir -p /app/.data/files && chown -R node:node /app/.data
 USER node

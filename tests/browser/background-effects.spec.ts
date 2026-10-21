@@ -278,7 +278,7 @@ test("outgoing camera effects: private preview/cancel, blur, built-ins, upload, 
       .click();
     await warm(a, "Background effect preview");
     await a
-      .getByRole("dialog", { name: "Call window" })
+      .getByRole("region", { name: "Call area" })
       .screenshot({ path: "docs/evidence/background-effects-preview.png" });
     await green(b);
     await panel
@@ -499,7 +499,7 @@ test("outgoing camera effects: private preview/cancel, blur, built-ins, upload, 
       panel.getByRole("radio", { name: "Private studio.png", exact: true }),
     ).toHaveCount(0);
     await a
-      .getByRole("dialog", { name: "Call window" })
+      .getByRole("region", { name: "Call area" })
       .screenshot({ path: "docs/evidence/background-effects-desktop.png" });
     expect(
       (
@@ -522,7 +522,7 @@ test("outgoing camera effects: private preview/cancel, blur, built-ins, upload, 
       ),
     ).toBe(true);
     await a
-      .getByRole("dialog", { name: "Call window" })
+      .getByRole("region", { name: "Call area" })
       .screenshot({ path: "docs/evidence/background-effects-mobile.png" });
     await a.getByRole("button", { name: "Leave call", exact: true }).click();
     await expect
@@ -684,7 +684,7 @@ test("prejoin preferences restore without camera activation; uploads validate an
       b.getByRole("heading", { name: "Call ended", exact: true }),
     ).toBeVisible();
     await a
-      .getByRole("button", { name: "Close call window", exact: true })
+      .getByRole("button", { name: "Close call", exact: true })
       .click();
   } finally {
     if (call)

@@ -62,14 +62,33 @@ export function Modal({
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
+    const trigger =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     dialog?.showModal();
-    return () => dialog?.close();
+    return () => {
+      dialog?.close();
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
+      else
+        document
+          .querySelector<HTMLElement>("#main")
+          ?.focus({ preventScroll: true });
+    };
   }, []);
   return (
-    <dialog ref={ref} aria-label={title} onCancel={onClose}>
+    <dialog
+      ref={ref}
+      aria-label={title}
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+    >
       <header>
         <h2>{title}</h2>
         <button
+          type="button"
           className="icon-button"
           aria-label="Close dialog"
           onClick={onClose}

@@ -1,0 +1,85 @@
+Platform UX verification — 2026-10-21
+188 automated tests passed; 39 distinct browser workflows passed across runs.
+Combined-run failures and independent successful rechecks are documented in docs/platform-ux-audit.md.
+Media uses actual local LiveKit transport with simulated capture devices; physical-device and TURN testing are unverified.
+
+platform-tests.log
+ℹ tests 188
+ℹ suites 0
+ℹ pass 188
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30745.19925
+
+platform-regressions.log
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chrome] › tests/browser/meeting-viewport.spec.ts:182:1 › bounded live gallery: viewport matrix, pages, pinning, panels, media continuity and wide/tall sharing 
+    [chrome] › tests/browser/platform-ux.spec.ts:486:1 › message loading, failed history and retry stay distinct from an empty conversation 
+    [chrome] › tests/browser/presence-settings.spec.ts:8:1 › workspace presence overrides are observed independently, expire and recover without touching profile or draft 
+  22 passed (2.2m)
+
+platform-media-viewport.log
+
+Running 1 test using 1 worker
+
+(node:6990) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/meeting-viewport.spec.ts:182:1 › bounded live gallery: viewport matrix, pages, pinning, panels, media continuity and wide/tall sharing (38.0s)
+
+  1 passed (38.4s)
+
+platform-background.log
+(node:7269) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/background-effects.spec.ts:190:1 › outgoing camera effects: private preview/cancel, blur, built-ins, upload, group, camera lifecycle and fail-closed recovery (17.5s)
+  ✓  2 [chrome] › tests/browser/background-effects.spec.ts:547:1 › prejoin preferences restore without camera activation; uploads validate and unsupported effects stay disabled (4.7s)
+  ✓  3 [chrome] › tests/browser/background-effects.spec.ts:696:1 › model initialization and unavailable preference storage fail closed while audio stays connected (10.1s)
+  ✓  4 [chrome] › tests/browser/background-effects.spec.ts:825:1 › chat audio/video initiation stays real and deduplicated; answer, decline and cancellation retain call behavior (14.9s)
+
+  4 passed (47.6s)
+
+platform-focused-final.log
+  ✓  2 [chrome] › tests/browser/platform-ux.spec.ts:186:1 › timeline follows latest, protects history readers, deduplicates updates and restores view/prepend anchors (3.6s)
+  ✓  3 [chrome] › tests/browser/platform-ux.spec.ts:280:1 › busy meeting dialogs survive Escape; normal close and context panels restore focus (977ms)
+  ✓  4 [chrome] › tests/browser/platform-ux.spec.ts:360:1 › short chat layouts, independent context panels and larger text keep the composer usable (1.6s)
+  ✓  5 [chrome] › tests/browser/platform-ux.spec.ts:480:1 › core desktop/mobile screens expose selected navigation and pass scoped accessibility checks (6.6s)
+  ✓  6 [chrome] › tests/browser/platform-ux.spec.ts:526:1 › message loading, failed history and retry stay distinct from an empty conversation (522ms)
+  ✓  7 [chrome] › tests/browser/presence-settings.spec.ts:8:1 › workspace presence overrides are observed independently, expire and recover without touching profile or draft (4.4s)
+
+  7 passed (20.3s)
+
+platform-workflows-final.log
+        npx playwright show-trace test-results/team-members-team-admins-e-aa112-while-shared-grants-survive-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send 
+    [chrome] › tests/browser/team-members.spec.ts:6:1 › team admins explicitly admit guests and revoke standard/private access while shared grants survive 
+  7 passed (1.4m)
+
+platform-last-verification.log
+        npx playwright show-trace test-results/reply-drafts-reply-IDs-sur-e8b5e-lidate-before-explicit-send-chrome/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chrome] › tests/browser/platform-ux.spec.ts:483:1 › core desktop/mobile screens expose selected navigation and pass scoped accessibility checks 
+    [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send 
+  11 passed (13.6m)
+
+platform-final-rechecks.log
+Running 2 tests using 1 worker
+
+(node:8460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/platform-ux.spec.ts:483:1 › core desktop/mobile screens expose selected navigation and pass scoped accessibility checks (6.8s)
+  ✓  2 [chrome] › tests/browser/reply-drafts.spec.ts:6:1 › reply IDs survive scoped navigation/reload with text/files and revalidate before explicit send (26.4s)
+
+  2 passed (34.3s)
+

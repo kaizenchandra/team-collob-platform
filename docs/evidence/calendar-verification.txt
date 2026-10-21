@@ -1,0 +1,191 @@
+Complete browser suite
+
+Running 10 tests using 1 worker
+
+(node:96810) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chrome] › tests/browser/calendar-experience.spec.ts:95:1 › calendar source data, privacy, approvals, availability and recurring occurrences (331ms)
+  ✓   2 [chrome] › tests/browser/calendar-experience.spec.ts:275:1 › calendar views, overlapping events, interactive details, scheduling, settings and responsive layout (2.8s)
+  ✓   3 [chrome] › tests/browser/calendar-experience.spec.ts:479:1 › calendar Join resolves one live room, preserves the session and enforces termination and roster access (10.1s)
+  ✓   4 [chrome] › tests/browser/calendar.spec.ts:113:1 › calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation (21.3s)
+  ✓   5 [chrome] › tests/browser/calendar.spec.ts:188:1 › visible calendar range paginates beyond fifty meetings and recovers from a failed page (971ms)
+  ✓   6 [chrome] › tests/browser/calendar.spec.ts:240:1 › scheduling rejects a DST gap and persists an explicitly chosen repeated-time occurrence (1.0s)
+  ✓   7 [chrome] › tests/browser/calendar.spec.ts:291:1 › weekly series retains local time across DST and edits or cancels all occurrences (1.1s)
+  ✓   8 [chrome] › tests/browser/calendar.spec.ts:346:1 › monthly last-day series expands without changing old IDs and reschedules with yearly rules (1.2s)
+  ✓   9 [chrome] › tests/browser/calendar.spec.ts:432:1 › upcoming-only edits preserve past occurrence descriptions and invitees (974ms)
+  ✓  10 [chrome] › tests/browser/calendar.spec.ts:490:1 › personal reminders survive reload and dismissal synchronizes across windows (21.2s)
+
+  10 passed (1.0m)
+
+
+Rendered leave/holiday and live-media rerun
+
+Running 3 tests using 1 worker
+
+(node:96978) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chrome] › tests/browser/calendar-experience.spec.ts:95:1 › calendar source data, privacy, approvals, availability and recurring occurrences (1.2s)
+  ✓  2 [chrome] › tests/browser/calendar-experience.spec.ts:298:1 › calendar views, overlapping events, interactive details, scheduling, settings and responsive layout (3.0s)
+  ✓  3 [chrome] › tests/browser/calendar-experience.spec.ts:507:1 › calendar Join resolves one live room, preserves the session and enforces termination and roster access (10.8s)
+
+  3 passed (16.0s)
+
+
+Focused date/time/join-window tests
+✔ unused prepared rooms obey the scheduled join window at token issuance (1.402833ms)
+✔ actual meeting attendance permits joining an ongoing call beyond its planned end (0.107292ms)
+✔ instant calls retain their existing lifecycle policy (0.06425ms)
+✔ calendar ranges use local midnight across DST and retain date-only month boundaries (10.545042ms)
+✔ overlapping meetings occupy distinct lanes; adjacent meetings reuse the full width (0.216292ms)
+✔ per-day overnight working hours include the following civil day and reject nonworking time (2.387375ms)
+✔ DST grids preserve repeated-hour ordering and real elapsed duration (6.086ms)
+✔ work week follows configured weekdays and adjoining shifts form continuous working time (1.635625ms)
+✔ meeting timezone resolves normal and non-hour offsets (6.492209ms)
+✔ DST gaps are rejected for every repeated-time choice (1.311125ms)
+✔ DST folds require choice and resolve to distinct instants (0.6145ms)
+✔ invalid local date and zone cannot silently normalize (0.1725ms)
+✔ editor initialization uses stored timezone for normal and folded instants (0.288667ms)
+✔ weekly recurrence preserves local time across DST (2.943292ms)
+✔ recurrence rejects any invalid later occurrence and bounds expansion (0.915583ms)
+✔ monthly rules anchor to original date without short-month drift (1.664917ms)
+✔ monthly overnight duration follows clamped start rather than a drifting end anchor (0.551542ms)
+✔ yearly leap-day anchoring and five-year horizon are explicit (2.52325ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 193.832792
+
+
+Backend regressions
+✔ anonymous and cross-origin requests are rejected (707.620875ms)
+✔ tenant isolation across bootstrap, history, search, work, activity and audit (22.778458ms)
+✔ private-channel visibility excludes a team guest (117.739292ms)
+✔ concurrent retried writes commit one message and one ordered event (129.754875ms)
+✔ message edit ownership, threads, reactions and monotonic read position (34.236209ms)
+✔ search and draft persistence survive a fresh application instance (47.670083ms)
+✔ private tasks and forms enforce assignment and response permissions (22.859583ms)
+✔ atomic channel conversion previews and applies explicit historical access changes (25.510459ms)
+✔ meeting attendees must be tenant members; only organizer cancels (22.099583ms)
+✔ files remain quarantined and cannot be discovered cross-tenant (24.11675ms)
+✔ 32-person receipts include every opted-in authorized recipient (277.081458ms)
+✔ live event replay and membership revocation close an active subscription (1069.603834ms)
+✔ invitations are identity-bound, expirable, single-use and revocable; last owner protected (56.822417ms)
+✔ receipt privacy opt-out and session logout enforced (375.347666ms)
+✔ production rejects development authentication, development seed, and missing identity configuration (1027.242458ms)
+✔ OIDC state survives app recreation, rejects wrong browsers and permits only one concurrent consumption (145.884ms)
+✔ production configuration requires explicit storage, HTTPS identity and assurance policy (4.901958ms)
+✔ authentication throttling does not consume the session-status and logout budget (265.438375ms)
+✔ logout JWT validation rejects wrong signatures, claims, audience, issuer and stale tokens (100.568042ms)
+✔ provider logout is scoped, idempotent, audited and prevents an in-flight callback restoring access (1920.573ms)
+✔ signed logout endpoint has a narrow Origin exception and rejects malformed/oversized forms (24.324291ms)
+✔ session assurance policy rejects legacy, weaker, foreign-client and disabled-user sessions (332.583959ms)
+✔ identity actions allow only configured provider recovery without arbitrary actions or redirects (9.020833ms)
+✔ provider credential encryption authenticates binding, detects tampering and supports explicit key rotation (8.760417ms)
+✔ provider checks coalesce, rotate encrypted credentials and fail closed on provider outages (97.310167ms)
+✔ provider leases survive process peers, expire, and cannot restore a session deleted during refresh (69.772458ms)
+✔ inactive provider sessions are removed with one audit effect while unknown legacy credentials require reauthentication (429.044792ms)
+✔ authentication failures retain bounded global evidence without trusting identity or tenant input (1048.940666ms)
+✔ successful login/logout audit is scoped to active memberships and excluded from foreign/member views (199.007042ms)
+✔ identity audit scope excludes inactive memberships and rolls back with the surrounding mutation (845.383333ms)
+✔ audit storage failure rolls back sign-in and returns a generic unavailable response (168.685542ms)
+✔ message format persists, validates and participates in retry deduplication without reinterpreting legacy text (118.087958ms)
+✔ mention parsing recognizes only explicit Markdown links and bounds unique recipients (4.010833ms)
+✔ mentions persist once, reject inaccessible recipients, and disappear on edit, deletion and access revocation (845.654ms)
+✔ durable scan jobs retry, reject, recover leases and never resurrect deleted files (228.460542ms)
+✔ attachments enforce scanned same-channel access, immutable retries and current history visibility (207.903167ms)
+✔ upload client IDs deduplicate concurrent acceptance, conflict on payload changes and retain deletion identity (82.649083ms)
+✔ orphan reconciliation preserves referenced, young, unknown and symlink bytes and excludes active uploads (12.247917ms)
+✔ failed upload metadata leaves recoverable bytes instead of eagerly unlinking them (19.637375ms)
+✔ object keys bind tenant, file and checksum; incomplete and insecure configuration fail closed (2.905791ms)
+✔ source previews enforce scan/ACL/integrity and bound literal Unicode text (64.740375ms)
+✔ file revisions serialize numbering, preserve retry identity and withdraw the whole lineage (137.666292ms)
+✔ quiet hours evaluate overnight, equal endpoints and timezone DST boundaries (1.523292ms)
+✔ notification claims enforce quiet hours, current access, unread/mute and persistent cross-tab dedup (216.190541ms)
+✔ digest scheduling and delivery enforce private access, quiet hours, retry bounds and ambiguous-send isolation (290.163708ms)
+✔ reply activity enforces recipient, current channel access and parent/reply deletion (275.923917ms)
+✔ reply alert opt-in is independent, cutoff-bound and deduplicates overlapping categories (194.347291ms)
+✔ invitation inbox isolates recipients and serializes concurrent identity acceptance (98.032375ms)
+✔ recipient decline is scoped, audited and cannot grant or revoke membership (47.626833ms)
+✔ accept and decline races serialize without audit foreign-key deadlocks (59.318875ms)
+✔ organizer edits enforce revisions, reset rescheduled responses and serialize cancellation (68.712792ms)
+✔ meeting roster edits preserve retained RSVP and revoke removed attendee access (180.190333ms)
+✔ calendar keyset pages preserve microsecond ordering, range bounds and current access (41.520291ms)
+✔ calendar change counters are durable, recipient-scoped and transactional (38.715167ms)
+✔ recurring series is atomic, retry-safe, scoped and cancelled without resurrection (48.999ms)
+✔ series edits are revision-scoped, preserve cancelled occurrences and serialize individual edits (52.422333ms)
+✔ series rescheduling preserves IDs/cancelled exceptions and updates canonical anchor atomically (85.996458ms)
+✔ monthly/yearly rules persist policy and preserve legacy retry identity (71.852333ms)
+✔ series expansion preserves existing identities and original creation replay (100.509ms)
+✔ upcoming-only series changes preserve historical rows and reject backward shifts (52.2245ms)
+✔ upcoming cancellation preserves started meetings and is idempotent (97.11125ms)
+✔ personal reminders persist, suppress safely and rearm only after time changes (253.0845ms)
+✔ channel posting policy serializes new writes, preserves accepted retries and enforces current roles (140.28475ms)
+✔ message reports preserve privacy, bound abuse and serialize audited moderation (328.513625ms)
+✔ audit search is tenant authorized, exact, time bounded and bigint safe (576.243584ms)
+✔ audit export is scoped, lossless, bounded and audited with serialized generation quotas (547.540416ms)
+✔ administrative usage reports preserve exact aggregates, UTC boundaries and current resource authorization (180.435833ms)
+✔ group participants, concurrent renames and departure enforce current access without deleting shared history (557.719292ms)
+✔ direct participant snapshots do not permit group lifecycle mutations (264.705791ms)
+✔ administrator group grants explicitly authorize retained history and serialize revocation and limits (1681.409375ms)
+✔ channel settings enforce current admin access, revisions, archive state and parent-team restoration (752.388459ms)
+✔ team ownership transfers atomically to eligible members and inactive owners cannot permit abandonment (260.498375ms)
+✔ private/shared explicit grants serialize access, include retained content and revoke without changing team membership (2059.344875ms)
+✔ admin team membership grants only standard history, removes private access, preserves shared grants and fences stale creation (5355.761958ms)
+✔ ownerless team recovery requires joined workspace ownership and fences reactivation without restoring former ownership (211.474709ms)
+✔ deleted file recovery rechecks owner, ACL, archive, quota and lifecycle token, rescans one version and fences old scan leases (405.503959ms)
+✔ deleted-file metadata listing is uploader-scoped, bounded and does not expose storage or scan internals (27.1215ms)
+✔ owner-only channel preservation freezes destructive message/file paths, serializes hold changes and keeps reads/additions/scanned recovery available (437.423125ms)
+✔ manual message retention bounds exact approved batches, honors current owner/hold state and retains files/reference metadata (824.859666ms)
+✔ manual file retention keeps families whole, fences scans and preserves recoverable bytes under current owner and hold rules (1751.471334ms)
+✔ deleted-file keyset pages preserve microseconds and ties, survive boundary removal and recheck uploader/channel access (219.118625ms)
+✔ original-file pages traverse ties and microseconds, exclude versions/deleted rows and recheck conversation access (260.553375ms)
+✔ workspace filename search is literal, bounded, scoped, current-access checked and metadata-only (297.922542ms)
+✔ message and filename search pages preserve exact boundaries, survive mutation and never expand query or access scope (339.531709ms)
+✔ exact linked message reads are scoped, minimized, current-access checked and withdraw deleted content/attachment names (412.511542ms)
+✔ exact file source reads minimize metadata and enforce original/current organization and conversation scope without writes (277.933417ms)
+✔ saved message pages are personal, current-access scoped, bounded and read-only over exact cursor boundaries (763.539375ms)
+✔ mark unread rewinds only the current reader to a current nondeleted source, never advances, and emits only changed events (297.415291ms)
+✔ personal conversation preferences merge strict partial fields atomically without changing access or drafts (281.924125ms)
+✔ manual presence is personal and workspace scoped, survives heartbeats and expires under connected and stale TTL rules (277.666333ms)
+✔ own presence metadata is minimized and clearing an override is scoped, strict and heartbeat neutral (250.85225ms)
+✔ activity pages retain exact boundaries and current access without read side effects (521.473625ms)
+✔ notification preference patches preserve concurrent independent fields and opt-in cutoffs with strict own-state defaults (702.979708ms)
+✔ read advancement accepts exact bigint strings and legacy safe integers without rounding or unauthorized side effects (68.750667ms)
+✔ message readers page beyond one hundred with exact positions, current privacy/author access and no read-side writes (109.217833ms)
+✔ standard message readers require current inherited team membership and reevaluate privacy on every page (70.682375ms)
+✔ direct replies enforce current parent/channel/workspace access and exclude nested, unrelated and deleted rows without read-side writes (60.597709ms)
+✔ direct reply pages retain microsecond timestamp ties without gaps, bound excerpts and reject invalid cursor shapes (34.962708ms)
+✔ call invitations, raised hands and chat enforce session, room, expiry and idempotent-send boundaries (513.747833ms)
+✔ meeting protocol orders hands and chat, binds invitation winners, authorizes host transfer and preserves ended history (188.081792ms)
+✔ media callbacks require a signed body, deduplicate event IDs and never revive an ended meeting (15.105542ms)
+✔ profile calling resolves one current organization-scoped direct conversation without granting cross-tenant access (40.504542ms)
+✔ provider provisioning outages return actionable failures and retries reuse one authorized device grant (42.133959ms)
+✔ accept versus end races have one serialized invitation outcome and cannot revive a terminal call (98.5275ms)
+✔ a delayed provider creation is fenced before end and cannot recreate an ended room (31.733292ms)
+✔ sharing retirement fences stale commands, competing claims, ambiguous RPCs and expired leases (106.26725ms)
+ℹ tests 106
+ℹ suites 0
+ℹ pass 106
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36902.277833
+
+
+Lint
+
+> team-collob-platform@0.1.127 lint
+> eslint
+
+
+/Volumes/KaizenChandra/Workspace/04-Development/Codex/team-collob-platform/app/components/notification-permission.tsx
+  10:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+✖ 1 problem (0 errors, 1 warning)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

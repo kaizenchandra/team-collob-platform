@@ -1,113 +1,551 @@
-import {test,expect,type Page} from '@playwright/test';
-const org='11111111-1111-4111-8111-111111111111',api='http://localhost:4100';
-test('calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation',async({browser})=>{
+import { test, expect, type BrowserContext, type Page } from "@playwright/test";
+import { randomUUID } from "node:crypto";
+import pg from "pg";
+const org = randomUUID(),
+  owner = randomUUID(),
+  attendee = randomUUID(),
+  api = "http://localhost:4100/v1",
+  base = `${api}/organizations/${org}`,
+  headers = { origin: "http://localhost:3101" };
+const users = [
+  {
+    id: owner,
+    name: "Calendar organizer",
+    email: `calendar-owner-${org}@example.test`,
+    role: "owner",
+  },
+  {
+    id: attendee,
+    name: "Calendar attendee",
+    email: `calendar-attendee-${org}@example.test`,
+    role: "member",
+  },
+];
+test.beforeAll(async () => {
+  const db = new pg.Pool({
+    connectionString:
+      "postgres://concord:local-development-only@localhost:55432/concord",
+  });
+  try {
+    await db.query("INSERT INTO organizations(id,name) VALUES($1,$2)", [
+      org,
+      `Scheduling regression ${org}`,
+    ]);
+    for (const u of users) {
+      await db.query(
+        "INSERT INTO users(id,email,name,password_hash) SELECT $1,$2,$3,password_hash FROM users WHERE email=$4",
+        [u.id, u.email, u.name, "alice@acme.test"],
+      );
+      await db.query(
+        "INSERT INTO memberships(org_id,user_id,role) VALUES($1,$2,$3)",
+        [org, u.id, u.role],
+      );
+    }
+  } finally {
+    await db.end();
+  }
+});
+test.afterAll(async () => {
+  const db = new pg.Pool({
+    connectionString:
+      "postgres://concord:local-development-only@localhost:55432/concord",
+  });
+  try {
+    await db.query("UPDATE memberships SET active=false WHERE org_id=$1", [
+      org,
+    ]);
+    await db.query("UPDATE users SET disabled=true WHERE id=ANY($1::uuid[])", [
+      [owner, attendee],
+    ]);
+  } finally {
+    await db.end();
+  }
+});
+async function login(c: BrowserContext, index = 0) {
+  const r = await c.request.post(`${api}/session`, {
+    headers,
+    data: { email: users[index].email, password: "Development123!" },
+  });
+  expect(r.status()).toBe(200);
+}
+async function calendar(p: Page, date: string, view = "day") {
+  await p.goto(`/?org=${org}`);
+  await p.getByRole("button", { name: "Calendar", exact: true }).click();
+  await p.getByLabel("Calendar date", { exact: true }).fill(date);
+  await p.getByLabel("Calendar view", { exact: true }).selectOption(view);
+}
+function event(p: Page, title: string) {
+  return p
+    .locator(".calendar-time-scroll .calendar-event")
+    .filter({ hasText: title })
+    .first();
+}
+async function details(p: Page, title: string) {
+  await event(p, title).click();
+  return p
+    .getByRole("dialog")
+    .filter({ has: p.getByRole("heading", { name: title, exact: true }) });
+}
+async function create(
+  c: BrowserContext,
+  title: string,
+  extra: Record<string, unknown> = {},
+) {
+  const r = await c.request.post(`${base}/meetings`, {
+    headers,
+    data: {
+      title,
+      startsAt: "2034-06-21T10:00:00Z",
+      endsAt: "2034-06-21T11:00:00Z",
+      timezone: "UTC",
+      attendees: [attendee],
+      ...extra,
+    },
+  });
+  expect(r.status(), await r.text()).toBe(200);
+  return r.json();
+}
+async function openEditor(p: Page, title: string) {
+  const card = await details(p, title);
+  await card.getByRole("button", { name: "Edit meeting", exact: true }).click();
+  return p.getByRole("dialog", { name: "Edit meeting", exact: true });
+}
+test("calendar automatically refreshes organizer edits, attendee removal, re-addition and cancellation", async ({
+  browser,
+}) => {
   test.setTimeout(60000);
-  const a=await browser.newContext(),b=await browser.newContext();let id='';
-  const login=async(p:Page,email:string)=>{await p.goto('/');await p.getByLabel('Email address').fill(email);await p.getByLabel('Password',{exact:true}).fill('Development123!');await p.getByRole('button',{name:'Sign in',exact:true}).click();await p.getByRole('button',{name:'Calendar',exact:true}).click();await p.getByLabel('Calendar from',{exact:true}).fill('2026-12-01');await p.getByLabel('Calendar through',{exact:true}).fill('2026-12-31');await p.getByRole('button',{name:'Apply dates',exact:true}).click();};
-  try{
-    const alice=await a.newPage(),bob=await b.newPage();await login(alice,'alice@acme.test');await login(bob,'bob@acme.test');
-    const title=`Calendar edit ${Date.now()}`,base=`${api}/v1/organizations/${org}/meetings`;
-    const created=await a.request.post(base,{headers:{origin:'http://localhost:3101'},data:{title,startsAt:'2026-12-21T10:00:00Z',endsAt:'2026-12-21T11:00:00Z',timezone:'UTC',attendees:['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb']}});expect(created.status()).toBe(200);id=(await created.json()).id;
-    await b.request.patch(`${base}/${id}`,{headers:{origin:'http://localhost:3101'},data:{response:'accepted'}});
-    await alice.getByRole('button',{name:'Refresh calendar',exact:true}).click();const card=alice.locator('.meeting-card').filter({hasText:title});await card.getByRole('button',{name:'Edit meeting',exact:true}).click();
-    const dialog=alice.getByRole('dialog',{name:'Edit meeting'});await dialog.getByLabel('Meeting title',{exact:true}).fill(title+' updated');await dialog.getByLabel('Description',{exact:true}).fill('Updated meeting details');await dialog.getByLabel('Starts',{exact:true}).fill('2026-12-22T10:00');await dialog.getByLabel('Ends',{exact:true}).fill('2026-12-22T11:00');await dialog.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(dialog).toHaveCount(0);
-    const received=bob.locator('.meeting-card').filter({hasText:title+' updated'});await expect(received).toBeVisible({timeout:12000});await expect(received.getByText('Updated meeting details',{exact:true})).toBeVisible();await expect(received.getByLabel('RSVP',{exact:true})).toHaveValue('pending');await expect(received.getByRole('button',{name:'Edit meeting',exact:true})).toHaveCount(0);await bob.screenshot({path:'docs/evidence/meeting-update.png'});
-    await card.getByRole('button',{name:'Edit meeting',exact:true}).click();await dialog.getByLabel('Bob Chen',{exact:true}).uncheck();await dialog.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(dialog).toHaveCount(0);
-    await expect(received).toHaveCount(0,{timeout:12000});
-    const denied=await b.request.patch(`${base}/${id}`,{headers:{origin:'http://localhost:3101'},data:{response:'accepted'}});expect(denied.status()).toBe(404);
-    await card.getByRole('button',{name:'Edit meeting',exact:true}).click();await dialog.getByLabel('Bob Chen',{exact:true}).check();await alice.screenshot({path:'docs/evidence/meeting-attendees.png'});await dialog.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(dialog).toHaveCount(0);
-    await expect(received).toBeVisible({timeout:12000});await expect(received.getByLabel('RSVP',{exact:true})).toHaveValue('pending');
-    await a.request.patch(`${base}/${id}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});await expect(received.getByRole('heading')).toContainText('Cancelled',{timeout:12000});
-  }finally{if(id)await a.request.patch(`${api}/v1/organizations/${org}/meetings/${id}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});await a.close();await b.close();}
+  const a = await browser.newContext(),
+    b = await browser.newContext();
+  try {
+    await login(a);
+    await login(b, 1);
+    const title = `Calendar update ${randomUUID()}`,
+      made = await create(a, title);
+    await b.request.patch(`${base}/meetings/${made.id}`, {
+      headers,
+      data: { response: "accepted" },
+    });
+    const pa = await a.newPage(),
+      pb = await b.newPage();
+    await calendar(pa, "2034-06-21");
+    await calendar(pb, "2034-06-21");
+    const editor = await openEditor(pa, title);
+    await editor
+      .getByLabel("Meeting title", { exact: true })
+      .fill(title + " revised");
+    await editor
+      .getByLabel("Description", { exact: true })
+      .fill("Revised agenda");
+    await editor
+      .getByRole("button", { name: "Save meeting changes", exact: true })
+      .click();
+    await expect(editor).toHaveCount(0);
+    await expect(event(pb, title + " revised")).toBeVisible({ timeout: 12000 });
+    let card = await details(pb, title + " revised");
+    await expect(
+      card.getByText("Revised agenda", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      card.getByRole("button", { name: "Edit meeting", exact: true }),
+    ).toHaveCount(0);
+    await pb.keyboard.press("Escape");
+    let edit = await openEditor(pa, title + " revised");
+    await edit.getByRole("button", {name:"Remove Calendar attendee",exact:true}).click();
+    await edit
+      .getByRole("button", { name: "Save meeting changes", exact: true })
+      .click();
+    await expect(edit).toHaveCount(0);
+    await expect(event(pb, title + " revised")).toHaveCount(0, {
+      timeout: 12000,
+    });
+    expect(
+      (await b.request.get(`${base}/meetings/${made.id}/details`)).status(),
+    ).toBe(404);
+    edit = await openEditor(pa, title + " revised");
+    await edit.getByRole("combobox",{name:"Add attendees",exact:true}).fill("Calendar attendee");
+    await pa.getByRole("option").filter({hasText:"Calendar attendee"}).click();
+    await edit
+      .getByRole("button", { name: "Save meeting changes", exact: true })
+      .click();
+    await expect(edit).toHaveCount(0);
+    await expect(event(pb, title + " revised")).toBeVisible({ timeout: 12000 });
+    card = await details(pb, title + " revised");
+    await expect(card.getByLabel("RSVP", { exact: true })).toHaveValue(
+      "pending",
+    );
+    await pb.keyboard.press("Escape");
+    await a.request.patch(`${base}/meetings/${made.id}`, {
+      headers,
+      data: { cancelled: true },
+    });
+    await expect(event(pb, title + " revised")).toHaveClass(/cancelled/, {
+      timeout: 12000,
+    });
+  } finally {
+    await a.close();
+    await b.close();
+  }
 });
-
-test('calendar date range loads beyond the first page and retries an unavailable page',async({page})=>{
-  const {Pool}=await import('pg'),{randomUUID}=await import('node:crypto');const db=new Pool({connectionString:'postgres://concord:local-development-only@localhost:55432/concord'}),ids=Array.from({length:53},()=>randomUUID()),marker=`Calendar page ${Date.now()}`;
-  try{
-    await db.query("INSERT INTO meetings(id,org_id,title,starts_at,ends_at,timezone,organizer_id) SELECT id,$2,$3,'2033-06-04T10:00:00Z','2033-06-04T11:00:00Z','UTC','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' FROM unnest($1::uuid[]) id",[ids,org,marker]);
-    await page.goto('/');await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('button',{name:'Calendar',exact:true}).click();
-    await page.getByLabel('Calendar from',{exact:true}).fill('2033-06-04');await page.getByLabel('Calendar through',{exact:true}).fill('2033-06-04');await page.getByRole('button',{name:'Apply dates',exact:true}).click();const cards=page.locator('.meeting-card').filter({hasText:marker});await expect(cards).toHaveCount(50);
-    let failed=false;await page.route('**/v1/organizations/*/meetings?*',async route=>{if(route.request().url().includes('afterStart=')&&!failed){failed=true;await route.abort();}else await route.continue();});
-    await page.getByRole('button',{name:'Load more meetings',exact:true}).click();await expect(page.getByRole('button',{name:'Retry calendar',exact:true})).toBeVisible();await expect(cards).toHaveCount(50);await page.getByRole('button',{name:'Retry calendar',exact:true}).click();await expect(cards).toHaveCount(53);await expect(page.getByRole('button',{name:'Load more meetings',exact:true})).toHaveCount(0);await page.screenshot({path:'docs/evidence/calendar-pagination.png'});
-    let counterFailed=false;await page.route('**/calendar-version',async route=>{if(!counterFailed){counterFailed=true;await route.abort();}else await route.continue();});
-    await expect(page.getByText('Calendar updates unavailable. Retrying automatically; stale meetings have been cleared.',{exact:true})).toBeVisible({timeout:12000});await expect(cards).toHaveCount(0);await expect(cards).toHaveCount(50,{timeout:12000});await expect(page.getByRole('button',{name:'Load more meetings',exact:true})).toBeVisible();
-  }finally{await db.query('DELETE FROM meetings WHERE id=ANY($1::uuid[])',[ids]);await db.end();}
+test("visible calendar range paginates beyond fifty meetings and recovers from a failed page", async ({
+  browser,
+}) => {
+  const c = await browser.newContext();
+  try {
+    await login(c);
+    const db = new pg.Pool({
+        connectionString:
+          "postgres://concord:local-development-only@localhost:55432/concord",
+      }),
+      ids = Array.from({ length: 53 }, () => randomUUID());
+    try {
+      await db.query(
+        "INSERT INTO meetings(id,org_id,title,starts_at,ends_at,timezone,organizer_id) SELECT id,$2,'Paged meeting','2033-06-04T10:00:00Z','2033-06-04T11:00:00Z','UTC',$3 FROM unnest($1::uuid[]) id",
+        [ids, org, owner],
+      );
+    } finally {
+      await db.end();
+    }
+    const p = await c.newPage();
+    await calendar(p, "2033-06-04");
+    await expect(
+      p.locator(".calendar-time-scroll .calendar-event"),
+    ).toHaveCount(50);
+    await p.route("**/meetings?**afterStart**", (r) => r.abort());
+    await p
+      .getByRole("button", {
+        name: "Load more meetings in this range",
+        exact: true,
+      })
+      .click();
+    await expect(
+      p.getByRole("button", { name: "Retry calendar", exact: true }),
+    ).toBeVisible();
+    await p.unroute("**/meetings?**afterStart**");
+    await p
+      .getByRole("button", { name: "Retry calendar", exact: true })
+      .click();
+    await expect(
+      p.locator(".calendar-time-scroll .calendar-event"),
+    ).toHaveCount(53);
+    await p
+      .getByText("All meetings in this range (53)", { exact: true })
+      .click();
+    await expect(
+      p.locator(".calendar-range-agenda .calendar-event"),
+    ).toHaveCount(53);
+    await expect(p.locator(".calendar-time-scroll")).not.toBeVisible();
+  } finally {
+    await c.close();
+  }
 });
-
-test('scheduling rejects DST gaps and persists an explicitly chosen repeated-time occurrence',async({page})=>{
-  const title=`Timezone ${Date.now()}`;let id='',posts=0;
-  try{
-    await page.goto('/');await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('button',{name:'Calendar',exact:true}).click();await page.getByRole('button',{name:'Schedule meeting',exact:true}).click();
-    const dialog=page.getByRole('dialog',{name:'Schedule a meeting'});await dialog.getByLabel('Meeting title',{exact:true}).fill(title);await dialog.getByLabel('Scheduling timezone',{exact:true}).fill('America/New_York');
-    page.on('request',r=>{if(r.method()==='POST'&&r.url().endsWith(`/organizations/${org}/meetings`))posts++;});
-    await dialog.getByLabel('Starts',{exact:true}).fill('2026-03-08T02:30');await dialog.getByLabel('Ends',{exact:true}).fill('2026-03-08T03:30');await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('does not exist');expect(posts).toBe(0);
-    await dialog.getByLabel('Starts',{exact:true}).fill('2026-11-01T01:30');await dialog.getByLabel('Ends',{exact:true}).fill('2026-11-01T02:30');await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();await expect(dialog.getByRole('alert')).toContainText('occurs twice');expect(posts).toBe(0);
-    await dialog.getByLabel('Repeated clock time',{exact:true}).selectOption('later');await page.screenshot({path:'docs/evidence/meeting-timezone.png'});
-    const response=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/organizations/${org}/meetings`));await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();const saved=await response;expect(saved.status()).toBe(200);id=(await saved.json()).id;await expect(dialog).toHaveCount(0);
-    const rows=await (await page.request.get(`${api}/v1/organizations/${org}/meetings?from=2026-11-01T00:00:00Z&to=2026-11-02T00:00:00Z`)).json();const meeting=rows.meetings.find((m:{id:string})=>m.id===id);expect(meeting.starts_at).toBe('2026-11-01T06:30:00.000Z');expect(meeting.ends_at).toBe('2026-11-01T07:30:00.000Z');expect(meeting.timezone).toBe('America/New_York');
-  }finally{if(id)await page.request.patch(`${api}/v1/organizations/${org}/meetings/${id}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});}
+test("scheduling rejects a DST gap and persists an explicitly chosen repeated-time occurrence", async ({
+  browser,
+}) => {
+  const c = await browser.newContext();
+  try {
+    await login(c);
+    const p = await c.newPage();
+    await calendar(p, "2034-11-05");
+    await p
+      .getByRole("button", { name: "Schedule meeting", exact: true })
+      .click();
+    const form = p.getByRole("dialog", {
+      name: "Schedule a meeting",
+      exact: true,
+    });
+    await form
+      .getByLabel("Meeting title", { exact: true })
+      .fill("Clock change validation");
+    await form
+      .getByLabel("Scheduling timezone", { exact: true })
+      .fill("America/New_York");
+    await form.getByLabel("Starts", { exact: true }).fill("2034-03-12T02:10");
+    await form.getByLabel("Ends", { exact: true }).fill("2034-03-12T03:10");
+    await form
+      .getByRole("button", { name: "Schedule meeting", exact: true })
+      .click();
+    await expect(form.getByRole("alert")).toContainText("does not exist");
+    await form.getByLabel("Starts", { exact: true }).fill("2034-11-05T01:10");
+    await form.getByLabel("Ends", { exact: true }).fill("2034-11-05T01:40");
+    await form
+      .getByRole("button", { name: "Schedule meeting", exact: true })
+      .click();
+    await expect(form.getByRole("alert")).toContainText("occurs twice");
+    await form
+      .getByLabel("Repeated clock time", { exact: true })
+      .selectOption("later");
+    const saved = p.waitForResponse(
+      (r) => r.request().method() === "POST" && r.url().endsWith("/meetings"),
+    );
+    await form
+      .getByRole("button", { name: "Schedule meeting", exact: true })
+      .click();
+    const id = (await (await saved).json()).id;
+    const m = (
+      await (await c.request.get(`${base}/meetings/${id}/details`)).json()
+    ).meeting;
+    expect(m.starts_at).toBe("2034-11-05T06:10:00.000Z");
+  } finally {
+    await c.close();
+  }
 });
-
-test('weekly series keeps DST time, supports whole-series edits and roster changes, then cancels',async({browser})=>{
-  test.setTimeout(60000);const a=await browser.newContext(),b=await browser.newContext();let first='';
-  const login=async(p:Page,email:string)=>{await p.goto('/');await p.getByLabel('Email address').fill(email);await p.getByLabel('Password',{exact:true}).fill('Development123!');await p.getByRole('button',{name:'Sign in',exact:true}).click();await p.getByRole('button',{name:'Calendar',exact:true}).click();};
-  try{
-    const alice=await a.newPage(),bob=await b.newPage();await login(alice,'alice@acme.test');await login(bob,'bob@acme.test');const title=`Weekly series ${Date.now()}`;
-    await alice.getByRole('button',{name:'Schedule meeting',exact:true}).click();const dialog=alice.getByRole('dialog',{name:'Schedule a meeting'});await dialog.getByLabel('Meeting title',{exact:true}).fill(title);await dialog.getByLabel('Scheduling timezone',{exact:true}).fill('America/New_York');await dialog.getByLabel('Starts',{exact:true}).fill('2026-03-01T09:00');await dialog.getByLabel('Ends',{exact:true}).fill('2026-03-01T10:00');await dialog.getByLabel('Repeat',{exact:true}).selectOption('weekly');await dialog.getByLabel('Occurrence count',{exact:true}).fill('3');await dialog.getByLabel('Bob Chen',{exact:true}).check();
-    const saved=alice.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/organizations/${org}/meetings`));await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();const response=await saved;expect(response.status()).toBe(200);const result=await response.json();first=result.id;expect(result.occurrenceIds).toHaveLength(3);await expect(dialog).toHaveCount(0);
-    const cards=bob.locator('.meeting-card').filter({hasText:title});await expect(cards).toHaveCount(3,{timeout:12000});const rows=await (await b.request.get(`${api}/v1/organizations/${org}/meetings?from=2026-03-01T00:00:00Z&to=2026-03-16T00:00:00Z`)).json();expect(rows.meetings.filter((m:{series_id:string})=>m.series_id===result.seriesId).map((m:{starts_at:string})=>m.starts_at)).toEqual(['2026-03-01T14:00:00.000Z','2026-03-08T13:00:00.000Z','2026-03-15T13:00:00.000Z']);
-    await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Edit meeting',exact:true}).click();const editor=alice.getByRole('dialog',{name:'Edit meeting'});await editor.getByLabel('Edit scope',{exact:true}).selectOption('series');await expect(editor.getByLabel('Starts',{exact:true})).toHaveCount(0);await editor.getByLabel('Meeting title',{exact:true}).fill(title+' shared');await editor.getByLabel('Description',{exact:true}).fill('All active occurrences updated');await alice.screenshot({path:'docs/evidence/meeting-series-edit.png'});await editor.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(editor).toHaveCount(0);await expect(cards.filter({hasText:'All active occurrences updated'})).toHaveCount(3,{timeout:12000});
-    await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Edit meeting',exact:true}).click();await editor.getByLabel('Edit scope',{exact:true}).selectOption('series');await editor.getByLabel('Bob Chen',{exact:true}).uncheck();await editor.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(editor).toHaveCount(0);await expect(cards).toHaveCount(0,{timeout:12000});
-    await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Edit meeting',exact:true}).click();await editor.getByLabel('Edit scope',{exact:true}).selectOption('series');await editor.getByLabel('Bob Chen',{exact:true}).check();await editor.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(editor).toHaveCount(0);await expect(cards).toHaveCount(3,{timeout:12000});
-    await alice.locator('.meeting-card').filter({hasText:title}).nth(1).getByRole('button',{name:'Reschedule series',exact:true}).click();const rescheduler=alice.getByRole('dialog',{name:'Reschedule series'});await expect(rescheduler.getByLabel('Series starts',{exact:true})).toHaveValue(/^2026-03-01T09:00(:00)?$/);await rescheduler.getByLabel('Series starts',{exact:true}).fill('2026-03-02T10:00');await rescheduler.getByLabel('Series ends',{exact:true}).fill('2026-03-02T11:00');await rescheduler.getByLabel('Series frequency',{exact:true}).selectOption('daily');await rescheduler.getByLabel('Series interval',{exact:true}).fill('2');await alice.screenshot({path:'docs/evidence/meeting-series-reschedule.png'});await rescheduler.getByRole('button',{name:'Save series schedule',exact:true}).click();await expect(rescheduler).toHaveCount(0);await expect(cards.filter({hasText:'daily'})).toHaveCount(3,{timeout:12000});
-    const shifted=await (await b.request.get(`${api}/v1/organizations/${org}/meetings?from=2026-03-01T00:00:00Z&to=2026-03-16T00:00:00Z`)).json();expect(shifted.meetings.filter((m:{series_id:string})=>m.series_id===result.seriesId).map((m:{starts_at:string})=>m.starts_at)).toEqual(['2026-03-02T15:00:00.000Z','2026-03-04T15:00:00.000Z','2026-03-06T15:00:00.000Z']);
-    await alice.locator('.meeting-card').filter({hasText:title}).first().getByRole('button',{name:'Cancel series',exact:true}).click();await expect(cards.filter({hasText:'Cancelled'})).toHaveCount(3,{timeout:12000});await bob.screenshot({path:'docs/evidence/meeting-series.png'});
-  }finally{if(first)await a.request.patch(`${api}/v1/organizations/${org}/meetings/${first}/series`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});await a.close();await b.close();}
+test("weekly series retains local time across DST and edits or cancels all occurrences", async ({
+  browser,
+}) => {
+  const c = await browser.newContext();
+  try {
+    await login(c);
+    const title = `Weekly series ${randomUUID()}`,
+      made = await create(c, title, {
+        startsAt: "2034-03-05T15:00:00Z",
+        endsAt: "2034-03-05T16:00:00Z",
+        timezone: "America/New_York",
+        clientId: randomUUID(),
+        recurrence: { frequency: "weekly", interval: 1, count: 3 },
+      }),
+      p = await c.newPage();
+    await calendar(p, "2034-03-05");
+    const editor = await openEditor(p, title);
+    await editor
+      .getByLabel("Edit scope", { exact: true })
+      .selectOption("series");
+    await editor
+      .getByLabel("Description", { exact: true })
+      .fill("Whole series agenda");
+    await editor
+      .getByRole("button", { name: "Save meeting changes", exact: true })
+      .click();
+    await expect(editor).toHaveCount(0);
+    const rows = (
+      await (
+        await c.request.get(
+          `${base}/meetings?from=2034-03-01T00:00:00Z&to=2034-04-01T00:00:00Z`,
+        )
+      ).json()
+    ).meetings.filter(
+      (m: { series_id: string }) => m.series_id === made.seriesId,
+    );
+    expect(rows.map((m: { starts_at: string }) => m.starts_at)).toEqual([
+      "2034-03-05T15:00:00.000Z",
+      "2034-03-12T14:00:00.000Z",
+      "2034-03-19T14:00:00.000Z",
+    ]);
+    expect(
+      rows.every(
+        (m: { description: string }) => m.description === "Whole series agenda",
+      ),
+    ).toBe(true);
+    const card = await details(p, title);
+    await card
+      .getByRole("button", { name: "Cancel series", exact: true })
+      .click();
+    await expect(event(p, title)).toHaveClass(/cancelled/);
+  } finally {
+    await c.close();
+  }
 });
-
-test('monthly last-day policy creates anchored dates and rescheduler supports yearly rules',async({page})=>{
-  let first='';const title=`Monthly ${Date.now()}`;
-  try{
-    await page.goto('/');await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('button',{name:'Calendar',exact:true}).click();
-    await page.getByLabel('Calendar from',{exact:true}).fill('2030-01-01');await page.getByLabel('Calendar through',{exact:true}).fill('2030-12-31');await page.getByRole('button',{name:'Apply dates',exact:true}).click();await page.getByRole('button',{name:'Schedule meeting',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Schedule a meeting'});
-    await dialog.getByLabel('Meeting title',{exact:true}).fill(title);await dialog.getByLabel('Scheduling timezone',{exact:true}).fill('UTC');await dialog.getByLabel('Starts',{exact:true}).fill('2030-01-31T10:00');await dialog.getByLabel('Ends',{exact:true}).fill('2030-01-31T11:00');await dialog.getByLabel('Repeat',{exact:true}).selectOption('monthly');const preview=dialog.getByRole('region',{name:'Recurrence preview'});await preview.getByRole('button',{name:'Preview occurrences',exact:true}).click();await expect(preview.getByRole('alert')).toContainText('Occurrence 2');await expect(dialog).toBeVisible();await dialog.getByLabel('Missing month date',{exact:true}).selectOption('constrain');await expect(preview.getByRole('alert')).toHaveCount(0);await preview.getByRole('button',{name:'Preview occurrences',exact:true}).click();await expect(preview.locator('li')).toHaveCount(4);await preview.getByRole('list',{name:'Proposed occurrence dates'}).focus();await expect(preview.getByRole('list',{name:'Proposed occurrence dates'})).toBeFocused();const previewStarts=await preview.locator('li time:first-child').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('datetime')));expect(previewStarts).toEqual(['2030-01-31T10:00:00.000Z','2030-02-28T10:00:00.000Z','2030-03-31T10:00:00.000Z','2030-04-30T10:00:00.000Z']);await dialog.getByLabel('Occurrence count',{exact:true}).fill('5');await expect(preview.locator('li')).toHaveCount(0);await dialog.getByLabel('Occurrence count',{exact:true}).fill('4');await preview.getByRole('button',{name:'Preview occurrences',exact:true}).click();await preview.scrollIntoViewIfNeeded();await page.screenshot({path:'docs/evidence/meeting-recurrence-preview.png'});
-    const saved=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith(`/organizations/${org}/meetings`));await dialog.getByRole('button',{name:'Schedule meeting',exact:true}).click();const response=await saved;expect(response.status()).toBe(200);const series=await response.json();first=series.id;await expect(dialog).toHaveCount(0);const cards=page.locator('.meeting-card').filter({hasText:title});await expect(cards).toHaveCount(4);
-    const rows=await (await page.request.get(`${api}/v1/organizations/${org}/meetings?from=2030-01-01T00:00:00Z&to=2031-01-01T00:00:00Z`)).json();expect(rows.meetings.filter((m:{series_id:string})=>m.series_id===series.seriesId).map((m:{starts_at:string})=>m.starts_at.slice(0,10))).toEqual(['2030-01-31','2030-02-28','2030-03-31','2030-04-30']);expect(rows.meetings.filter((m:{series_id:string})=>m.series_id===series.seriesId).map((m:{starts_at:string})=>m.starts_at)).toEqual(previewStarts);
-    await cards.first().getByRole('button',{name:'Reschedule series',exact:true}).click();const expansion=page.getByRole('dialog',{name:'Reschedule series'});await expansion.getByLabel('Total series occurrences',{exact:true}).fill('6');await expansion.getByRole('button',{name:'Preview occurrences',exact:true}).click();await expect(expansion.getByRole('region',{name:'Recurrence preview'}).locator('li')).toHaveCount(6);await page.screenshot({path:'docs/evidence/meeting-series-expansion.png'});await expansion.getByRole('button',{name:'Save series schedule',exact:true}).click();await expect(expansion).toHaveCount(0);await expect(cards).toHaveCount(6);
-    const expanded=await (await page.request.get(`${api}/v1/organizations/${org}/meetings?from=2030-01-01T00:00:00Z&to=2031-01-01T00:00:00Z`)).json();const sequence=expanded.meetings.filter((m:{series_id:string})=>m.series_id===series.seriesId);expect(sequence.slice(0,4).map((m:{id:string})=>m.id)).toEqual(series.occurrenceIds);expect(sequence.map((m:{starts_at:string})=>m.starts_at.slice(0,10))).toEqual(['2030-01-31','2030-02-28','2030-03-31','2030-04-30','2030-05-31','2030-06-30']);
-    await cards.first().getByRole('button',{name:'Reschedule series',exact:true}).click();const editor=page.getByRole('dialog',{name:'Reschedule series'});await expect(editor.getByLabel('Missing month date',{exact:true})).toHaveValue('constrain');await editor.getByLabel('Series starts',{exact:true}).fill('2032-02-29T10:00');await editor.getByLabel('Series ends',{exact:true}).fill('2032-02-29T11:00');await editor.getByLabel('Series frequency',{exact:true}).selectOption('yearly');await page.screenshot({path:'docs/evidence/meeting-monthly-yearly.png'});await editor.getByRole('button',{name:'Save series schedule',exact:true}).click();await expect(editor).toHaveCount(0);
-    const yearly=await (await page.request.get(`${api}/v1/organizations/${org}/meetings/${first}/series`)).json();expect(yearly.frequency).toBe('yearly');expect(yearly.month_day_policy).toBe('constrain');
-  }finally{if(first)await page.request.patch(`${api}/v1/organizations/${org}/meetings/${first}/series`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});}
+test("monthly last-day series expands without changing old IDs and reschedules with yearly rules", async ({
+  browser,
+}) => {
+  const c = await browser.newContext();
+  try {
+    await login(c);
+    const title = `Monthly series ${randomUUID()}`,
+      made = await create(c, title, {
+        startsAt: "2034-01-31T10:00:00Z",
+        endsAt: "2034-01-31T11:00:00Z",
+        clientId: randomUUID(),
+        recurrence: {
+          frequency: "monthly",
+          interval: 1,
+          count: 4,
+          monthDayPolicy: "constrain",
+        },
+      }),
+      p = await c.newPage();
+    await calendar(p, "2034-01-31");
+    const card = await details(p, title);
+    await card
+      .getByRole("button", { name: "Reschedule series", exact: true })
+      .click();
+    const form = p.getByRole("dialog", {
+      name: "Reschedule series",
+      exact: true,
+    });
+    await form
+      .getByLabel("Total series occurrences", { exact: true })
+      .fill("6");
+    await form
+      .getByRole("button", { name: "Preview occurrences", exact: true })
+      .click();
+    await expect(
+      form.getByRole("region", { name: "Recurrence preview" }).locator("li"),
+    ).toHaveCount(6);
+    await form
+      .getByRole("button", { name: "Save series schedule", exact: true })
+      .click();
+    await expect(form).toHaveCount(0);
+    const rows = (
+      await (
+        await c.request.get(
+          `${base}/meetings?from=2034-01-01T00:00:00Z&to=2035-01-01T00:00:00Z`,
+        )
+      ).json()
+    ).meetings.filter(
+      (m: { series_id: string }) => m.series_id === made.seriesId,
+    );
+    expect(rows.slice(0, 4).map((m: { id: string }) => m.id)).toEqual(
+      made.occurrenceIds,
+    );
+    expect(
+      rows.map((m: { starts_at: string }) => m.starts_at.slice(0, 10)),
+    ).toEqual([
+      "2034-01-31",
+      "2034-02-28",
+      "2034-03-31",
+      "2034-04-30",
+      "2034-05-31",
+      "2034-06-30",
+    ]);
+    await (
+      await details(p, title)
+    )
+      .getByRole("button", { name: "Reschedule series", exact: true })
+      .click();
+    await expect(
+      form.getByLabel("Missing month date", { exact: true }),
+    ).toHaveValue("constrain");
+    await form
+      .getByLabel("Series frequency", { exact: true })
+      .selectOption("yearly");
+    await form
+      .getByRole("button", { name: "Save series schedule", exact: true })
+      .click();
+    await expect(form).toHaveCount(0);
+    expect(
+      (await (await c.request.get(`${base}/meetings/${made.id}/series`)).json())
+        .frequency,
+    ).toBe("yearly");
+  } finally {
+    await c.close();
+  }
 });
-
-test('upcoming-only scope preserves historical occurrence content, roster and schedule',async({page})=>{
-  let first='';const title=`Upcoming ${Date.now()}`,now=Date.now(),start=new Date(now-36*3600000).toISOString(),end=new Date(now-35*3600000).toISOString();
-  try{
-    await page.goto('/');await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.getByRole('button',{name:'Calendar',exact:true})).toBeVisible();const base=`${api}/v1/organizations/${org}/meetings`;
-    const made=await page.request.post(base,{headers:{origin:'http://localhost:3101'},data:{title,startsAt:start,endsAt:end,timezone:'UTC',attendees:['bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'],clientId:crypto.randomUUID(),recurrence:{frequency:'daily',interval:1,count:4}}});expect(made.status()).toBe(200);const series=await made.json();first=series.id;
-    await page.getByRole('button',{name:'Calendar',exact:true}).click();const from=new Date(now-3*86400000),to=new Date(now+3*86400000);const localDate=(d:Date)=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);await page.getByLabel('Calendar from',{exact:true}).fill(localDate(from));await page.getByLabel('Calendar through',{exact:true}).fill(localDate(to));await page.getByRole('button',{name:'Apply dates',exact:true}).click();const cards=page.locator('.meeting-card').filter({hasText:title});await expect(cards).toHaveCount(4);
-    await cards.first().getByRole('button',{name:'Edit meeting',exact:true}).click();const editor=page.getByRole('dialog',{name:'Edit meeting'});await editor.getByLabel('Edit scope',{exact:true}).selectOption('future');await editor.getByLabel('Meeting title',{exact:true}).fill(title+' revised');await editor.getByLabel('Bob Chen',{exact:true}).uncheck();await editor.getByRole('button',{name:'Save meeting changes',exact:true}).click();await expect(editor).toHaveCount(0);
-    let rows=(await (await page.request.get(`${base}?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`)).json()).meetings.filter((m:{series_id:string})=>m.series_id===series.seriesId);expect(rows.map((m:{title:string})=>m.title)).toEqual([title,title,title+' revised',title+' revised']);expect(rows.slice(0,2).every((m:{attendee_ids:string[]})=>m.attendee_ids.includes('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'))).toBe(true);
-    await cards.first().getByRole('button',{name:'Reschedule series',exact:true}).click();const schedule=page.getByRole('dialog',{name:'Reschedule series'});await schedule.getByLabel('Only upcoming occurrences',{exact:true}).check();await schedule.getByLabel('Series starts',{exact:true}).fill(new Date(Date.parse(start)+3600000).toISOString().slice(0,19));await schedule.getByLabel('Series ends',{exact:true}).fill(new Date(Date.parse(end)+3600000).toISOString().slice(0,19));await page.screenshot({path:'docs/evidence/meeting-upcoming-scope.png'});await schedule.getByRole('button',{name:'Save series schedule',exact:true}).click();await expect(schedule).toHaveCount(0);
-    rows=(await (await page.request.get(`${base}?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`)).json()).meetings.filter((m:{series_id:string})=>m.series_id===series.seriesId);expect(rows[0].starts_at).toBe(start);expect(rows[1].starts_at).toBe(new Date(Date.parse(start)+86400000).toISOString());expect(Date.parse(rows[2].starts_at)).toBe(Math.floor((Date.parse(start)+2*86400000+3600000)/1000)*1000);
-    await cards.first().getByRole('button',{name:'Cancel upcoming occurrences',exact:true}).click();await expect(cards.filter({hasText:'Cancelled'})).toHaveCount(2);await expect(cards.filter({hasText:'Cancelled'})).not.toHaveCount(4);
-    rows=(await (await page.request.get(`${base}?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`)).json()).meetings.filter((m:{series_id:string})=>m.series_id===series.seriesId);expect(rows.map((m:{cancelled:boolean})=>m.cancelled)).toEqual([false,false,true,true]);expect(rows[0].starts_at).toBe(start);await page.screenshot({path:'docs/evidence/meeting-upcoming-cancellation.png'});
-
-  }finally{if(first)await page.request.patch(`${api}/v1/organizations/${org}/meetings/${first}/series`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});}
+test("upcoming-only edits preserve past occurrence descriptions and invitees", async ({
+  browser,
+}) => {
+  const c = await browser.newContext();
+  try {
+    await login(c);
+    const now = Date.now(),
+      title = `Upcoming series ${randomUUID()}`,
+      made = await create(c, title, {
+        startsAt: new Date(now - 36 * 3600000).toISOString(),
+        endsAt: new Date(now - 35 * 3600000).toISOString(),
+        clientId: randomUUID(),
+        recurrence: { frequency: "daily", interval: 1, count: 4 },
+      }),
+      p = await c.newPage();
+    await calendar(p, new Date(now).toISOString().slice(0, 10), "week");
+    const editor = await openEditor(p, title);
+    await editor
+      .getByLabel("Edit scope", { exact: true })
+      .selectOption("future");
+    await editor
+      .getByLabel("Description", { exact: true })
+      .fill("Future only agenda");
+    await editor.getByRole("button", {name:"Remove Calendar attendee",exact:true}).click();
+    await editor
+      .getByRole("button", { name: "Save meeting changes", exact: true })
+      .click();
+    await expect(editor).toHaveCount(0);
+    const rows = (
+      await (
+        await c.request.get(
+          `${base}/meetings?from=${encodeURIComponent(new Date(now - 3 * 86400000).toISOString())}&to=${encodeURIComponent(new Date(now + 3 * 86400000).toISOString())}`,
+        )
+      ).json()
+    ).meetings.filter(
+      (m: { series_id: string }) => m.series_id === made.seriesId,
+    );
+    expect(
+      rows
+        .slice(0, 2)
+        .every(
+          (m: { description: string; attendee_ids: string[] }) =>
+            m.description === "" && m.attendee_ids.includes(attendee),
+        ),
+    ).toBe(true);
+    expect(
+      rows
+        .slice(2)
+        .every(
+          (m: { description: string; attendee_ids: string[] }) =>
+            m.description === "Future only agenda" &&
+            !m.attendee_ids.includes(attendee),
+        ),
+    ).toBe(true);
+  } finally {
+    await c.close();
+  }
 });
-
-test('personal meeting reminders persist across reload and dismiss across windows',async({page,context})=>{
-  let meeting='',pref:Record<string,unknown>|null=null;const title=`Reminder ${Date.now()}`,base=`${api}/v1/organizations/${org}`;
-  try{
-    await page.goto('/');await page.getByLabel('Email address').fill('alice@acme.test');await page.getByLabel('Password',{exact:true}).fill('Development123!');await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.getByRole('button',{name:'Calendar',exact:true})).toBeVisible();
-    pref=await (await page.request.get(`${api}/v1/notification-settings`)).json();expect((await page.request.put(`${api}/v1/notification-settings`,{headers:{origin:'http://localhost:3101'},data:{...pref,quiet_enabled:false}})).status()).toBe(200);
-    const start=new Date(Date.now()+10*60000).toISOString(),end=new Date(Date.now()+20*60000).toISOString();const made=await page.request.post(`${base}/meetings`,{headers:{origin:'http://localhost:3101'},data:{title,startsAt:start,endsAt:end,timezone:'UTC',attendees:[]}});expect(made.status()).toBe(200);meeting=(await made.json()).id;
-    await page.getByRole('button',{name:'Calendar',exact:true}).click();const card=page.locator('.meeting-card').filter({hasText:title});await expect(card).toHaveCount(1);await card.getByLabel('In-app reminder',{exact:true}).selectOption('15');await expect(card.getByLabel('In-app reminder',{exact:true})).toHaveValue('15');const reminders=page.getByRole('region',{name:'Meeting reminders'});await expect(reminders).toContainText(title,{timeout:15000});
-    await page.reload();await expect(page.getByRole('region',{name:'Meeting reminders'})).toContainText(title);await page.getByRole('button',{name:'Calendar',exact:true}).click();await expect(page.locator('.meeting-card').filter({hasText:title}).getByLabel('In-app reminder',{exact:true})).toHaveValue('15');
-    const second=await context.newPage();await second.goto('/');const other=second.getByRole('region',{name:'Meeting reminders'});await expect(other).toContainText(title);await second.screenshot({path:'docs/evidence/meeting-reminders.png'});await other.getByRole('button',{name:'Dismiss reminder',exact:true}).click();await expect(other).toHaveCount(0);await expect(page.getByRole('region',{name:'Meeting reminders'})).toHaveCount(0,{timeout:15000});await second.close();
-    await page.reload();await expect(page.getByRole('button',{name:'Calendar',exact:true})).toBeVisible();expect((await (await page.request.get(`${base}/meeting-reminders`)).json()).items.some((m:{id:string})=>m.id===meeting)).toBe(false);
-  }finally{
-    if(meeting)await page.request.patch(`${base}/meetings/${meeting}`,{headers:{origin:'http://localhost:3101'},data:{cancelled:true}});
-    if(pref)await page.request.put(`${api}/v1/notification-settings`,{headers:{origin:'http://localhost:3101'},data:pref});
+test("personal reminders survive reload and dismissal synchronizes across windows", async ({
+  browser,
+}) => {
+  test.setTimeout(45000);
+  const c = await browser.newContext();
+  try {
+    await login(c);
+    const title = `Reminder ${randomUUID()}`,
+      now = Date.now();
+    const prefs = await (
+      await c.request.get(`${api}/notification-settings`)
+    ).json();
+    await c.request.put(`${api}/notification-settings`, {
+      headers,
+      data: { ...prefs, quiet_enabled: false },
+    });
+    const made = await create(c, title, {
+        startsAt: new Date(now + 10 * 60000).toISOString(),
+        endsAt: new Date(now + 20 * 60000).toISOString(),
+        attendees: [],
+      }),
+      p = await c.newPage();
+    await calendar(p, new Date(now).toISOString().slice(0, 10));
+    await (
+      await details(p, title)
+    )
+      .getByLabel("In-app reminder", { exact: true })
+      .selectOption("15");
+    await expect(
+      p.getByRole("region", { name: "Meeting reminders" }),
+    ).toContainText(title, { timeout: 15000 });
+    await p.reload();
+    await expect(
+      p.getByRole("region", { name: "Meeting reminders" }),
+    ).toContainText(title);
+    await p.getByRole("button", { name: "Calendar", exact: true }).click();
+    await p.getByLabel("Calendar view", { exact: true }).selectOption("day");
+    await expect(
+      (await details(p, title)).getByLabel("In-app reminder", { exact: true }),
+    ).toHaveValue("15");
+    await p.keyboard.press("Escape");
+    const second = await c.newPage();
+    await second.goto(`/?org=${org}`);
+    const other = second.getByRole("region", { name: "Meeting reminders" });
+    await expect(other).toContainText(title);
+    await other
+      .getByRole("button", { name: "Dismiss reminder", exact: true })
+      .click();
+    await expect(other).toHaveCount(0);
+    await expect(
+      p.getByRole("region", { name: "Meeting reminders" }),
+    ).toHaveCount(0, { timeout: 15000 });
+    expect(
+      (
+        await (await c.request.get(`${base}/meeting-reminders`)).json()
+      ).items.some((m: { id: string }) => m.id === made.id),
+    ).toBe(false);
+  } finally {
+    await c.close();
   }
 });

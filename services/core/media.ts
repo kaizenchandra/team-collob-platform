@@ -1,3 +1,4 @@
+import {scheduledJoinWindow} from './calendar-media.ts';
 import type {FastifyInstance,FastifyRequest} from 'fastify';
 import {randomUUID} from 'node:crypto';
 import {createReadStream} from 'node:fs';
@@ -53,6 +54,7 @@ export async function reconcileMedia(){
     known=new Map(roomRows.map(row=>[mediaRoomName(row.provider_room),{call:row,room:row.room_id}]));
     const live=(await pool.query<Grant>(`SELECT g.* FROM media_grants g JOIN media_calls x ON x.id=g.call_id JOIN channels c ON c.id=x.channel_id
       WHERE g.revoked_at IS NULL AND g.expires_at>now() AND x.ended_at IS NULL AND NOT c.archived
+      AND NOT EXISTS(SELECT 1 FROM calendar_media cal JOIN meetings mt ON mt.id=cal.meeting_id WHERE cal.call_id=x.id AND (mt.cancelled OR (mt.organizer_id IS DISTINCT FROM g.user_id AND NOT EXISTS(SELECT 1 FROM meeting_attendees ma WHERE ma.meeting_id=mt.id AND ma.user_id=g.user_id))))
       AND NOT EXISTS(SELECT 1 FROM media_bans b WHERE b.call_id=x.id AND b.user_id=g.user_id)
       AND EXISTS(SELECT 1 FROM memberships m WHERE m.org_id=x.org_id AND m.user_id=g.user_id AND m.active)
       AND (c.kind='standard' AND EXISTS(SELECT 1 FROM team_members t WHERE t.team_id=c.team_id AND t.user_id=g.user_id)
@@ -87,7 +89,7 @@ export async function reconcileMedia(){
     await db.query("UPDATE media_invitations SET response='missed',responded_at=now() WHERE call_id=$1 AND response='pending'",[call.id]);
     if(call.kind==='direct'&&!(await db.query("SELECT 1 FROM media_invitations WHERE call_id=$1 AND user_id<>$2 AND response='accepted'",[call.id,call.caller_user_id])).rowCount){await db.query("UPDATE media_calls SET ended_at=now(),end_reason='missed' WHERE id=$1",[call.id]);await db.query('UPDATE media_grants SET revoked_at=now() WHERE call_id=$1',[call.id]);}
   });
-  await pool.query(`UPDATE media_calls x SET ended_at=now(),end_reason=CASE WHEN x.created_at<now()-interval '24 hours' THEN 'max_duration' ELSE 'empty' END WHERE x.ended_at IS NULL AND (x.created_at<now()-interval '24 hours' OR (x.created_at<now()-interval '2 minutes' AND NOT EXISTS(SELECT 1 FROM media_grants g WHERE g.call_id=x.id AND g.revoked_at IS NULL AND g.expires_at>now())))`);
+  await pool.query(`UPDATE media_calls x SET ended_at=now(),end_reason=CASE WHEN x.created_at<now()-interval '24 hours' THEN 'max_duration' ELSE 'empty' END WHERE x.ended_at IS NULL AND (x.created_at<now()-interval '24 hours' OR ((x.created_at<now()-interval '2 minutes' OR EXISTS(SELECT 1 FROM calendar_media cm JOIN meetings m ON m.id=cm.meeting_id WHERE cm.call_id=x.id AND m.ends_at<=now())) AND NOT EXISTS(SELECT 1 FROM media_grants g WHERE g.call_id=x.id AND g.revoked_at IS NULL AND g.expires_at>now()) AND (NOT EXISTS(SELECT 1 FROM calendar_media cm JOIN meetings m ON m.id=cm.meeting_id WHERE cm.call_id=x.id AND m.ends_at>now()) OR EXISTS(SELECT 1 FROM media_attendance a JOIN media_grants g ON g.id=a.grant_id WHERE g.call_id=x.id))))`);
   await pool.query("UPDATE media_invitations i SET response=CASE WHEN x.ring_until<=now() THEN 'missed' ELSE 'cancelled' END,responded_at=now() FROM media_calls x WHERE i.call_id=x.id AND i.response='pending' AND x.ended_at IS NOT NULL");
 }
 
@@ -135,7 +137,7 @@ export async function registerMedia(app:FastifyInstance,readAuth?:ReturnType<typ
   });
   app.post('/v1/organizations/:id/channels/:channel/calls',async req=>{
     configured();const org=idParam(req),channelId=idParam(req,'channel'),body=z.object({clientId:uuid,mode:z.enum(['audio','video']).default('video')}).strict().parse(req.body);
-    return transaction(async db=>{const c=await channel(db,req.user.id,channelId,true);if(c.org_id!==org)throw new HttpError(404,'Conversation unavailable');if(c.archived)throw new HttpError(409,'This conversation is archived');await requirePosting(db,req.user.id,c);
+    return transaction(async db=>{const c=await channel(db,req.user.id,channelId,true);if(c.org_id!==org)throw new HttpError(404,'Conversation unavailable');if(c.archived)throw new HttpError(409,'This conversation is archived');if((await db.query('SELECT 1 FROM calendar_media cm JOIN media_calls x ON x.id=cm.call_id WHERE x.channel_id=$1',[channelId])).rowCount)throw new HttpError(409,'Open scheduled meetings from the calendar');await requirePosting(db,req.user.id,c);
       const old=(await db.query('SELECT id FROM media_calls WHERE channel_id=$1 AND (ended_at IS NULL OR client_id=$2) ORDER BY (ended_at IS NULL) DESC LIMIT 1',[channelId,body.clientId])).rows[0];if(old)return {id:old.id};
       await db.query('SELECT pg_advisory_xact_lock(712399)');
       if(Number((await db.query('SELECT count(*) FROM media_calls WHERE ended_at IS NULL')).rows[0].count)>=meetingLimits().calls)throw new HttpError(409,'The deployment call limit has been reached');
@@ -155,7 +157,7 @@ export async function registerMedia(app:FastifyInstance,readAuth?:ReturnType<typ
   });
   app.post('/v1/organizations/:id/calls/:call/join',async req=>{
     configured();const b=z.object({clientId:uuid,recordingConsent:z.boolean()}).strict().parse(req.body);
-    const grant=await transaction(async db=>{await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,126))',[req.user.id]);const call=await callAccess(db,req.user.id,idParam(req),idParam(req,'call'),true);active(call);
+    const grant=await transaction(async db=>{await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,126))',[req.user.id]);const call=await callAccess(db,req.user.id,idParam(req),idParam(req,'call'),true);active(call);await scheduledJoinWindow(db,call.id);
       if((await db.query('SELECT 1 FROM media_grants g JOIN media_calls x ON x.id=g.call_id WHERE g.user_id=$1 AND g.call_id<>$2 AND g.revoked_at IS NULL AND g.expires_at>now() AND x.ended_at IS NULL',[req.user.id,call.id])).rowCount)throw new HttpError(409,'Busy: leave your other call before joining');
       if((await db.query('SELECT 1 FROM media_bans WHERE call_id=$1 AND user_id=$2',[call.id,req.user.id])).rowCount)throw new HttpError(403,'You were removed from this call');
       let g:Grant|undefined=(await db.query<Grant>('SELECT * FROM media_grants WHERE call_id=$1 AND user_id=$2 AND client_id=$3 AND revoked_at IS NULL FOR UPDATE',[call.id,req.user.id,b.clientId])).rows[0];
